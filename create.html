@@ -1,0 +1,80 @@
+<style>
+#app{--b:#10131a;--f:#e8eaf0;--c:#1c2230;--a:#e0a43a;background:var(--b);color:var(--f);min-height:100vh;font-family:Tahoma,system-ui,sans-serif;direction:rtl;padding:12px}
+#app[data-t=light]{--b:#f4f1ea;--f:#222;--c:#fff;--a:#b5651d}
+#app *{box-sizing:border-box}#app [hidden]{display:none!important}
+#app input,#app textarea,#app select,#app button{font:inherit;background:var(--c);color:var(--f);border:1px solid #8886;border-radius:8px;padding:8px;margin:3px 0}
+#app input,#app textarea,#app select{width:100%}#app textarea{min-height:80px}#app button{cursor:pointer;background:var(--a);color:#111;border:0;width:auto;font-weight:700}
+#app .card{background:var(--c);border-radius:12px;padding:12px;margin:10px 0;box-shadow:0 1px 6px #0004}
+#app .row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}#app .row>input,#app .row>select{flex:1;min-width:120px}#app .m{opacity:.7;font-size:.85em}
+</style>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap');
+#app{--b:#0c0f17;--c:#171c2a;--c2:#212839;--a:#f0b54a;--f:#eef0f6;--l:#ffffff18;background:radial-gradient(1100px 560px at 85% -10%,#2b2257 0,transparent 60%),var(--b);font-family:Tajawal,'Segoe UI',Tahoma,system-ui,sans-serif;padding:0 0 48px;line-height:1.7}
+#app[data-t=light]{--b:#f6f2ea;--c:#fff;--c2:#f2ece1;--a:#c0701a;--f:#2a2420;--l:#0000001a;background:radial-gradient(1000px 500px at 85% -10%,#ffe3b0 0,transparent 60%),var(--b)}
+#app>*{max-width:960px;width:calc(100% - 24px);margin-left:auto;margin-right:auto}
+#app>.row:first-child{position:sticky;top:0;z-index:5;max-width:none;width:100%;padding:12px 18px;margin:0 0 14px;background:color-mix(in srgb,var(--b) 80%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--l)}
+#app>.row:first-child>b{flex:1;font-size:1.25em;font-weight:800}
+#app .card{background:var(--c);border:1px solid var(--l);border-radius:16px;padding:16px;box-shadow:0 8px 24px #0003}
+#app summary{cursor:pointer;font-weight:700}
+#app input,#app textarea,#app select{background:var(--c2);border:1px solid var(--l);border-radius:10px;padding:10px 12px;transition:.2s}
+#app input:focus,#app textarea:focus,#app select:focus{outline:0;border-color:var(--a);box-shadow:0 0 0 3px #f0b54a33}
+#app button{background:linear-gradient(135deg,var(--a),#ff8f5a);color:#1a1205;border-radius:10px;padding:9px 16px;box-shadow:0 2px 8px #0003;transition:.15s}
+#app button:hover{transform:translateY(-1px);filter:brightness(1.1)}#app button.d{background:#e5484d;color:#fff}
+#app a{color:var(--a)}
+#ls{gap:16px;grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+#ls .card{padding:0;overflow:hidden;transition:.2s}#ls .card:hover{transform:translateY(-4px) scale(1.02)}
+#ls img{aspect-ratio:3/4;object-fit:cover;display:block;border-radius:0!important}
+#ls h3{margin:0;min-height:230px;display:flex;align-items:center;justify-content:center;padding:16px;background:linear-gradient(160deg,#4a3490,#12182b);color:#fff;font-size:1.5em}
+#ls .m{padding:10px 12px}
+#st{border:1px solid var(--l);box-shadow:0 20px 60px #0006;padding:28px}
+#tx p{text-shadow:0 2px 10px #0009}
+#cb button{border-radius:12px;backdrop-filter:blur(6px);transition:.2s}#cb button:hover{border-color:var(--a);background:#000d;transform:none}
+#tm{border-radius:4px}
+#sc .card{border-right:4px solid var(--a)}
+</style>
+<div id="app">
+<div class="row"><b>✍ إنشاء الألعاب القصصية</b><button onclick="tg()">🌓</button><button onclick="$('#nl').hidden=!$('#nl').hidden">🔔 <span id="nc">0</span></button><span id="ou" hidden><span id="un"></span> <button onclick="delete L.ssp_user;location.reload()">خروج</button></span></div>
+<div id="nl" class="card" hidden></div>
+<div id="lg" class="card"><b>تسجيل الدخول (إجباري)</b><input id="lu" placeholder="اسم المستخدم"><input id="la" placeholder="اسم الحساب"><input id="lp" type="password" placeholder="كلمة المرور"><button onclick="dl()">دخول / إنشاء حساب</button></div>
+<div id="mn" hidden>
+<div class="card"><b>ألعابي</b> <button onclick="ne()">+ لعبة جديدة</button> <button onclick="tp()">📄 قالب JSON فارغ</button> <button onclick="$('#jf').click()">📥 رفع JSON</button><input id="jf" type="file" accept=".json,application/json" hidden onchange="ij(this.files[0]);this.value=''"><div id="my"></div></div>
+<div id="ed" class="card" hidden>
+<input id="t" placeholder="اسم اللعبة / الرواية">
+<input id="c" placeholder="رابط صورة اللعبة (اتركه فارغًا لإظهار الاسم فقط)">
+<div class="m">رفع الصور: <a href="https://top4top.io" target="_blank" style="color:var(--a)">top4top.io</a> ثم الصق الرابط المباشر هنا وفي الحقول.</div>
+<select id="p"></select><div class="m">الجزء الثاني: اختر الجزء الأول ليرث متغيرات الحفظ.</div>
+<div class="row"><select id="m"><option value="dark">وضع ليلي</option><option value="light">وضع نهاري</option><option value="custom">لون مخصص</option></select><input id="bg" placeholder="لون الخلفية #000"><input id="fg" placeholder="لون النص #fff"><input id="im" placeholder="رابط خلفية مخصصة"></div>
+<div class="m card">صيغة الأسطر: <code>النص | تأخير ثوانٍ | لون | تأثير | حجم | خط | رابط صوت</code> — التأثيرات: fade, zoom, shake, slide, type. يمكن استخدام {متغير}.<br>صيغة الخيارات: <code>نص الخيار | معرّف المشهد التالي | متغير=قيمة,آخر=قيمة</code> (فارغ = نهاية).<br>المدة: 0 = خيار مفتوح بلا وقت، وإلا يُختار تلقائيًا مشهد «عند انتهاء الوقت» (أو أول خيار).</div>
+<div id="sc"></div>
+<button onclick="D.s.push({id:'s'+(D.s.length+1)});rs()">+ مشهد</button>
+<div class="row"><button onclick="sv('draft')">💾 حفظ مسودة</button><button onclick="sv('pending')">📤 إرسال للمراجعة</button><button onclick="dj(cj(),(D.id||'game')+'.json')">⬇ تصدير JSON</button></div>
+</div></div></div>
+<script>
+const $=s=>document.querySelector(s),L=localStorage,app=$('#app');
+// ===== إعدادات Firebase: ضعها هنا =====
+const FB={url:'',secret:''}; // url مثال: 'https://xxxx-default-rtdb.firebaseio.com' — secret اختياري
+const cfg=()=>window.SSP_FB||FB;
+async function db(p,m='GET',b){const c=cfg();if(!c.url)throw'ضع رابط RTDB في الإعدادات';const[a,q]=p.split('?');const r=await fetch(c.url.replace(/\/$/,'')+'/'+a+'.json?'+(q||'')+(c.secret?'&auth='+c.secret:''),{method:m,body:b===undefined?undefined:JSON.stringify(b)});if(!r.ok)throw'خطأ '+r.status;return r.json()}
+const H=async s=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))].map(x=>x.toString(16).padStart(2,'0')).join('');
+const me=()=>JSON.parse(L.ssp_user||'null'),E=s=>String(s??'').replace(/[&<>"]/g,c=>'&#'+c.charCodeAt(0)+';');
+async function dl(){try{const u=$('#lu').value.trim().toLowerCase(),a=$('#la').value.trim(),p=$('#lp').value;if(!u||!p)return;const id=(await H(u)).slice(0,16),h=await H(u+':'+p+':ssp'),r=await db('users/'+id);if(!r)await db('users/'+id,'PUT',{u,a,h});else if(r.h!==h)return alert('كلمة المرور خاطئة');L.ssp_user=JSON.stringify({id,u,a:r?r.a:a});location.reload()}catch(e){alert(e)}}
+function tg(){L.ssp_t=app.dataset.t=app.dataset.t=='dark'?'light':'dark'}
+app.dataset.t=L.ssp_t||'dark';
+let D,M={};
+const ST={draft:'مسودة',pending:'قيد المراجعة',approved:'مقبولة',rejected:'مرفوضة',suspended:'معلّقة'};
+async function init(){const u=me();$('#lg').hidden=!!u;$('#mn').hidden=!u;$('#ou').hidden=!u;if(!u)return;$('#un').textContent=u.a;
+try{const n=[...Object.values(await db('notifs/all')||{}),...Object.values(await db('notifs/'+u.id)||{})].sort((a,b)=>b.ts-a.ts);$('#nc').textContent=n.length;$('#nl').innerHTML=n.map(x=>`<div>• ${E(x.t)}</div>`).join('')||'لا إشعارات';ml()}catch(e){alert(e)}}
+async function ml(){M=await db('games?orderBy="uid"&equalTo="'+me().id+'"')||{};$('#my').innerHTML='';$('#p').innerHTML='<option value="">بدون جزء سابق</option>'+Object.entries(M).map(([i,x])=>`<option value="${i}">${E(x.title)}</option>`).join('');
+for(const[id,x]of Object.entries(M)){const d=document.createElement('div');d.className='card';d.innerHTML=`<b>${E(x.title)}</b> <span class=m>${ST[x.status]||x.status}</span><div class=row><button>تعديل</button><button>جزء ثانٍ</button><button>حذف</button></div>`;const b=d.querySelectorAll('button');b[0].onclick=()=>ed(id);b[1].onclick=()=>{ne();$('#t').value=x.title+' - الجزء الثاني';$('#p').value=id};b[2].onclick=async()=>{if(confirm('حذف اللعبة؟')){await db('games/'+id,'DELETE');await db('gdata/'+id,'DELETE');ml()}};$('#my').append(d)}}
+function ne(){D={s:[{id:'s1'}]};fill({})}
+async function ed(id){const x=M[id],d=await db('gdata/'+id)||{};D={id,s:d.scenes||[]};fill(x)}
+function fill(x){const t=x.th||{};$('#ed').hidden=false;$('#t').value=x.title||'';$('#c').value=x.cover||'';$('#p').value=x.prev||'';$('#m').value=t.m||'dark';$('#bg').value=t.bg||'';$('#fg').value=t.fg||'';$('#im').value=t.img||'';rs()}
+function rs(){const el=$('#sc');el.innerHTML='';D.s.forEach((s,i)=>{const d=document.createElement('div');d.className='card';d.innerHTML=`<div class=row><input data-k=id placeholder="معرّف المشهد"><input data-k=ch placeholder="اسم الفصل (يظهر عند بدايته)"></div><div class=row><input data-k=bg placeholder="رابط خلفية المشهد"><input data-k=music placeholder="رابط موسيقى المشهد"></div><textarea data-k=lines placeholder="النص | 1.5 | #ffcc00 | fade | 22"></textarea><textarea data-k=choices placeholder="اختيار | s2 | ساعدت=1"></textarea><div class=row><input data-k=timer type=number placeholder="مدة الاختيار بالثواني (0 = مفتوح)"><input data-k=to placeholder="مشهد عند انتهاء الوقت"><button>🗑</button></div>`;d.querySelectorAll('[data-k]').forEach(e=>{e.value=s[e.dataset.k]||'';e.oninput=()=>s[e.dataset.k]=e.value});d.querySelector('button').onclick=()=>{D.s.splice(i,1);rs()};el.append(d)})}
+async function sv(st){const u=me(),title=$('#t').value.trim();if(!title)return alert('أدخل اسم اللعبة');const id=D.id||Date.now().toString(36)+Math.random().toString(36).slice(2,5);D.id=id;
+try{await db('gdata/'+id,'PUT',{scenes:D.s});await db('games/'+id,'PATCH',{title,cover:$('#c').value.trim(),prev:$('#p').value==id?'':$('#p').value,th:{m:$('#m').value,bg:$('#bg').value,fg:$('#fg').value,img:$('#im').value},uid:u.id,au:u.a,status:st,ts:Date.now()});alert('تم الحفظ');ml()}catch(e){alert(e)}}
+function dj(o,n){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(o,null,2)],{type:'application/json'}));a.download=n;a.click()}
+function cj(){return{title:$('#t').value,cover:$('#c').value,th:{m:$('#m').value,bg:$('#bg').value,fg:$('#fg').value,img:$('#im').value},scenes:D.s}}
+function tp(){dj({_instructions:"أنشئ قصة تفاعلية بهذا الشكل بالضبط وأعد JSON فقط. scenes: مصفوفة مشاهد، أول مشهد هو البداية. id معرّف فريد للمشهد (إنجليزي بدون مسافات). ch اسم الفصل (يُكتب في أول مشهد من الفصل فقط). bg رابط خلفية (اختياري). music رابط موسيقى (اختياري). lines: مصفوفة أسطر، كل سطر مصفوفة [النص, التأخير بالثواني, اللون, التأثير, الحجم, الخط, رابط الصوت]، التأثيرات المتاحة: fade, zoom, shake, slide, type، والحقول بعد النص اختيارية، ويمكن استخدام {اسم_متغير} داخل النص. choices: مصفوفة خيارات، كل خيار [نص الخيار, id المشهد التالي, 'متغير=قيمة,متغير2=قيمة'] والمتغيرات اختيارية، وترك المشهد التالي فارغًا يعني نهاية القصة. timer: مدة الاختيار بالثواني (0 أو غير موجود = بلا وقت). to: id المشهد الذي يُنفَّذ عند انتهاء الوقت (اختياري، وإلا يُختار أول خيار). title عنوان القصة، cover رابط الغلاف (اختياري)، th: m يكون dark أو light أو custom مع bg وfg وimg للون الخلفية والنص وصورة الخلفية عند custom. احذف هذا الحقل _instructions إن أردت.",title:"عنوان القصة",cover:"",th:{m:"dark",bg:"",fg:"",img:""},scenes:[{id:"s1",ch:"الفصل الأول",bg:"",music:"",lines:[["كانت ليلة هادئة...",1,"","fade","22"],["سمعتَ طرقًا على الباب.",2,"#ff6666","shake"]],choices:[["أفتح الباب","s2","شجاع=1"],["أتجاهله","s3","شجاع=0"]],timer:10,to:"s3"},{id:"s2",lines:[["فتحتَ الباب فوجدتَ صديقًا قديمًا.",1,"","type"]],choices:[]},{id:"s3",lines:[["بقي الطرق طوال الليل...",1,"","fade"]],choices:[]}]},'template.json')}
+function ij(f){if(!f)return;const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result),n=x=>Array.isArray(x)?x.map(l=>Array.isArray(l)?l.join(' | '):l).join('\n'):x||'';ne();D.s=(o.scenes||[]).map(s=>({...s,lines:n(s.lines),choices:n(s.choices)}));fill({title:o.title,cover:o.cover,th:o.th})}catch(e){alert('ملف JSON غير صالح')}};r.readAsText(f)}
+init();
+</script>
