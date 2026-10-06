@@ -1,0 +1,26 @@
+[
+  {
+    "file": "admin.html",
+    "title": "admin",
+    "icon": "fa-solid fa-file",
+    "hidden": true,
+    "searchEnabled": true,
+    "searchNames": []
+  },
+  {
+    "file": "create.html",
+    "title": "create",
+    "icon": "fa-solid fa-file",
+    "hidden": true,
+    "searchEnabled": true,
+    "searchNames": []
+  },
+  {
+    "file": "home.html",
+    "title": "home",
+    "icon": "fa-solid fa-file",
+    "hidden": true,
+    "searchEnabled": true,
+    "searchNames": []
+  }
+]
