@@ -14,5 +14,9 @@
   "admin.html": {
     "op": "update",
     "timestamp": 1791307709885
+  },
+  "sps-pages.json": {
+    "op": "add",
+    "timestamp": 1791307712748
   }
 }
