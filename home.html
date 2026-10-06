@@ -53,7 +53,7 @@
 <script>
 const $=s=>document.querySelector(s),L=localStorage,app=$('#app');
 // ===== إعدادات Firebase: ضعها هنا =====
-const FB={url:'',secret:''}; // url مثال: 'https://xxxx-default-rtdb.firebaseio.com' — secret اختياري
+const FB={url:'https://clean-sequencer-422716-g8-default-rtdb.firebaseio.com/',secret:''}; // url مثال: 'https://xxxx-default-rtdb.firebaseio.com' — secret اختياري
 const cfg=()=>window.SSP_FB||FB;
 async function db(p,m='GET',b){const c=cfg();if(!c.url)throw'ضع رابط RTDB في الإعدادات';const[a,q]=p.split('?');const r=await fetch(c.url.replace(/\/$/,'')+'/'+a+'.json?'+(q||'')+(c.secret?'&auth='+c.secret:''),{method:m,body:b===undefined?undefined:JSON.stringify(b)});if(!r.ok)throw'خطأ '+r.status;return r.json()}
 const H=async s=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))].map(x=>x.toString(16).padStart(2,'0')).join('');
