@@ -1,0 +1,63 @@
+<style>
+#app{--b:#10131a;--f:#e8eaf0;--c:#1c2230;--a:#e0a43a;background:var(--b);color:var(--f);min-height:100vh;font-family:Tahoma,system-ui,sans-serif;direction:rtl;padding:12px}
+#app[data-t=light]{--b:#f4f1ea;--f:#222;--c:#fff;--a:#b5651d}
+#app *{box-sizing:border-box}#app [hidden]{display:none!important}
+#app input,#app select,#app button{font:inherit;background:var(--c);color:var(--f);border:1px solid #8886;border-radius:8px;padding:8px;margin:3px 0}
+#app input,#app select{width:100%}#app button{cursor:pointer;background:var(--a);color:#111;border:0;width:auto;font-weight:700}
+#app .card{background:var(--c);border-radius:12px;padding:12px;margin:10px 0;box-shadow:0 1px 6px #0004}
+#app .row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}#app .m{opacity:.7;font-size:.85em}
+</style>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap');
+#app{--b:#0c0f17;--c:#171c2a;--c2:#212839;--a:#f0b54a;--f:#eef0f6;--l:#ffffff18;background:radial-gradient(1100px 560px at 85% -10%,#2b2257 0,transparent 60%),var(--b);font-family:Tajawal,'Segoe UI',Tahoma,system-ui,sans-serif;padding:0 0 48px;line-height:1.7}
+#app[data-t=light]{--b:#f6f2ea;--c:#fff;--c2:#f2ece1;--a:#c0701a;--f:#2a2420;--l:#0000001a;background:radial-gradient(1000px 500px at 85% -10%,#ffe3b0 0,transparent 60%),var(--b)}
+#app>*{max-width:960px;width:calc(100% - 24px);margin-left:auto;margin-right:auto}
+#app>.row:first-child{position:sticky;top:0;z-index:5;max-width:none;width:100%;padding:12px 18px;margin:0 0 14px;background:color-mix(in srgb,var(--b) 80%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--l)}
+#app>.row:first-child>b{flex:1;font-size:1.25em;font-weight:800}
+#app .card{background:var(--c);border:1px solid var(--l);border-radius:16px;padding:16px;box-shadow:0 8px 24px #0003}
+#app summary{cursor:pointer;font-weight:700}
+#app input,#app textarea,#app select{background:var(--c2);border:1px solid var(--l);border-radius:10px;padding:10px 12px;transition:.2s}
+#app input:focus,#app textarea:focus,#app select:focus{outline:0;border-color:var(--a);box-shadow:0 0 0 3px #f0b54a33}
+#app button{background:linear-gradient(135deg,var(--a),#ff8f5a);color:#1a1205;border-radius:10px;padding:9px 16px;box-shadow:0 2px 8px #0003;transition:.15s}
+#app button:hover{transform:translateY(-1px);filter:brightness(1.1)}#app button.d{background:#e5484d;color:#fff}
+#app a{color:var(--a)}
+#ls{gap:16px;grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+#ls .card{padding:0;overflow:hidden;transition:.2s}#ls .card:hover{transform:translateY(-4px) scale(1.02)}
+#ls img{aspect-ratio:3/4;object-fit:cover;display:block;border-radius:0!important}
+#ls h3{margin:0;min-height:230px;display:flex;align-items:center;justify-content:center;padding:16px;background:linear-gradient(160deg,#4a3490,#12182b);color:#fff;font-size:1.5em}
+#ls .m{padding:10px 12px}
+#st{border:1px solid var(--l);box-shadow:0 20px 60px #0006;padding:28px}
+#tx p{text-shadow:0 2px 10px #0009}
+#cb button{border-radius:12px;backdrop-filter:blur(6px);transition:.2s}#cb button:hover{border-color:var(--a);background:#000d;transform:none}
+#tm{border-radius:4px}
+#sc .card{border-right:4px solid var(--a)}
+</style>
+<div id="app">
+<div class="row"><b>🛡 لوحة الإدارة</b><button onclick="tg()">🌓</button></div>
+<div id="mn">
+<div class="card"><b>إرسال إشعار</b><input id="nu" placeholder="اسم المستخدم (فارغ = للجميع)"><input id="nt" placeholder="نص الإشعار"><button onclick="sn()">إرسال</button></div>
+<select id="fl" onchange="ls()"><option value="">كل الألعاب</option><option value="pending">قيد المراجعة</option><option value="approved">مقبولة</option><option value="rejected">مرفوضة</option><option value="suspended">معلّقة</option><option value="draft">مسودات</option></select>
+<div id="ls"></div></div></div>
+<script>
+const $=s=>document.querySelector(s),L=localStorage,app=$('#app');
+// ===== إعدادات Firebase: ضعها هنا =====
+const FB={url:'',secret:''}; // url مثال: 'https://xxxx-default-rtdb.firebaseio.com' — secret اختياري
+const cfg=()=>window.SSP_FB||FB;
+async function db(p,m='GET',b){const c=cfg();if(!c.url)throw'ضع رابط RTDB في الإعدادات';const[a,q]=p.split('?');const r=await fetch(c.url.replace(/\/$/,'')+'/'+a+'.json?'+(q||'')+(c.secret?'&auth='+c.secret:''),{method:m,body:b===undefined?undefined:JSON.stringify(b)});if(!r.ok)throw'خطأ '+r.status;return r.json()}
+const H=async s=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))].map(x=>x.toString(16).padStart(2,'0')).join('');
+const E=s=>String(s??'').replace(/[&<>"]/g,c=>'&#'+c.charCodeAt(0)+';');
+function tg(){L.ssp_t=app.dataset.t=app.dataset.t=='dark'?'light':'dark'}
+app.dataset.t=L.ssp_t||'dark';
+const ST={draft:'مسودة',pending:'قيد المراجعة',approved:'مقبولة',rejected:'مرفوضة',suspended:'معلّقة'};
+async function nf(uid,t){await db('notifs/'+uid,'POST',{t,ts:Date.now()})}
+async function sn(){try{const u=$('#nu').value.trim().toLowerCase(),t=$('#nt').value.trim();if(!t)return;await nf(u?(await H(u)).slice(0,16):'all',t);$('#nt').value='';alert('أُرسل')}catch(e){alert(e)}}
+async function ls(){const el=$('#ls');try{const g=await db('games')||{},f=$('#fl').value;el.innerHTML='';
+for(const[id,x]of Object.entries(g)){if(f&&x.status!=f)continue;const d=document.createElement('div');d.className='card';
+d.innerHTML=`<b>${E(x.title)}</b> <span class=m>${E(x.au)} · ${ST[x.status]||x.status} · ❤ ${Object.keys(x.likes||{}).length}</span><div class=row><button>قبول</button><button>رفض</button><button>تعليق/تعطيل</button><button>حذف</button><button>التعليقات (${Object.keys(x.comments||{}).length})</button></div><div class=cx></div>`;
+const b=d.querySelectorAll('button'),set=(s,m)=>async()=>{await db('games/'+id+'/status','PUT',s);await nf(x.uid,`لعبتك «${x.title}» ${m}`);ls()};
+b[0].onclick=set('approved','تم قبولها ونشرها');b[1].onclick=set('rejected','تم رفضها');b[2].onclick=set('suspended','تم تعليقها');
+b[3].className='d';b[3].onclick=async()=>{if(confirm('حذف نهائي؟')){await db('games/'+id,'DELETE');await db('gdata/'+id,'DELETE');await nf(x.uid,`تم حذف لعبتك «${x.title}»`);ls()}};
+b[4].onclick=()=>{const c=d.querySelector('.cx');c.innerHTML='';for(const[k,v]of Object.entries(x.comments||{})){const r=document.createElement('div');r.className='row';r.innerHTML=`<span><b>${E(v.u)}:</b> ${E(v.t)}</span><button>🗑</button>`;r.querySelector('button').onclick=async()=>{await db(`games/${id}/comments/${k}`,'DELETE');r.remove()};c.append(r)}};
+el.append(d)}}catch(e){el.textContent=e}}
+ls();
+</script>
