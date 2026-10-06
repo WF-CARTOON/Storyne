@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>إنشاء الروايات</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&family=Amiri:wght@400;700&display=swap');
+*{box-sizing:border-box}
+html{--bg:#10131c;--pn:#181c28;--tx:#e9e4d6;--mu:#8d93a6;--ac:#d6b25e;--ln:#2a3042}
+html[data-t=day]{--bg:#eceff4;--pn:#fff;--tx:#1b2030;--mu:#5d6478;--ac:#9a6b12;--ln:#d5dae4}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.7 Tajawal,sans-serif}
+.w{max-width:900px;margin:auto;padding:18px}
+button,input,select,textarea{font:inherit;color:inherit}
+input,select,textarea{background:var(--pn);border:1px solid var(--ln);border-radius:10px;padding:8px 12px;width:100%}
+textarea{min-height:80px}
+button{background:var(--ac);color:#14110a;border:0;border-radius:10px;padding:8px 16px;cursor:pointer;font-weight:700}
+button.g{background:transparent;color:var(--tx);border:1px solid var(--ln)}button.r{background:#c4493f;color:#fff}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.card{background:var(--pn);border:1px solid var(--ln);border-radius:14px;padding:14px;margin:10px 0}
+.sub{background:color-mix(in srgb,var(--tx) 4%,var(--pn))}
+.mu{color:var(--mu)}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}.sp{flex:1}
+.L{display:grid;gap:2px;font-size:.82em;color:var(--mu);flex:1;min-width:110px}
+h1,h2{font-family:Amiri,serif;margin:.4em 0}h1{font-size:2.2em}
+dialog{background:var(--pn);color:var(--tx);border:1px solid var(--ln);border-radius:18px;width:min(92vw,460px)}
+dialog::backdrop{background:#000a}dialog>*{margin:8px 0}
+#tt{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ac);color:#111;padding:8px 18px;border-radius:99px;z-index:9;display:none}
+.st{font-size:.8em;border-radius:99px;padding:1px 10px;border:1px solid var(--ac);color:var(--ac)}
+a{color:var(--ac)}
+</style>
+<div class="w">
+ <div class="row" style="align-items:center"><span id="who" class="mu"></span><span class="sp"></span>
+  <button class="g" id="bl" onclick="bell()">🔔</button><button class="g" onclick="tth()">☾ / ☀</button><button class="g" id="lg"></button></div>
+ <h1>استوديو الروايات</h1>
+ <div id="lo" class="card"><p>سجّل الدخول لتبدأ بكتابة روايتك. الحساب الجديد يُنشأ تلقائيًا.</p><button onclick="authDlg(()=>location.reload())">تسجيل الدخول</button></div>
+ <div id="mg" hidden>
+  <div class="row" style="align-items:center"><h2>ألعابي</h2><span class="sp"></span><button onclick="newGame()">رواية جديدة</button></div>
+  <div id="my"></div></div>
+ <div id="ed" hidden></div>
+</div><div id="tt"></div>
+<script>
+const DB='https://clean-sequencer-422716-g8-default-rtdb.firebaseio.com',KEY='';
+const GAMES_PAGE='games.html';
+const $=s=>document.querySelector(s),h=(t,a={},...c)=>{const e=document.createElement(t);for(const k in a){const v=a[k];if(v==null||v===false)continue;k.startsWith('on')?e[k]=v:k=='class'?e.className=v:e.setAttribute(k,v===true?'':v)}c.flat().forEach(x=>e.append(x?.nodeType?x:(x??'')));return e};
+const api=async(m,p,b)=>{const r=await fetch(DB+'/'+p+'.json'+(KEY?'?auth='+KEY:''),{method:m,body:b===undefined?undefined:JSON.stringify(b)});if(!r.ok)throw 0;return r.json()};
+const get=p=>api('GET',p),put=(p,b)=>api('PUT',p,b),del=p=>api('DELETE',p),patch=(p,b)=>api('PATCH',p,b);
+const sha=async s=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))].map(x=>x.toString(16).padStart(2,'0')).join('');
+const me=()=>JSON.parse(localStorage.sg_user||'null');
+const toast=m=>{const t=$('#tt');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',2800)};
+const dlg=(...c)=>{const d=h('dialog',{},...c);d.onclose=()=>d.remove();document.body.append(d);d.showModal();return d};
+const closeBtn=()=>h('button',{class:'g',onclick:e=>e.target.closest('dialog').close()},'إغلاق');
+const dl=(n,t)=>{h('a',{href:URL.createObjectURL(new Blob([t],{type:'application/json'})),download:n}).click()};
+const kv=s=>Object.fromEntries(s.split(/[,،]/).map(x=>x.split('=').map(y=>y.trim())).filter(x=>x[0]).map(([k,v=''])=>[k,v=='true'?true:v=='false'?false:v===''||isNaN(v)?v:+v]));
+const kvs=o=>Object.entries(o||{}).map(([k,v])=>k+'='+v).join(', ');
+document.documentElement.dataset.t=localStorage.sg_theme||'night';
+const tth=()=>{const d=document.documentElement;d.dataset.t=localStorage.sg_theme=d.dataset.t=='day'?'night':'day'};
+async function login(name,acc,pw){const id=acc.trim().toLowerCase().replace(/[.#$\[\]\/\s]/g,'_');if(!id||!pw||!name)throw'أكمل جميع الحقول';const u=await get('users/'+id);let nm=name;if(!u){const salt=crypto.randomUUID();await put('users/'+id,{name,acc,salt,hash:await sha(salt+pw),created:Date.now()})}else{if(u.hash!==await sha(u.salt+pw))throw'كلمة المرور غير صحيحة';nm=u.name}localStorage.sg_user=JSON.stringify({id,name:nm})}
+function authDlg(cb){const n=h('input',{placeholder:'إسم المستخدم'}),a=h('input',{placeholder:'إسم الحساب'}),p=h('input',{type:'password',placeholder:'كلمة المرور'}),er=h('small',{class:'mu'});const d=dlg(h('h3',{},'تسجيل الدخول'),h('p',{class:'mu'},'إن لم يكن الحساب موجودًا فسيُنشأ تلقائيًا.'),n,a,p,er,h('div',{class:'row'},h('button',{onclick:async()=>{try{await login(n.value.trim(),a.value,p.value);d.close();cb()}catch(e){er.textContent=typeof e=='string'?e:'تعذّر الاتصال'}}},'دخول'),closeBtn()))}
+async function nots(){const u=me();let a={},b={};try{a=await get('notifs/'+u.id)||{};b=await get('notifs/_all')||{}}catch(e){}return[...Object.values(a),...Object.values(b)].sort((x,y)=>y.d-x.d)}
+async function bell(){if(!me())return authDlg(()=>location.reload());const l=await nots();localStorage['sg_seen_'+me().id]=Date.now();$('#bl').textContent='🔔';dlg(h('h3',{},'الإشعارات'),...(l.length?l.map(n=>h('div',{class:'card'},n.m,h('small',{class:'mu'},' '+new Date(n.d).toLocaleDateString('ar')))):[h('p',{class:'mu'},'لا توجد إشعارات')]),closeBtn())}
+
+const ST={pending:'قيد المراجعة',approved:'منشورة',rejected:'مرفوضة',suspended:'معلّقة'};
+const FX=[['fade','ظهور تدريجي'],['zoom','تكبير'],['slide','انزلاق'],['type','كتابة حرفية'],['shake','اهتزاز'],['glow','توهّج'],['none','بدون']];
+const FONTS=['Amiri','Tajawal','Cairo','Reem Kufi','Aref Ruqaa','Lalezar'].map(x=>[x,x]);
+const blank=t=>({title:t||'',desc:'',cover:'',theme:{mode:'night',bg:'',text:'',img:'',font:'Amiri'},start:'s1',chapters:[{id:'c1',title:'الفصل الأول'}],scenes:{s1:{name:'البداية',chapter:'c1',blocks:[{t:'',delay:0,fx:'fade'}],choices:[],timer:0,default:0,next:'',end:false}}});
+const TPL={_ai_instructions:"اكتب قصة تفاعلية بنفس بنية هذا الملف وأعد JSON صالحًا فقط. title/desc/cover: بيانات الرواية. theme.mode: night أو day أو custom (مع bg وtext لونان، وimg رابط خلفية). chapters: قائمة فصول {id,title}. scenes: كائن مفاتيحه معرّفات المشاهد. لكل مشهد: chapter (معرّف الفصل)، blocks (نصوص: t النص، delay ثواني بعد النص السابق، fx من fade|zoom|slide|type|shake|glow|none، color، font، size مضاعف الحجم، who المتحدث، img رابط صورة)، music (رابط أو stop)، sfx (رابط صوت)، bg (صورة خلفية)، choices (text، goto معرّف المشهد، set متغيرات مثل {\"ساعدت_أحمد\":true}، if شرط ظهور مثل {\"ساعدت_أحمد\":true})، timer (ثواني، 0 = اختيار مفتوح بلا وقت)، default (رقم الاختيار الافتراضي عند انتهاء الوقت ويبدأ من 0)، next (مشهد تالٍ إن لم توجد اختيارات)، end (true لنهاية القصة). start: معرّف المشهد الأول. استخدم متغيرات لتذكّر قرارات اللاعب لأنها تنتقل إلى الجزء الثاني.",
+title:"عنوان الرواية",desc:"وصف قصير",cover:"",theme:{mode:"night",bg:"",text:"",img:"",font:"Amiri"},start:"s1",chapters:[{id:"c1",title:"الفصل الأول"}],
+scenes:{s1:{name:"الباب",chapter:"c1",music:"",sfx:"",bg:"",blocks:[{t:"سمعتَ طرقًا على الباب في منتصف الليل.",delay:0,fx:"fade"},{t:"من يكون؟",delay:2,fx:"type",color:"#e0b050"}],choices:[{text:"أفتح الباب",goto:"s2",set:{فتحت_الباب:true}},{text:"أتجاهل الطرق",goto:"s3",set:{فتحت_الباب:false}}],timer:10,default:1,next:"",end:false},
+s2:{name:"الزائر",chapter:"c1",blocks:[{t:"كان صديقك القديم أحمد واقفًا هناك.",delay:0,fx:"zoom"}],choices:[],timer:0,default:0,next:"",end:true},
+s3:{name:"الصمت",chapter:"c1",blocks:[{t:"توقّف الطرق، وبقي الصمت.",delay:0,fx:"fade"}],choices:[],timer:0,default:0,next:"",end:true}}};
+let U=me(),D,GID,META,cur;
+function bar(){$('#who').textContent=U?'أهلًا '+U.name:'';const b=$('#lg');b.style.display=U?'':'none';b.textContent='خروج';b.onclick=()=>{localStorage.removeItem('sg_user');location.reload()};$('#bl').style.display=U?'':'none';$('#lo').hidden=!!U;$('#mg').hidden=!U;if(U){nots().then(l=>{const n=l.filter(x=>x.d>(+localStorage['sg_seen_'+U.id]||0)).length;if(n)$('#bl').textContent='🔔 '+n});mine()}}
+async function mine(){const b=$('#my');b.innerHTML='';let a={};try{a=await get('games')||{}}catch(e){b.append('لا اتصال بالخادم');return}const l=Object.entries(a).filter(([k,v])=>v.owner==U.id);if(!l.length)b.append(h('p',{class:'mu'},'لا توجد روايات بعد. ابدأ برواية جديدة أو ارفع ملف JSON.'));
+l.forEach(([k,v])=>b.append(h('div',{class:'card'},h('div',{class:'row',style:'align-items:center'},h('b',{},v.title+(v.part>1?' (الجزء '+v.part+')':'')),h('span',{class:'st'},ST[v.status]||v.status),h('span',{class:'sp'})),v.note?h('p',{class:'mu'},'ملاحظة الإدارة: '+v.note):'',h('div',{class:'row'},h('button',{onclick:()=>openG(k,v)},'تعديل'),h('button',{class:'g',onclick:()=>part2(k,v)},'إنشاء جزء ثانٍ'),h('button',{class:'r',onclick:()=>rm(k,v)},'حذف')))))}
+async function rm(k,v){if(!confirm('حذف «'+v.title+'» نهائيًا؟'))return;try{await Promise.all(['games','stories','comments','likes'].map(p=>del(p+'/'+k)));mine()}catch(e){toast('تعذّر الحذف')}}
+async function openG(k,v){try{D=await get('stories/'+k)}catch(e){return toast('تعذّر التحميل')}D.theme=D.theme||{};D.chapters=D.chapters||[];GID=k;META=v;cur=D.start;show()}
+function newGame(){D=blank();GID=null;META=null;cur='s1';show()}
+function part2(k,v){D=blank('');D.title=v.title+' - الجزء '+((v.part||1)+1);GID=null;META={prev:k,part:(v.part||1)+1};cur='s1';show();toast('سيحمل هذا الجزء قرارات اللاعب من الجزء السابق')}
+function show(){$('#mg').hidden=1;$('#ed').hidden=0;ed();scrollTo(0,0)}
+function ed(){const B=$('#ed');B.innerHTML='';
+const L=(t,x)=>h('label',{class:'L'},t,x),I=(o,k,ph,ty)=>h('input',{type:ty||'text',placeholder:ph,value:o[k]??'',oninput:e=>o[k]=ty=='number'?+e.target.value||0:e.target.value});
+const SEL=(o,k,op)=>{const s=h('select',{onchange:e=>o[k]=e.target.value});op.forEach(([v,l])=>{const x=h('option',{value:v},l);if(o[k]==v)x.selected=true;s.append(x)});return s};
+const ids=Object.keys(D.scenes),sop=[['','—'],...ids.map(i=>[i,i+(D.scenes[i].name?' · '+D.scenes[i].name:'')])],th=D.theme;
+if(!D.scenes[cur])cur=ids[0];const sc=D.scenes[cur];sc.blocks=sc.blocks||[];sc.choices=sc.choices||[];
+B.append(h('div',{class:'row',style:'align-items:center'},h('h2',{},'محرر الرواية'),h('span',{class:'sp'}),h('button',{class:'g',onclick:()=>{$('#ed').hidden=1;$('#mg').hidden=0;mine()}},'رجوع')));
+const f=h('input',{type:'file',accept:'.json',hidden:1,onchange:async e=>{try{const o=JSON.parse(await e.target.files[0].text());if(!o.scenes||!Object.keys(o.scenes).length)throw 0;delete o._ai_instructions;D=Object.assign(blank(),o);D.theme=Object.assign(blank().theme,o.theme);if(!D.scenes[D.start])D.start=Object.keys(D.scenes)[0];cur=D.start;ed();toast('تم رفع الملف')}catch(x){toast('ملف JSON غير صالح')}}});
+B.append(h('div',{class:'card'},h('div',{class:'row'},h('button',{onclick:save},'حفظ وإرسال للمراجعة'),h('button',{class:'g',onclick:prev},'معاينة'),h('button',{class:'g',onclick:()=>dl(( D.title||'story')+'.json',JSON.stringify(D,null,1))},'تنزيل JSON'),h('button',{class:'g',onclick:()=>f.click()},'رفع JSON'),h('button',{class:'g',onclick:()=>dl('template.json',JSON.stringify(TPL,null,1))},'تنزيل template.json'),f),h('p',{class:'mu'},'أي تعديل على رواية منشورة يعيدها إلى المراجعة. لرفع الصور: ',h('a',{href:'https://top4top.io/',target:'_blank'},'top4top.io'),' ثم الصق الرابط المباشر في الحقول.')));
+const ch=h('div');D.chapters.forEach((c,i)=>ch.append(h('div',{class:'row'},I(c,'title','عنوان الفصل'),h('button',{class:'g',onclick:()=>{D.chapters.splice(i,1);ed()}},'حذف'))));
+B.append(h('div',{class:'card'},h('h3',{},'بيانات الرواية'),I(D,'title','عنوان الرواية'),h('textarea',{placeholder:'وصف مختصر',oninput:e=>D.desc=e.target.value},D.desc||''),I(D,'cover','رابط صورة الغلاف (اتركه فارغًا لإظهار الاسم فقط)'),
+h('div',{class:'row'},L('نمط الرواية',SEL(th,'mode',[['night','ليلي'],['day','نهاري'],['custom','مخصص']])),L('لون الخلفية',I(th,'bg','#101820')),L('لون النص',I(th,'text','#ffffff')),L('الخط',SEL(th,'font',FONTS))),I(th,'img','رابط خلفية عامة (اختياري)'),L('أول مشهد',SEL(D,'start',sop.slice(1))),h('h3',{},'الفصول'),ch,h('button',{class:'g',onclick:()=>{D.chapters.push({id:'c'+Date.now().toString(36),title:'فصل جديد'});ed()}},'إضافة فصل')));
+const ss=h('select',{onchange:e=>{cur=e.target.value;ed()}});sop.slice(1).forEach(([v,l])=>{const x=h('option',{value:v},l);if(v==cur)x.selected=true;ss.append(x)});
+const bk=h('div'),cs=h('div');
+sc.blocks.forEach((b,i)=>bk.append(h('div',{class:'card sub'},h('textarea',{placeholder:'النص',oninput:e=>b.t=e.target.value},b.t||''),h('div',{class:'row'},L('بعد (ثانية)',I(b,'delay','','number')),L('المؤثر',SEL(b,'fx',FX)),L('اللون',I(b,'color','#ffd479')),L('الخط',SEL(b,'font',[['','افتراضي'],...FONTS])),L('الحجم (×)',I(b,'size','1.0','number'))),h('div',{class:'row'},I(b,'who','المتحدث (اختياري)'),I(b,'img','رابط صورة داخل المشهد (اختياري)'),h('button',{class:'g',onclick:()=>{sc.blocks.splice(i,1);ed()}},'حذف')))));
+sc.choices.forEach((c,i)=>cs.append(h('div',{class:'card sub'},I(c,'text','نص الاختيار'),h('div',{class:'row'},L('ينقل إلى',SEL(c,'goto',sop)),L('يحفظ متغيرات',h('input',{placeholder:'ساعدت_أحمد=true',value:kvs(c.set),oninput:e=>c.set=kv(e.target.value)})),L('يظهر إذا',h('input',{placeholder:'ساعدت_أحمد=true',value:kvs(c.if),oninput:e=>c.if=kv(e.target.value)})),h('button',{class:'g',onclick:()=>{sc.choices.splice(i,1);ed()}},'حذف')))));
+B.append(h('div',{class:'card'},h('div',{class:'row'},L('المشهد',ss),h('button',{class:'g',onclick:()=>{const id='s'+(Date.now().toString(36));D.scenes[id]={name:'',chapter:D.chapters[0]?.id||'',blocks:[{t:'',delay:0,fx:'fade'}],choices:[],timer:0,default:0,next:'',end:false};cur=id;ed()}},'مشهد جديد'),h('button',{class:'r',onclick:()=>{if(ids.length<2)return toast('يلزم مشهد واحد على الأقل');delete D.scenes[cur];if(D.start==cur)D.start=Object.keys(D.scenes)[0];ed()}},'حذف المشهد')),
+h('div',{class:'row'},L('اسم المشهد',I(sc,'name','للتنظيم فقط')),L('الفصل',SEL(sc,'chapter',[['','—'],...D.chapters.map(c=>[c.id,c.title])]))),
+h('div',{class:'row'},L('موسيقى (رابط أو stop)',I(sc,'music','https://...mp3')),L('مؤثر صوتي (رابط)',I(sc,'sfx','https://...mp3')),L('خلفية المشهد (رابط)',I(sc,'bg','https://...jpg'))),
+h('h3',{},'النصوص'),bk,h('button',{class:'g',onclick:()=>{sc.blocks.push({t:'',delay:1,fx:'fade'});ed()}},'إضافة نص'),
+h('h3',{},'الاختيارات'),h('div',{class:'row'},L('مدة الاختيار بالثواني (0 = مفتوح بلا وقت)',I(sc,'timer','','number')),L('الاختيار الافتراضي عند انتهاء الوقت',SEL(sc,'default',sc.choices.map((c,i)=>[i,(i+1)+'. '+(c.text||'').slice(0,24)])))),cs,h('button',{class:'g',onclick:()=>{sc.choices.push({text:'',goto:'',set:{}});ed()}},'إضافة اختيار'),
+h('h3',{},'الانتقال'),h('div',{class:'row'},L('المشهد التالي (إن لم توجد اختيارات)',SEL(sc,'next',sop)),h('label',{class:'row'},h('input',{type:'checkbox',style:'width:auto',checked:sc.end||null,onchange:e=>sc.end=e.target.checked}),'هذا المشهد نهاية الرواية'))))}
+async function save(){if(!D.title.trim())return toast('أضف عنوانًا للرواية');if(!D.scenes[D.start])return toast('حدّد أول مشهد');const id=GID||('g'+Date.now().toString(36)+Math.random().toString(36).slice(2,5));const m={title:D.title,desc:D.desc||'',cover:D.cover||'',owner:U.id,ownerName:U.name,status:'pending',note:null,updated:Date.now(),prev:META?.prev||null,part:META?.part||1};
+try{await put('stories/'+id,D);await patch('games/'+id,m);GID=id;META={...META,...m};toast('أُرسلت الرواية للمراجعة')}catch(e){toast('تعذّر الحفظ، تحقق من الاتصال')}}
+function prev(){localStorage.sg_preview=JSON.stringify(D);open(GAMES_PAGE+'?preview=1')}
+bar();
+</script>
