@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>إدارة المنصة</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&family=Amiri:wght@700&display=swap');
+*{box-sizing:border-box}
+html{--bg:#10131c;--pn:#181c28;--tx:#e9e4d6;--mu:#8d93a6;--ac:#d6b25e;--ln:#2a3042}
+html[data-t=day]{--bg:#eceff4;--pn:#fff;--tx:#1b2030;--mu:#5d6478;--ac:#9a6b12;--ln:#d5dae4}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.7 Tajawal,sans-serif}
+.w{max-width:900px;margin:auto;padding:18px}
+button,input,textarea{font:inherit;color:inherit}
+input,textarea{background:var(--pn);border:1px solid var(--ln);border-radius:10px;padding:8px 12px;width:100%}
+button{background:var(--ac);color:#14110a;border:0;border-radius:10px;padding:6px 14px;cursor:pointer;font-weight:700}
+button.g{background:transparent;color:var(--tx);border:1px solid var(--ln)}button.r{background:#c4493f;color:#fff}button.k{background:#30a46c;color:#fff}
+button.on{outline:2px solid var(--ac)}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.card{background:var(--pn);border:1px solid var(--ln);border-radius:14px;padding:14px;margin:10px 0}
+.mu{color:var(--mu)}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.sp{flex:1}
+h1,h2{font-family:Amiri,serif;margin:.4em 0}h1{font-size:2.2em}
+.st{font-size:.8em;border-radius:99px;padding:1px 10px;border:1px solid var(--ac);color:var(--ac)}
+#tt{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ac);color:#111;padding:8px 18px;border-radius:99px;z-index:9;display:none}
+</style>
+<div class="w">
+ <div class="row"><span class="sp"></span><button class="g" onclick="tth()">☾ / ☀</button><button class="g" id="out" hidden onclick="sessionStorage.removeItem('sg_admin');location.reload()">خروج</button></div>
+ <h1>لوحة إدارة المنصة</h1>
+ <div id="lo" class="card"><p>كلمة مرور الإدارة</p><input id="pw" type="password"><p></p><button onclick="enter()">دخول</button></div>
+ <div id="ad" hidden>
+  <div class="card"><b>إشعار عام لكل المستخدمين</b><textarea id="bc" placeholder="نص الإشعار"></textarea><p></p><button onclick="bcast()">إرسال للجميع</button></div>
+  <div class="row" id="tabs"></div><div id="ls"></div>
+ </div>
+</div><div id="tt"></div>
+<script>
+const DB='https://clean-sequencer-422716-g8-default-rtdb.firebaseio.com',KEY='';
+const ADMIN_PASS=''; // ضع كلمة مرور الإدارة هنا
+const GAMES_PAGE='games.html';
+const $=s=>document.querySelector(s),h=(t,a={},...c)=>{const e=document.createElement(t);for(const k in a){const v=a[k];if(v==null||v===false)continue;k.startsWith('on')?e[k]=v:k=='class'?e.className=v:e.setAttribute(k,v===true?'':v)}c.flat().forEach(x=>e.append(x?.nodeType?x:(x??'')));return e};
+const api=async(m,p,b)=>{const r=await fetch(DB+'/'+p+'.json'+(KEY?'?auth='+KEY:''),{method:m,body:b===undefined?undefined:JSON.stringify(b)});if(!r.ok)throw 0;return r.json()};
+const get=p=>api('GET',p),put=(p,b)=>api('PUT',p,b),del=p=>api('DELETE',p),patch=(p,b)=>api('PATCH',p,b);
+const toast=m=>{const t=$('#tt');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',2600)};
+document.documentElement.dataset.t=localStorage.sg_theme||'night';
+const tth=()=>{const d=document.documentElement;d.dataset.t=localStorage.sg_theme=d.dataset.t=='day'?'night':'day'};
+const ST={pending:'قيد المراجعة',approved:'منشورة',rejected:'مرفوضة',suspended:'معلّقة'};
+let G={},F='pending';
+function enter(){if(!ADMIN_PASS)return toast('لم تُضبط كلمة مرور الإدارة في الكود بعد');if($('#pw').value!==ADMIN_PASS)return toast('كلمة المرور غير صحيحة');sessionStorage.sg_admin='1';init()}
+function init(){$('#lo').hidden=1;$('#ad').hidden=0;$('#out').hidden=0;load()}
+const nt=(uid,m)=>put('notifs/'+uid+'/n'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),{m,d:Date.now()});
+async function bcast(){const m=$('#bc').value.trim();if(!m)return;try{await nt('_all',m);$('#bc').value='';toast('أُرسل الإشعار')}catch(e){toast('تعذّر الإرسال')}}
+async function load(){try{G=await get('games')||{}}catch(e){return toast('لا اتصال بالخادم')}draw()}
+function draw(){const t=$('#tabs');t.innerHTML='';[['all','الكل'],...Object.entries(ST)].forEach(([k,l])=>{const n=Object.values(G).filter(g=>k=='all'||g.status==k).length;t.append(h('button',{class:'g'+(F==k?' on':''),onclick:()=>{F=k;draw()}},l+' ('+n+')'))});
+const b=$('#ls');b.innerHTML='';const a=Object.entries(G).filter(([k,g])=>F=='all'||g.status==F).sort((x,y)=>y[1].updated-x[1].updated);if(!a.length)b.append(h('p',{class:'mu'},'لا توجد ألعاب في هذا القسم.'));
+a.forEach(([k,g])=>{const cm=h('div');b.append(h('div',{class:'card'},h('div',{class:'row'},h('b',{},g.title+(g.part>1?' (الجزء '+g.part+')':'')),h('span',{class:'st'},ST[g.status]||g.status),h('span',{class:'sp'}),h('span',{class:'mu'},g.ownerName+' @'+g.owner)),g.note?h('p',{class:'mu'},'ملاحظة: '+g.note):'',
+h('div',{class:'row'},g.status!='approved'?h('button',{class:'k',onclick:()=>setSt(k,'approved','تم قبول لعبتك «'+g.title+'» وهي الآن منشورة.')},'قبول'):'',g.status=='pending'?h('button',{class:'r',onclick:()=>{const r=prompt('سبب الرفض (اختياري)');if(r!==null)setSt(k,'rejected','تم رفض لعبتك «'+g.title+'».'+(r?' السبب: '+r:''),r)}},'رفض'):'',g.status=='approved'?h('button',{class:'g',onclick:()=>{const r=prompt('سبب التعليق (اختياري)');if(r!==null)setSt(k,'suspended','تم تعليق لعبتك «'+g.title+'».'+(r?' السبب: '+r:''),r)}},'تعليق'):'',g.status=='suspended'?h('button',{class:'k',onclick:()=>setSt(k,'approved','أُعيد تفعيل لعبتك «'+g.title+'».')},'تفعيل'):'',
+h('button',{class:'g',onclick:()=>prev(k)},'معاينة'),h('button',{class:'g',onclick:()=>cms(k,cm)},'التعليقات'),h('button',{class:'g',onclick:()=>{const m=prompt('نص الإشعار لصاحب اللعبة');if(m)nt(g.owner,m).then(()=>toast('أُرسل'))}},'إشعار للمالك'),h('button',{class:'r',onclick:()=>rm(k)},'حذف')),cm))})}
+async function setSt(k,s,m,note){try{await patch('games/'+k,{status:s,note:note||null});await nt(G[k].owner,m);G[k].status=s;G[k].note=note||null;draw();toast('تم')}catch(e){toast('تعذّر التنفيذ')}}
+async function rm(k){if(!confirm('حذف «'+G[k].title+'» مع كل تعليقاتها وإعجاباتها؟'))return;try{await Promise.all(['games','stories','comments','likes'].map(p=>del(p+'/'+k)));await nt(G[k].owner,'تم حذف لعبتك «'+G[k].title+'» من المنصة.');delete G[k];draw()}catch(e){toast('تعذّر الحذف')}}
+async function cms(k,box){if(box.innerHTML){box.innerHTML='';return}let c={};try{c=await get('comments/'+k)||{}}catch(e){return toast('لا اتصال')}const ks=Object.keys(c);if(!ks.length)box.append(h('p',{class:'mu'},'لا توجد تعليقات'));ks.forEach(i=>{const x=c[i],r=h('div',{class:'card row'},h('span',{class:'sp'},h('b',{},x.n+': '),x.t),h('button',{class:'r',onclick:async()=>{await del('comments/'+k+'/'+i);r.remove()}},'حذف'));box.append(r)})}
+async function prev(k){try{localStorage.sg_preview=JSON.stringify(await get('stories/'+k));open(GAMES_PAGE+'?preview=1')}catch(e){toast('تعذّر التحميل')}}
+if(sessionStorage.sg_admin&&ADMIN_PASS)init();
+</script>
