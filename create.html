@@ -2,31 +2,50 @@
 <html lang="ar" dir="rtl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>إنشاء الروايات</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&family=Amiri:wght@400;700&display=swap');
-*{box-sizing:border-box}
-html{--bg:#10131c;--pn:#181c28;--tx:#e9e4d6;--mu:#8d93a6;--ac:#d6b25e;--ln:#2a3042}
-html[data-t=day]{--bg:#eceff4;--pn:#fff;--tx:#1b2030;--mu:#5d6478;--ac:#9a6b12;--ln:#d5dae4}
-body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.7 Tajawal,sans-serif}
-.w{max-width:900px;margin:auto;padding:18px}
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&family=Amiri:wght@400;700&family=Cairo:wght@400;700&family=Reem+Kufi&family=Aref+Ruqaa&family=Lalezar&display=swap');
+*{box-sizing:border-box}[hidden]{display:none!important}
+html{--bg:#0e1118;--pn:#161a24;--p2:#1e2331;--tx:#ece7db;--mu:#9aa1b4;--ac:#e0b862;--on:#1a1408;--ln:#272d3d;--rd:#e5675d;--gn:#3fb27f;--sh:0 10px 30px #0006;color-scheme:dark;scroll-behavior:smooth}
+html[data-t=day]{--bg:#f4f1e9;--pn:#fffdf8;--p2:#efeadf;--tx:#25221b;--mu:#6c675b;--ac:#9a6410;--on:#fff;--ln:#ddd6c5;--rd:#c4493f;--gn:#238a5c;--sh:0 10px 28px #3a2f1a1c;color-scheme:light}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.75 Tajawal,sans-serif;-webkit-font-smoothing:antialiased}
+.w{max-width:960px;margin:auto;padding:20px 18px 70px}
 button,input,select,textarea{font:inherit;color:inherit}
-input,select,textarea{background:var(--pn);border:1px solid var(--ln);border-radius:10px;padding:8px 12px;width:100%}
-textarea{min-height:80px}
-button{background:var(--ac);color:#14110a;border:0;border-radius:10px;padding:8px 16px;cursor:pointer;font-weight:700}
-button.g{background:transparent;color:var(--tx);border:1px solid var(--ln)}button.r{background:#c4493f;color:#fff}
+input,select,textarea{background:var(--p2);border:1px solid var(--ln);border-radius:12px;padding:9px 13px;width:100%;transition:.15s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--ac);box-shadow:0 0 0 3px color-mix(in srgb,var(--ac) 25%,transparent)}
+textarea{min-height:84px;resize:vertical}
+button{background:var(--ac);color:var(--on);border:0;border-radius:12px;padding:8px 18px;min-height:40px;cursor:pointer;font-weight:700;transition:.15s}
+button:hover{filter:brightness(1.08)}button:active{transform:scale(.97)}
+button.g{background:transparent;color:var(--tx);border:1px solid var(--ln)}button.g:hover{background:var(--p2)}
+button.r{background:var(--rd);color:#fff}button.k{background:var(--gn);color:#fff}button.s{min-height:32px;padding:3px 12px;font-size:.88em}
+button.on{outline:2px solid var(--ac);outline-offset:1px}
 :focus-visible{outline:2px solid var(--ac);outline-offset:2px}
-.card{background:var(--pn);border:1px solid var(--ln);border-radius:14px;padding:14px;margin:10px 0}
-.sub{background:color-mix(in srgb,var(--tx) 4%,var(--pn))}
-.mu{color:var(--mu)}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}.sp{flex:1}
-.L{display:grid;gap:2px;font-size:.82em;color:var(--mu);flex:1;min-width:110px}
-h1,h2{font-family:Amiri,serif;margin:.4em 0}h1{font-size:2.2em}
-dialog{background:var(--pn);color:var(--tx);border:1px solid var(--ln);border-radius:18px;width:min(92vw,460px)}
-dialog::backdrop{background:#000a}dialog>*{margin:8px 0}
-#tt{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ac);color:#111;padding:8px 18px;border-radius:99px;z-index:9;display:none}
-.st{font-size:.8em;border-radius:99px;padding:1px 10px;border:1px solid var(--ac);color:var(--ac)}
 a{color:var(--ac)}
-.nv{display:flex;gap:6px;flex-wrap:wrap;padding:10px 18px;border-bottom:1px solid var(--ln);background:var(--pn)}.nv a{color:var(--tx);text-decoration:none;padding:6px 14px;border-radius:10px;font-weight:700}.nv a:hover{background:var(--ln)}.nv a.on{background:var(--ac);color:#14110a}
+.card{background:var(--pn);border:1px solid var(--ln);border-radius:16px;padding:16px;margin:12px 0}
+.sub{background:var(--p2)}
+.mu{color:var(--mu)}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.sp{flex:1}
+h1,h2,h3{font-family:Amiri,serif;margin:.5em 0;line-height:1.3}h1{font-size:2.4em}h2{font-size:1.7em}
+dialog{background:var(--pn);color:var(--tx);border:1px solid var(--ln);border-radius:20px;width:min(94vw,480px);max-height:88vh;padding:20px;box-shadow:var(--sh)}
+dialog::backdrop{background:#000b;backdrop-filter:blur(3px)}dialog>*{margin:10px 0}
+#tt{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:9px 20px;border-radius:99px;z-index:99;display:none;box-shadow:var(--sh);font-weight:700}
+.st,.chip{display:inline-block;font-size:.8em;border-radius:99px;padding:1px 12px;border:1px solid var(--ln);background:var(--p2);color:var(--mu)}
+.st.approved{color:var(--gn);border-color:var(--gn)}.st.pending{color:var(--ac);border-color:var(--ac)}.st.rejected,.st.suspended{color:var(--rd);border-color:var(--rd)}
+.nv{position:sticky;top:0;z-index:5;display:flex;gap:6px;flex-wrap:wrap;padding:10px 18px;border-bottom:1px solid var(--ln);background:color-mix(in srgb,var(--pn) 88%,transparent);backdrop-filter:blur(10px)}
+.nv a{color:var(--mu);text-decoration:none;padding:6px 16px;border-radius:10px;font-weight:700}.nv a:hover{background:var(--p2);color:var(--tx)}.nv a.on{background:var(--ac);color:var(--on)}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01s!important;transition:none!important}}
+.L{display:grid;gap:3px;font-size:.82em;color:var(--mu);flex:1;min-width:120px}
+.br{font:700 1.35em Amiri,serif;color:var(--ac);padding:2px 10px;margin-inline-end:6px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:14px 0}.stat{background:var(--pn);border:1px solid var(--ln);border-radius:16px;padding:10px 16px}.stat b{display:block;font:700 1.9em Amiri,serif;color:var(--ac);line-height:1.2}
+.ab{position:sticky;top:52px;z-index:4;display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 4px;margin-bottom:10px;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--ln)}.tt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:1.1em}
+.tabs{display:flex;gap:4px;background:var(--p2);padding:4px;border-radius:14px;width:max-content;max-width:100%;overflow:auto}.tabs button{background:transparent;color:var(--mu);min-height:36px;padding:4px 18px}.tabs button.on{background:var(--ac);color:var(--on)}
+.ws{display:grid;grid-template-columns:200px 1fr;gap:18px;align-items:start}@media(max-width:780px){.ws{grid-template-columns:1fr}.sl{flex-direction:row!important;position:static!important;overflow-x:auto}}
+.sl{display:flex;flex-direction:column;gap:6px;position:sticky;top:130px;max-height:68vh;overflow:auto}
+.si{text-align:right;background:var(--pn);color:var(--tx);border:1px solid var(--ln);font-weight:500;padding:8px 12px;border-radius:12px;min-height:0;flex:none;min-width:130px}.si.on{border-color:var(--ac);background:color-mix(in srgb,var(--ac) 14%,var(--pn))}
+.si small{display:block;color:var(--mu);font-weight:400;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;max-width:170px}
+.tx{min-height:96px;font-size:1.08em;line-height:1.9}.ic{min-height:36px;min-width:38px;padding:2px 10px}
+details.adv summary{cursor:pointer;color:var(--mu);font-size:.9em;margin:8px 0}details.adv.card{padding:10px 16px}
+.pvx{border-radius:16px;padding:22px;font-size:1.3em;line-height:2;min-height:110px;border:1px solid var(--ln)}.pvx p{margin:0}
+.L{min-width:130px}
 </style>
-<header class="nv"><a href="home.html">الرئيسية</a><a class="on" href="create.html">إنشاء</a><a href="admin.html">الإدارة</a></header>
+<header class="nv"><span class="br">✦ روايات</span><a href="home.html">الرئيسية</a><a class="on" href="create.html">إنشاء</a><a href="admin.html">الإدارة</a></header>
 <div class="w">
  <div class="row" style="align-items:center"><span id="who" class="mu"></span><span class="sp"></span>
   <button class="g" id="bl" onclick="bell()">🔔</button><button class="g" onclick="tth()">☾ / ☀</button><button class="g" id="lg"></button></div>
@@ -48,7 +67,7 @@ const me=()=>JSON.parse(localStorage.sg_user||'null');
 const toast=m=>{const t=$('#tt');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',2800)};
 const dlg=(...c)=>{const d=h('dialog',{},...c);d.onclose=()=>d.remove();document.body.append(d);d.showModal();return d};
 const closeBtn=()=>h('button',{class:'g',onclick:e=>e.target.closest('dialog').close()},'إغلاق');
-const dl=(n,t)=>{h('a',{href:URL.createObjectURL(new Blob([t],{type:'application/json'})),download:n}).click()};
+const dl=(n,t)=>{const a=h('a',{href:URL.createObjectURL(new Blob([t],{type:'application/json'})),download:n});document.body.append(a);a.click();a.remove()};
 const kv=s=>Object.fromEntries(s.split(/[,،]/).map(x=>x.split('=').map(y=>y.trim())).filter(x=>x[0]).map(([k,v=''])=>[k,v=='true'?true:v=='false'?false:v===''||isNaN(v)?v:+v]));
 const kvs=o=>Object.entries(o||{}).map(([k,v])=>k+'='+v).join(', ');
 document.documentElement.dataset.t=localStorage.sg_theme||'night';
@@ -72,32 +91,48 @@ function bar(){$('#who').textContent=U?'أهلًا '+U.name:'';const b=$('#lg');
 async function mine(){const b=$('#my');b.innerHTML='';let a={};try{a=await get('games')||{}}catch(e){b.append('لا اتصال بالخادم');return}const l=Object.entries(a).filter(([k,v])=>v.owner==U.id);if(!l.length)b.append(h('p',{class:'mu'},'لا توجد روايات بعد. ابدأ برواية جديدة أو ارفع ملف JSON.'));
 l.forEach(([k,v])=>b.append(h('div',{class:'card'},h('div',{class:'row',style:'align-items:center'},h('b',{},v.title+(v.part>1?' (الجزء '+v.part+')':'')),h('span',{class:'st'},ST[v.status]||v.status),h('span',{class:'sp'})),v.note?h('p',{class:'mu'},'ملاحظة الإدارة: '+v.note):'',h('div',{class:'row'},h('button',{onclick:()=>openG(k,v)},'تعديل'),h('button',{class:'g',onclick:()=>part2(k,v)},'إنشاء جزء ثانٍ'),h('button',{class:'r',onclick:()=>rm(k,v)},'حذف')))))}
 async function rm(k,v){if(!confirm('حذف «'+v.title+'» نهائيًا؟'))return;try{await Promise.all(['games','stories','comments','likes'].map(p=>del(p+'/'+k)));mine()}catch(e){toast('تعذّر الحذف')}}
-async function openG(k,v){try{D=await get('stories/'+k)}catch(e){return toast('تعذّر التحميل')}D.theme=D.theme||{};D.chapters=D.chapters||[];GID=k;META=v;cur=D.start;show()}
-function newGame(){D=blank();GID=null;META=null;cur='s1';show()}
-function part2(k,v){D=blank('');D.title=v.title+' - الجزء '+((v.part||1)+1);GID=null;META={prev:k,part:(v.part||1)+1};cur='s1';show();toast('سيحمل هذا الجزء قرارات اللاعب من الجزء السابق')}
+async function openG(k,v){try{D=await get('stories/'+k)}catch(e){return toast('تعذّر التحميل')}D.theme=D.theme||{};D.chapters=D.chapters||[];GID=k;META=v;cur=D.start;TB='story';show()}
+function newGame(){TB='about';D=blank();GID=null;META=null;cur='s1';show()}
+function part2(k,v){TB='about';D=blank('');D.title=v.title+' - الجزء '+((v.part||1)+1);GID=null;META={prev:k,part:(v.part||1)+1};cur='s1';show();toast('سيحمل هذا الجزء قرارات اللاعب من الجزء السابق')}
 function show(){$('#mg').hidden=1;$('#ed').hidden=0;ed();scrollTo(0,0)}
-function ed(){const B=$('#ed');B.innerHTML='';
-const L=(t,x)=>h('label',{class:'L'},t,x),I=(o,k,ph,ty)=>h('input',{type:ty||'text',placeholder:ph,value:o[k]??'',oninput:e=>o[k]=ty=='number'?+e.target.value||0:e.target.value});
-const SEL=(o,k,op)=>{const s=h('select',{onchange:e=>o[k]=e.target.value});op.forEach(([v,l])=>{const x=h('option',{value:v},l);if(o[k]==v)x.selected=true;s.append(x)});return s};
-const ids=Object.keys(D.scenes),sop=[['','—'],...ids.map(i=>[i,i+(D.scenes[i].name?' · '+D.scenes[i].name:'')])],th=D.theme;
-if(!D.scenes[cur])cur=ids[0];const sc=D.scenes[cur];sc.blocks=sc.blocks||[];sc.choices=sc.choices||[];
-B.append(h('div',{class:'row',style:'align-items:center'},h('h2',{},'محرر الرواية'),h('span',{class:'sp'}),h('button',{class:'g',onclick:()=>{$('#ed').hidden=1;$('#mg').hidden=0;mine()}},'رجوع')));
-const f=h('input',{type:'file',accept:'.json',hidden:1,onchange:async e=>{try{const o=JSON.parse(await e.target.files[0].text());if(!o.scenes||!Object.keys(o.scenes).length)throw 0;delete o._ai_instructions;D=Object.assign(blank(),o);D.theme=Object.assign(blank().theme,o.theme);if(!D.scenes[D.start])D.start=Object.keys(D.scenes)[0];cur=D.start;ed();toast('تم رفع الملف')}catch(x){toast('ملف JSON غير صالح')}}});
-B.append(h('div',{class:'card'},h('div',{class:'row'},h('button',{onclick:save},'حفظ وإرسال للمراجعة'),h('button',{class:'g',onclick:prev},'معاينة'),h('button',{class:'g',onclick:()=>dl(( D.title||'story')+'.json',JSON.stringify(D,null,1))},'تنزيل JSON'),h('button',{class:'g',onclick:()=>f.click()},'رفع JSON'),h('button',{class:'g',onclick:()=>dl('template.json',JSON.stringify(TPL,null,1))},'تنزيل template.json'),f),h('p',{class:'mu'},'أي تعديل على رواية منشورة يعيدها إلى المراجعة. لرفع الصور: ',h('a',{href:'https://top4top.io/',target:'_blank'},'top4top.io'),' ثم الصق الرابط المباشر في الحقول.')));
-const ch=h('div');D.chapters.forEach((c,i)=>ch.append(h('div',{class:'row'},I(c,'title','عنوان الفصل'),h('button',{class:'g',onclick:()=>{D.chapters.splice(i,1);ed()}},'حذف'))));
-B.append(h('div',{class:'card'},h('h3',{},'بيانات الرواية'),I(D,'title','عنوان الرواية'),h('textarea',{placeholder:'وصف مختصر',oninput:e=>D.desc=e.target.value},D.desc||''),I(D,'cover','رابط صورة الغلاف (اتركه فارغًا لإظهار الاسم فقط)'),
-h('div',{class:'row'},L('نمط الرواية',SEL(th,'mode',[['night','ليلي'],['day','نهاري'],['custom','مخصص']])),L('لون الخلفية',I(th,'bg','#101820')),L('لون النص',I(th,'text','#ffffff')),L('الخط',SEL(th,'font',FONTS))),I(th,'img','رابط خلفية عامة (اختياري)'),L('أول مشهد',SEL(D,'start',sop.slice(1))),h('h3',{},'الفصول'),ch,h('button',{class:'g',onclick:()=>{D.chapters.push({id:'c'+Date.now().toString(36),title:'فصل جديد'});ed()}},'إضافة فصل')));
-const ss=h('select',{onchange:e=>{cur=e.target.value;ed()}});sop.slice(1).forEach(([v,l])=>{const x=h('option',{value:v},l);if(v==cur)x.selected=true;ss.append(x)});
-const bk=h('div'),cs=h('div');
-sc.blocks.forEach((b,i)=>bk.append(h('div',{class:'card sub'},h('textarea',{placeholder:'النص',oninput:e=>b.t=e.target.value},b.t||''),h('div',{class:'row'},L('بعد (ثانية)',I(b,'delay','','number')),L('المؤثر',SEL(b,'fx',FX)),L('اللون',I(b,'color','#ffd479')),L('الخط',SEL(b,'font',[['','افتراضي'],...FONTS])),L('الحجم (×)',I(b,'size','1.0','number'))),h('div',{class:'row'},I(b,'who','المتحدث (اختياري)'),I(b,'img','رابط صورة داخل المشهد (اختياري)'),h('button',{class:'g',onclick:()=>{sc.blocks.splice(i,1);ed()}},'حذف')))));
-sc.choices.forEach((c,i)=>cs.append(h('div',{class:'card sub'},I(c,'text','نص الاختيار'),h('div',{class:'row'},L('ينقل إلى',SEL(c,'goto',sop)),L('يحفظ متغيرات',h('input',{placeholder:'ساعدت_أحمد=true',value:kvs(c.set),oninput:e=>c.set=kv(e.target.value)})),L('يظهر إذا',h('input',{placeholder:'ساعدت_أحمد=true',value:kvs(c.if),oninput:e=>c.if=kv(e.target.value)})),h('button',{class:'g',onclick:()=>{sc.choices.splice(i,1);ed()}},'حذف')))));
-B.append(h('div',{class:'card'},h('div',{class:'row'},L('المشهد',ss),h('button',{class:'g',onclick:()=>{const id='s'+(Date.now().toString(36));D.scenes[id]={name:'',chapter:D.chapters[0]?.id||'',blocks:[{t:'',delay:0,fx:'fade'}],choices:[],timer:0,default:0,next:'',end:false};cur=id;ed()}},'مشهد جديد'),h('button',{class:'r',onclick:()=>{if(ids.length<2)return toast('يلزم مشهد واحد على الأقل');delete D.scenes[cur];if(D.start==cur)D.start=Object.keys(D.scenes)[0];ed()}},'حذف المشهد')),
-h('div',{class:'row'},L('اسم المشهد',I(sc,'name','للتنظيم فقط')),L('الفصل',SEL(sc,'chapter',[['','—'],...D.chapters.map(c=>[c.id,c.title])]))),
-h('div',{class:'row'},L('موسيقى (رابط أو stop)',I(sc,'music','https://...mp3')),L('مؤثر صوتي (رابط)',I(sc,'sfx','https://...mp3')),L('خلفية المشهد (رابط)',I(sc,'bg','https://...jpg'))),
-h('h3',{},'النصوص'),bk,h('button',{class:'g',onclick:()=>{sc.blocks.push({t:'',delay:1,fx:'fade'});ed()}},'إضافة نص'),
-h('h3',{},'الاختيارات'),h('div',{class:'row'},L('مدة الاختيار بالثواني (0 = مفتوح بلا وقت)',I(sc,'timer','','number')),L('الاختيار الافتراضي عند انتهاء الوقت',SEL(sc,'default',sc.choices.map((c,i)=>[i,(i+1)+'. '+(c.text||'').slice(0,24)])))),cs,h('button',{class:'g',onclick:()=>{sc.choices.push({text:'',goto:'',set:{}});ed()}},'إضافة اختيار'),
-h('h3',{},'الانتقال'),h('div',{class:'row'},L('المشهد التالي (إن لم توجد اختيارات)',SEL(sc,'next',sop)),h('label',{class:'row'},h('input',{type:'checkbox',style:'width:auto',checked:sc.end||null,onchange:e=>sc.end=e.target.checked}),'هذا المشهد نهاية الرواية'))))}
-async function save(){if(!D.title.trim())return toast('أضف عنوانًا للرواية');if(!D.scenes[D.start])return toast('حدّد أول مشهد');const id=GID||('g'+Date.now().toString(36)+Math.random().toString(36).slice(2,5));const m={title:D.title,desc:D.desc||'',cover:D.cover||'',owner:U.id,ownerName:U.name,status:'pending',note:null,updated:Date.now(),prev:META?.prev||null,part:META?.part||1};
+let TB='story';
+const mv=(a,i,d)=>{const j=i+d;if(j<0||j>=a.length)return;[a[i],a[j]]=[a[j],a[i]];ed()};
+function newScene(from){const id='s'+Date.now().toString(36)+Math.random().toString(36).slice(2,4);D.scenes[id]={name:'',chapter:from?.chapter||D.chapters[0]?.id||'',blocks:[{t:'',delay:0,fx:'fade'}],choices:[],timer:0,default:0,next:'',end:false};return id}
+function more(){const f=h('input',{type:'file',accept:'.json',hidden:1,onchange:async e=>{try{const o=JSON.parse(await e.target.files[0].text());if(!o.scenes||!Object.keys(o.scenes).length)throw 0;delete o._ai_instructions;D=Object.assign(blank(),o);D.theme=Object.assign(blank().theme,o.theme);D.chapters=D.chapters||[];if(!D.scenes[D.start])D.start=Object.keys(D.scenes)[0];cur=D.start;d.close();ed();toast('تم رفع الملف')}catch(x){toast('ملف JSON غير صالح')}}});
+const d=dlg(h('h3',{},'المزيد'),h('p',{class:'mu'},'اكتب روايتك بالذكاء الاصطناعي: نزّل القالب، أعطه لأي AI واطلب قصة بنفس البنية، ثم ارفع الناتج هنا.'),h('button',{class:'g',onclick:()=>dl('template.json',JSON.stringify(TPL,null,1))},'⬇ تنزيل template.json'),h('button',{class:'g',onclick:()=>f.click()},'⬆ رفع ملف JSON'),h('button',{class:'g',onclick:()=>dl((D.title||'story')+'.json',JSON.stringify(D,null,1))},'⬇ تنزيل روايتي JSON'),h('p',{class:'mu'},'لرفع الصور: ',h('a',{href:'https://top4top.io/',target:'_blank'},'top4top.io'),' ثم الصق الرابط المباشر.'),f,closeBtn())}
+function ed(){const y=scrollY,B=$('#ed');B.innerHTML='';
+const L=(t,x)=>h('label',{class:'L'},t,x),gap=()=>h('div',{style:'height:10px'}),I=(o,k,ph,ty)=>h('input',{type:ty||'text',placeholder:ph||'',value:o[k]??'',oninput:e=>o[k]=ty=='number'?+e.target.value||0:e.target.value});
+const SEL=(o,k,op,fn)=>{const s=h('select',{onchange:e=>{o[k]=e.target.value;fn&&fn()}});op.forEach(([v,l])=>{const x=h('option',{value:v},l);if(o[k]==v)x.selected=true;s.append(x)});return s};
+const CLR=(o,k)=>h('div',{class:'row'},h('input',{type:'color',style:'width:48px;height:38px;padding:2px',value:o[k]||'#ffffff',oninput:e=>o[k]=e.target.value}),o[k]?h('button',{class:'g s',onclick:()=>{delete o[k];ed()}},'مسح'):h('small',{class:'mu'},'تلقائي'));
+D.chapters=D.chapters||[];const ids=Object.keys(D.scenes),sop=ids.map((i,n)=>[i,(n+1)+'. '+(D.scenes[i].name||'مشهد بلا اسم')]);
+if(!D.scenes[cur])cur=ids[0];const sc=D.scenes[cur];sc.blocks=sc.blocks||[];sc.choices=sc.choices||[];const th=D.theme;
+B.append(h('div',{class:'ab'},h('button',{class:'g',onclick:()=>{$('#ed').hidden=1;$('#mg').hidden=0;mine()}},'→'),h('b',{class:'sp tt'},D.title||'رواية جديدة'),h('button',{class:'g',onclick:prev},'👁 معاينة'),h('button',{class:'g',onclick:more},'⋯'),h('button',{onclick:save},'حفظ وإرسال')));
+B.append(h('div',{class:'tabs'},...[['story','✍ القصة'],['about','📖 الرواية'],['look','🎨 المظهر']].map(([k,l])=>h('button',{class:TB==k?'on':'',onclick:()=>{TB=k;ed();scrollTo(0,0)}},l))),gap());
+if(TB=='story'){
+const side=h('div',{class:'sl'});ids.forEach((i,n)=>side.append(h('button',{class:'si'+(i==cur?' on':''),onclick:()=>{cur=i;ed();scrollTo(0,0)}},(D.start==i?'★ ':'')+(n+1)+'. '+(D.scenes[i].name||'مشهد'),h('small',{},(D.scenes[i].blocks||[])[0]?.t||'—'))));
+side.append(h('button',{class:'g',onclick:()=>{cur=newScene(sc);ed();scrollTo(0,0)}},'＋ مشهد جديد'));
+const m=h('div');
+m.append(h('div',{class:'card'},h('div',{class:'row'},h('div',{style:'flex:2;min-width:160px'},I(sc,'name','اسم المشهد (للتنظيم فقط)')),D.chapters.length?L('الفصل',SEL(sc,'chapter',[['','—'],...D.chapters.map(c=>[c.id,c.title])])):''),h('div',{class:'row',style:'margin-top:10px'},D.start==cur?h('span',{class:'chip'},'★ أول مشهد'):h('button',{class:'g s',onclick:()=>{D.start=cur;ed()}},'اجعله أول مشهد'),h('span',{class:'sp'}),h('button',{class:'g s',onclick:()=>{if(ids.length<2)return toast('يلزم مشهد واحد على الأقل');if(!confirm('حذف هذا المشهد؟'))return;delete D.scenes[cur];if(D.start==cur)D.start=Object.keys(D.scenes)[0];cur=D.start;ed()}},'حذف المشهد'))));
+m.append(h('h3',{},'النص'));
+sc.blocks.forEach((b,i)=>m.append(h('div',{class:'card sub'},h('textarea',{class:'tx',placeholder:'اكتب النص هنا…',oninput:e=>b.t=e.target.value},b.t||''),h('div',{class:'row'},L('يظهر بعد (ثانية)',I(b,'delay','','number')),L('التأثير',SEL(b,'fx',FX)),h('button',{class:'g ic',title:'أعلى',onclick:()=>mv(sc.blocks,i,-1)},'↑'),h('button',{class:'g ic',title:'أسفل',onclick:()=>mv(sc.blocks,i,1)},'↓'),h('button',{class:'g ic',title:'حذف',onclick:()=>{sc.blocks.splice(i,1);ed()}},'✕')),h('details',{class:'adv'},h('summary',{},'خيارات أخرى للنص (لون، خط، متحدث، صورة)'),h('div',{class:'row'},L('اللون',CLR(b,'color')),L('الخط',SEL(b,'font',[['','افتراضي'],...FONTS])),L('الحجم (×)',I(b,'size','1','number'))),gap(),h('div',{class:'row'},I(b,'who','المتحدث (اختياري)'),I(b,'img','رابط صورة داخل المشهد (اختياري)'))))));
+m.append(h('button',{class:'g',onclick:()=>{sc.blocks.push({t:'',delay:1,fx:'fade'});ed()}},'＋ إضافة نص'));
+m.append(h('h3',{},'الاختيارات'),h('p',{class:'mu'},sc.choices.length?'اختر لكل خيار المشهد الذي ينتقل إليه، أو أنشئ مشهدًا جديدًا مباشرة.':'بلا اختيارات، ينتقل المشهد تلقائيًا (أو ينتهي).'));
+const tgt=c=>{const s=h('select',{onchange:e=>{if(e.target.value=='__new'){c.goto=newScene(sc);toast('أُنشئ مشهد جديد وربط بالاختيار')}else c.goto=e.target.value;ed()}});[['','— إلى أي مشهد؟'],...sop,['__new','＋ مشهد جديد']].forEach(([v,l])=>{const x=h('option',{value:v},l);if((c.goto||'')==v)x.selected=true;s.append(x)});return s};
+sc.choices.forEach((c,i)=>m.append(h('div',{class:'card sub'},h('div',{class:'row'},h('div',{style:'flex:2;min-width:160px'},I(c,'text','نص الاختيار')),h('div',{style:'flex:1.4;min-width:150px'},tgt(c)),h('button',{class:'g ic',title:'فتح المشهد',disabled:!c.goto,onclick:()=>{cur=c.goto;ed();scrollTo(0,0)}},'↗'),h('button',{class:'g ic',title:'حذف',onclick:()=>{sc.choices.splice(i,1);ed()}},'✕')),h('details',{class:'adv'},h('summary',{},'متغيرات وشروط (اختياري)'),h('div',{class:'row'},L('يحفظ متغيرات',h('input',{placeholder:'ساعدت_أحمد=true',value:kvs(c.set),oninput:e=>c.set=kv(e.target.value)})),L('يظهر إذا',h('input',{placeholder:'ساعدت_أحمد=true',value:kvs(c.if),oninput:e=>c.if=kv(e.target.value)}))))))); 
+m.append(h('button',{class:'g',onclick:()=>{sc.choices.push({text:'',goto:'',set:{}});ed()}},'＋ إضافة اختيار'));
+if(sc.choices.length){m.append(h('div',{class:'card'},h('label',{class:'row'},h('input',{type:'checkbox',style:'width:auto',checked:sc.timer>0,onchange:e=>{sc.timer=e.target.checked?10:0;ed()}}),'اختيار بوقت محدد (يُختار تلقائيًا عند انتهاء الوقت)'),sc.timer>0?h('div',{class:'row',style:'margin-top:10px'},L('عدد الثواني',I(sc,'timer','','number')),L('الاختيار التلقائي',SEL(sc,'default',sc.choices.map((c,i)=>[i,(i+1)+'. '+(c.text||'').slice(0,24)])))):''))}
+else{const es=h('select',{onchange:e=>{const v=e.target.value;if(v=='__new'){sc.next=newScene(sc);sc.end=false;ed();return}sc.end=v=='__end';sc.next=sc.end?'':v}});[['__end','🏁 تنتهي الرواية هنا'],...sop.filter(x=>x[0]!=cur).map(([v,l])=>[v,'← ينتقل إلى '+l]),['__new','＋ مشهد جديد']].forEach(([v,l])=>{const x=h('option',{value:v},l);if((sc.next||'__end')==v)x.selected=true;es.append(x)});m.append(h('div',{class:'card'},L('بعد هذا المشهد',es)))}
+m.append(h('details',{class:'adv card'},h('summary',{},'🔊 صوتيات وخلفية هذا المشهد (اختياري)'),h('div',{class:'row'},L('صوتيات الخلفية (رابط أو stop)',I(sc,'music','https://…mp3')),L('مؤثر صوتي (رابط)',I(sc,'sfx','https://…mp3'))),gap(),I(sc,'bg','خلفية المشهد (رابط صورة)')));
+B.append(h('div',{class:'ws'},side,m))}
+else if(TB=='about'){
+const ch=h('div');D.chapters.forEach((c,i)=>ch.append(h('div',{class:'row',style:'margin:6px 0'},h('div',{style:'flex:1'},I(c,'title','عنوان الفصل')),h('button',{class:'g ic',onclick:()=>{D.chapters.splice(i,1);ed()}},'✕'))));
+B.append(h('div',{class:'card'},I(D,'title','عنوان الرواية'),gap(),h('textarea',{placeholder:'نبذة عن الرواية (تظهر في صفحة التعريف)',oninput:e=>D.desc=e.target.value},D.desc||''),gap(),I(D,'cover','رابط صورة الغلاف (اختياري)'),gap(),L('أول مشهد في الرواية',SEL(D,'start',sop))),h('div',{class:'card'},h('h3',{},'الفصول'),h('p',{class:'mu'},'اختيارية: تظهر عناوينها للقارئ، ويستطيع العودة إليها.'),ch,h('button',{class:'g',onclick:()=>{D.chapters.push({id:'c'+Date.now().toString(36),title:'فصل جديد'});ed()}},'＋ إضافة فصل')))}
+else{const pv=h('div',{class:'pvx'},h('p',{},'كان الليل هادئًا…'),h('p',{},'حتى سمعتَ طرقًا على الباب.'));
+const upd=()=>{const n=th.mode!='day',c=th.mode=='custom';pv.style.background=c?(th.bg||'#10131c'):n?'#0c0f16':'#f2efe8';pv.style.color=c?(th.text||'#eee'):n?'#ece7da':'#1d1b17';pv.style.fontFamily=(th.font||'Amiri')+',serif'};
+const card=h('div',{class:'card'},h('h3',{},'مظهر القراءة'),L('نمط الرواية',SEL(th,'mode',[['night','ليلي'],['day','نهاري'],['custom','مخصص']],ed)),th.mode=='custom'?h('div',{class:'row',style:'margin-top:10px'},L('لون الخلفية',CLR(th,'bg')),L('لون النص',CLR(th,'text'))):'',gap(),L('الخط',SEL(th,'font',FONTS)),gap(),I(th,'img','رابط خلفية عامة للرواية (اختياري)'),gap(),pv);
+card.addEventListener('input',upd);card.addEventListener('change',upd);upd();B.append(card)}
+scrollTo(0,y)}
+async function save(){if(!D.title.trim())return toast('أضف عنوانًا للرواية');if(!D.scenes[D.start])return toast('حدّد أول مشهد');const bad=Object.entries(D.scenes).filter(([k,s])=>!(s.choices||[]).length&&!s.next&&!s.end).map(([k,s])=>s.name||k);if(bad.length&&!confirm('هذه المشاهد بلا خروج وستُعرض كنهاية للرواية: '+bad.join('، ')+'\nمتابعة الحفظ؟'))return;const id=GID||('g'+Date.now().toString(36)+Math.random().toString(36).slice(2,5));const m={title:D.title,desc:D.desc||'',cover:D.cover||'',owner:U.id,ownerName:U.name,status:'pending',note:null,updated:Date.now(),prev:META?.prev||null,part:META?.part||1};
 try{await put('stories/'+id,D);await patch('games/'+id,m);GID=id;META={...META,...m};toast('أُرسلت الرواية للمراجعة')}catch(e){toast('تعذّر الحفظ، تحقق من الاتصال')}}
 function prev(){localStorage.sg_preview=JSON.stringify(D);open(GAMES_PAGE+'?preview=1')}
 bar();
