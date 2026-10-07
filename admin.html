@@ -46,7 +46,7 @@ dialog::backdrop{background:#000b;backdrop-filter:blur(3px)}dialog>*{margin:10px
 </div><div id="tt"></div>
 <script>
 const DB='https://clean-sequencer-422716-g8-default-rtdb.firebaseio.com',KEY='';
-const ADMIN_PASS=''; // ضع كلمة مرور الإدارة هنا
+const ADMIN_PASS='1019'; // ضع كلمة مرور الإدارة هنا
 const GAMES_PAGE='home.html';
 const $=s=>document.querySelector(s),h=(t,a={},...c)=>{const e=document.createElement(t);for(const k in a){const v=a[k];if(v==null||v===false)continue;k.startsWith('on')?e[k]=v:k=='class'?e.className=v:e.setAttribute(k,v===true?'':v)}c.flat().forEach(x=>e.append(x?.nodeType?x:(x??'')));return e};
 const api=async(m,p,b)=>{const r=await fetch(DB+'/'+p+'.json'+(KEY?'?auth='+KEY:''),{method:m,body:b===undefined?undefined:JSON.stringify(b)});if(!r.ok)throw 0;return r.json()};
