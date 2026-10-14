@@ -38,5 +38,9 @@
   "rostrick-build/config.json": {
     "op": "add",
     "timestamp": 1792003031422
+  },
+  "story.js": {
+    "op": "add",
+    "timestamp": 1792005378884
   }
 }
