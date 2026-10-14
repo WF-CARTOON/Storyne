@@ -3,93 +3,95 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#2b1a0c">
-<title>سراب</title>
+<meta name="theme-color" content="#1a0f08">
+<title>ليلة الفانوس</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<canvas id="cv"></canvas>
 
-<canvas id="world"></canvas>
-
-<!-- واجهة اللعب -->
-<div id="hud" class="hidden">
-  <div class="hud-top">
-    <div class="water" title="الماء">
-      <span class="drop">💧</span>
-      <div class="bar"><div id="waterFill"></div></div>
-      <b id="waterNum">100</b>
-    </div>
-    <div id="pieces" class="pieces"></div>
-    <button id="muteBtn" class="icon-btn" aria-label="الصوت">🔊</button>
+<!-- الشريط العلوي (وضع التحقيق) -->
+<div id="topbar" class="hidden">
+  <div class="loc-box"><span id="locName"></span></div>
+  <div id="candles" class="candles" title="الفرص المتبقية"></div>
+  <div class="tb-btns">
+    <button id="btnBook" class="round" aria-label="دفتر الملاحظات">📓<b id="bookCount">٠</b></button>
+    <button id="btnMute" class="round" aria-label="الصوت">🔊</button>
   </div>
-  <div id="objective" class="objective"></div>
-  <div id="compass" class="compass hidden">
-    <div class="ring"><div id="compassArrow" class="arrow"></div></div>
-    <span id="compassLabel"></span>
-  </div>
-  <canvas id="minimap" width="160" height="160"></canvas>
-  <div id="toast" class="toast"></div>
 </div>
 
-<div id="stick"><div id="knob"></div></div>
-<button id="actBtn" class="hidden">تفاعل</button>
+<!-- التنقّل -->
+<div id="nav" class="hidden">
+  <div id="navLocs"></div>
+  <button id="btnFinish" class="fin">⚖️ أنهِ التحقيق</button>
+</div>
+
+<!-- قائمة موضوعات الحديث -->
+<div id="topics" class="panel hidden">
+  <div id="topicsHead"></div>
+  <div id="topicsList"></div>
+  <button id="topicsClose" class="btn small">إغلاق</button>
+</div>
+
+<!-- الحوار -->
+<div id="timer" class="hidden"><i></i></div>
+<div id="choices" class="hidden"></div>
+<div id="dlg" class="hidden">
+  <div id="who"></div>
+  <div id="txt"></div>
+  <div id="more">▼</div>
+</div>
+
+<div id="toast"></div>
+
+<!-- بطاقة الفصل -->
+<div id="chapter" class="hidden"><small id="chN"></small><h2 id="chT"></h2></div>
+
+<!-- دفتر الملاحظات -->
+<div id="book" class="screen hidden">
+  <div class="card book-card">
+    <h2>📓 دفتر الملاحظات</h2>
+    <div id="bookTrust" class="trust"></div>
+    <div id="bookList" class="clue-list"></div>
+    <button id="bookClose" class="btn">إغلاق</button>
+  </div>
+</div>
+
+<!-- اختيار الدليل في المواجهة -->
+<div id="evid" class="screen hidden">
+  <div class="card evid-card">
+    <h2>أيّ دليلٍ تواجهه به؟</h2>
+    <div id="lives" class="lives"></div>
+    <div id="evidList" class="clue-list pick"></div>
+    <button id="evidSkip" class="btn">لا أملك ما أردّ به</button>
+  </div>
+</div>
 
 <!-- الشاشة الرئيسية -->
 <section id="title" class="screen">
   <div class="card title-card">
-    <h1>سراب</h1>
-    <p class="tag">رحلة بحثٍ عن مدينةٍ دفنتها الرمال</p>
+    <small class="kicker">لعبة تحقيق قصصية</small>
+    <h1>ليلة الفانوس</h1>
+    <p class="tag">ميناء الفنار، ١٩٥٣. لؤلؤةٌ تختفي في العتمة، وخمسة وجوهٍ يخفي كلٌّ منها سرّاً.</p>
     <ul class="how">
-      <li><b>الحركة:</b> W A S D أو الأسهم، وعلى الجوال اسحب بإصبعك.</li>
-      <li><b>التفاعل:</b> زر E أو زر التفاعل عند الاقتراب من أي شيء.</li>
-      <li>اجمع <b>٥ قطع خريطة</b> من الأطلال والمراصد، ثم اتبع البوصلة واحفر.</li>
-      <li>الماء ينقص كلما مشيت، والواحة تُشرب مرة واحدة فقط.</li>
-      <li>انتبه: ليس كل ما يلمع ماءً... الواحة الحقيقية لا تتموّج.</li>
+      <li>اختياراتك تغيّر ما يقوله الناس لك... وما ينتهي إليه الحال.</li>
+      <li>في التحقيق فرصٌ محدودة: افحص الأشياء المتوهّجة أو حادث الأشخاص.</li>
+      <li>في النهاية تواجه الجاني بأدلّتك، فاختر ما تحمله بعناية.</li>
+      <li>خمس نهايات مختلفة؛ إحداها سرّية.</li>
     </ul>
     <div class="btns">
-      <button id="startBtn" class="btn primary">ابدأ رحلة جديدة</button>
-      <button id="dailyBtn" class="btn">التحدي اليومي</button>
+      <button id="startBtn" class="btn primary">ابدأ التحقيق</button>
     </div>
-    <p id="best" class="best"></p>
-  </div>
-</section>
-
-<!-- شاشة التحميل -->
-<section id="loading" class="screen hidden">
-  <div class="loading-box">تُنسج الكثبان…</div>
-</section>
-
-<!-- الألغاز -->
-<section id="puzzle" class="screen hidden">
-  <div class="card puzzle-card">
-    <h2 id="puzzleTitle"></h2>
-    <p id="puzzleText"></p>
-    <canvas id="puzzleCanvas" width="640" height="400"></canvas>
-    <div class="puzzle-foot">
-      <span id="puzzleMsg"></span>
-      <div class="foot-btns">
-        <button id="speedBtn" class="btn small hidden">⏩ تسريع الزمن</button>
-        <button id="puzzleClose" class="btn small">ابتعد</button>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- تجميع الخريطة -->
-<section id="mapScreen" class="screen hidden">
-  <div class="card map-card">
-    <h2>تتجمّع القطع…</h2>
-    <canvas id="mapCanvas" width="600" height="380"></canvas>
-    <p id="mapText"></p>
-    <button id="mapContinue" class="btn primary hidden">ابدأ البحث عن ✕</button>
+    <div id="endingsBox" class="endings"></div>
   </div>
 </section>
 
 <!-- النهاية -->
-<section id="endScreen" class="screen hidden">
+<section id="ending" class="screen hidden">
   <div id="endBox" class="card end-card"></div>
 </section>
 
+<script src="story.js"></script>
 <script src="game.js"></script>
 </body>
 </html>
