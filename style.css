@@ -1,0 +1,153 @@
+:root{
+  --gold:#f1c45a;
+  --sand:#f5deaa;
+  --ink:#2a190b;
+  --panel:rgba(34,20,9,.9);
+  --line:rgba(241,196,90,.35);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{
+  margin:0;height:100%;overflow:hidden;background:#2a190b;color:var(--sand);
+  font-family:"Noto Naskh Arabic","Segoe UI",Tahoma,"Geeza Pro","Arial",sans-serif;
+  user-select:none;-webkit-user-select:none;
+}
+#world{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.hidden{display:none!important}
+button{font-family:inherit}
+
+/* ---------- الواجهة ---------- */
+#hud{position:fixed;inset:0;pointer-events:none;z-index:5}
+.hud-top{
+  position:absolute;top:max(10px,env(safe-area-inset-top));left:12px;right:12px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+}
+.water{
+  display:flex;align-items:center;gap:8px;background:var(--panel);
+  border:1px solid var(--line);border-radius:999px;padding:6px 12px;
+}
+.water .bar{width:clamp(80px,22vw,150px);height:10px;border-radius:99px;background:rgba(255,255,255,.12);overflow:hidden}
+#waterFill{height:100%;width:100%;background:linear-gradient(90deg,#3aa6c9,#8be0f2);border-radius:99px;transition:width .15s linear}
+#waterFill.low{background:linear-gradient(90deg,#c0392b,#f0845a)}
+.water b{min-width:2ch;text-align:center;font-size:15px}
+.pieces{
+  display:flex;gap:6px;background:var(--panel);border:1px solid var(--line);
+  border-radius:999px;padding:6px 14px;font-size:18px;line-height:1;
+}
+.pieces span{color:rgba(245,222,170,.35);transition:color .3s,transform .3s}
+.pieces span.on{color:var(--gold);transform:scale(1.15);text-shadow:0 0 8px rgba(241,196,90,.7)}
+.icon-btn{
+  pointer-events:auto;width:40px;height:40px;border-radius:50%;cursor:pointer;
+  background:var(--panel);border:1px solid var(--line);color:var(--sand);font-size:18px;
+}
+.objective{
+  position:absolute;top:calc(max(10px,env(safe-area-inset-top)) + 54px);right:12px;
+  max-width:min(60vw,330px);font-size:14px;line-height:1.6;
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px 12px;
+}
+#minimap{
+  position:absolute;left:12px;top:calc(max(10px,env(safe-area-inset-top)) + 54px);
+  width:116px;height:116px;border-radius:14px;border:2px solid var(--line);
+  background:#2a1c10;box-shadow:0 4px 18px rgba(0,0,0,.4);
+}
+.compass{
+  position:absolute;top:calc(max(10px,env(safe-area-inset-top)) + 54px);left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;
+}
+.compass .ring{
+  width:48px;height:48px;border-radius:50%;background:var(--panel);
+  border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;
+}
+.compass .arrow{
+  width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;
+  border-bottom:22px solid var(--gold);filter:drop-shadow(0 0 4px rgba(241,196,90,.8));
+}
+.compass span{background:var(--panel);padding:1px 8px;border-radius:99px}
+.toast{
+  position:absolute;left:50%;bottom:calc(120px + env(safe-area-inset-bottom));transform:translate(-50%,10px);
+  background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 18px;
+  font-size:16px;max-width:min(90vw,520px);text-align:center;opacity:0;transition:opacity .3s,transform .3s;
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* عصا التحكم + زر التفاعل */
+#stick{
+  position:fixed;width:120px;height:120px;border-radius:50%;z-index:6;pointer-events:none;
+  transform:translate(-50%,-50%);display:none;
+  background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.25);
+}
+#stick.on{display:block}
+#knob{
+  position:absolute;left:50%;top:50%;width:52px;height:52px;border-radius:50%;
+  background:rgba(241,196,90,.55);border:2px solid rgba(255,235,180,.8);transform:translate(-50%,-50%);
+}
+#actBtn{
+  position:fixed;right:max(22px,env(safe-area-inset-right));bottom:max(26px,env(safe-area-inset-bottom));z-index:7;
+  min-width:96px;height:96px;padding:0 16px;border-radius:50px;cursor:pointer;
+  background:radial-gradient(circle at 30% 30%,#ffe29a,#d99a2b);color:var(--ink);
+  border:3px solid #fff3c9;font-size:19px;font-weight:700;
+  box-shadow:0 6px 24px rgba(0,0,0,.45),0 0 28px rgba(241,196,90,.5);
+  animation:pulse 1.6s ease-in-out infinite;
+}
+@keyframes pulse{50%{transform:scale(1.06)}}
+
+/* ---------- الشاشات ---------- */
+.screen{
+  position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;
+  background:rgba(22,11,4,.55);backdrop-filter:blur(3px);padding:16px;overflow:auto;
+}
+.card{
+  background:var(--panel);border:1px solid var(--line);border-radius:22px;
+  padding:26px 28px;max-width:640px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.55);text-align:center;
+}
+.title-card h1{
+  margin:0;font-size:clamp(72px,16vw,130px);line-height:1;font-weight:700;
+  background:linear-gradient(180deg,#fff0bd,#e0a132 70%,#b8741a);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 4px 14px rgba(240,170,60,.35));
+}
+.tag{margin:6px 0 18px;font-size:19px;opacity:.9}
+.how{list-style:none;padding:0;margin:0 0 20px;text-align:right;font-size:15.5px;line-height:1.9}
+.how li{padding-right:20px;position:relative}
+.how li::before{content:"✦";position:absolute;right:0;color:var(--gold)}
+.btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn{
+  cursor:pointer;border:1px solid var(--line);background:rgba(255,255,255,.07);color:var(--sand);
+  padding:12px 24px;border-radius:14px;font-size:17px;transition:transform .15s,background .15s;
+}
+.btn:hover{background:rgba(255,255,255,.14);transform:translateY(-1px)}
+.btn.primary{background:linear-gradient(180deg,#f7cf6a,#d99a2b);color:var(--ink);font-weight:700;border-color:#fff1c0}
+.btn.small{padding:8px 16px;font-size:15px}
+.best{margin:14px 0 0;font-size:14px;opacity:.8;min-height:1.4em}
+.loading-box{font-size:26px;padding:20px 34px;background:var(--panel);border-radius:18px;border:1px solid var(--line)}
+
+.puzzle-card{max-width:700px}
+.puzzle-card h2,.map-card h2{margin:0 0 6px;color:var(--gold);font-size:26px}
+#puzzleText{margin:0 0 12px;line-height:1.8;font-size:16px}
+#puzzleCanvas,#mapCanvas{
+  width:min(100%,640px);height:auto;border-radius:14px;touch-action:none;
+  border:2px solid rgba(241,196,90,.4);background:#000;display:block;margin:0 auto;
+}
+#mapCanvas{background:transparent;border:none}
+.puzzle-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;flex-wrap:wrap}
+#puzzleMsg{font-size:15px;min-height:1.4em;flex:1;text-align:right}
+#puzzleMsg.bad{color:#ff9a8a}
+#puzzleMsg.ok{color:#9ff0a8}
+.foot-btns{display:flex;gap:8px}
+#mapText{margin:14px 0;line-height:1.8;font-size:16px}
+
+.end-card h2{margin:10px 0;font-size:30px;color:var(--gold)}
+.end-card p{line-height:1.9;margin:6px 0}
+.end-card .big{font-size:64px;line-height:1}
+.stats{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:14px 0 20px}
+.stats div{background:rgba(255,255,255,.07);border:1px solid var(--line);border-radius:12px;padding:8px 14px;font-size:14px}
+.stats b{display:block;font-size:20px;color:var(--gold)}
+.skyline{color:#f1c45a;max-width:360px;margin:0 auto;overflow:hidden;height:120px}
+.skyline svg{width:100%;display:block;animation:rise 2.4s ease-out both;filter:drop-shadow(0 0 14px rgba(241,196,90,.6))}
+@keyframes rise{from{transform:translateY(100%)}to{transform:translateY(0)}}
+
+@media (max-width:560px){
+  .card{padding:18px 16px}
+  .how{font-size:14px}
+  #minimap{width:96px;height:96px}
+  .objective{font-size:13px}
+}
