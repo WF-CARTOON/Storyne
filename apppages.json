@@ -18,5 +18,9 @@
   ".github/workflows/build-apk.yml": {
     "op": "add",
     "timestamp": 1791911799768
+  },
+  "game.js": {
+    "op": "add",
+    "timestamp": 1792002780228
   }
 }
