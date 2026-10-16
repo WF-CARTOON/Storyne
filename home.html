@@ -1,17 +1,29 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head><meta name="rostrick-orientation" content="portrait">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>home</title>
-    <style>
-        * {
-            user-select: none !important;
-            -webkit-user-select: none !important;
-            -moz-user-select: none !important;
-            -ms-user-select: none !important;
-        }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>اختبار أذونات RosTrick</title>
+<style>
+  :root { --bg:#0f1419; --card:#1a2129; --line:#2a3541; --txt:#eaf0f6; --mut:#9fb0c0; --ok:#2ecc71; --bad:#ff6b5e; --acc:#4da3ff; }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:14px; background:var(--bg); color:var(--txt); font-family:Tahoma,Arial,sans-serif; line-height:1.7; }
+  h1 { font-size:1.15rem; margin:4px 0 2px; }
+  .sub { color:var(--mut); font-size:.82rem; margin-bottom:14px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px; margin-bottom:12px; }
+  .card h2 { margin:0 0 8px; font-size:1rem; display:flex; align-items:center; gap:8px; }
+  .badge { margin-inline-start:auto; font-size:.72rem; padding:2px 9px; border-radius:20px; background:#2a3541; color:var(--mut); }
+  .badge.ok { background:rgba(46,204,113,.18); color:var(--ok); }
+  .badge.bad { background:rgba(255,107,94,.18); color:var(--bad); }
+  button { background:var(--acc); color:#06121f; border:0; border-radius:10px; padding:10px 14px; font:inherit; font-weight:bold; margin:3px 0 3px 6px; }
+  button.alt { background:#2a3541; color:var(--txt); }
+  button:disabled { opacity:.5; }
+  video, canvas.snap { width:100%; max-height:260px; border-radius:10px; background:#000; margin-top:8px; display:none; object-fit:cover; }
+  .meter { height:10px; background:#2a3541; border-radius:6px; overflow:hidden; margin-top:8px; }
+  .meter i { display:block; height:100%; width:0; background:var(--ok); transition:width .08s; }
+  pre { margin:8px 0 0; padding:8px; background:#0b1015; border-radius:8px; font-size:.78rem; white-space:pre-wrap; word-break:break-all; color:var(--mut); direction:ltr; text-align:left; }
+  audio { width:100%; margin-top:8px; display:none; }
+</style>
 <!-- SM-AUTO-INJECTED:START:admin-styles -->
 <style id="admin-styles">
         :root {
@@ -214,12 +226,191 @@ header::after {
     </div>
 </div>
 <!-- END ADMIN DRAWER -->
+<h1>🔐 اختبار أذونات التطبيق</h1>
+<div class="sub">جرّب كل إذن على حدة. الأذونات التي لم تخترها وقت البناء ستُرفض هنا.</div>
 
-<main style="padding: 20px;">
-    <h1 id="pageContentTitle">صفحة home</h1>
-    <p>محتوى الصفحة الافتراضي المخصص لك.</p>
-</main>
+<div class="card" id="c-cam">
+  <h2>📷 الكاميرا <span class="badge" id="b-cam">لم تُجرَّب</span></h2>
+  <button id="cam-start">تشغيل الكاميرا</button>
+  <button class="alt" id="cam-flip" disabled>تبديل الكاميرا</button>
+  <button class="alt" id="cam-snap" disabled>التقاط صورة</button>
+  <button class="alt" id="cam-stop" disabled>إيقاف</button>
+  <video id="cam-video" autoplay playsinline muted></video>
+  <canvas class="snap" id="cam-canvas"></canvas>
+</div>
 
+<div class="card" id="c-mic">
+  <h2>🎙️ الميكروفون <span class="badge" id="b-mic">لم تُجرَّب</span></h2>
+  <button id="mic-start">بدء التسجيل</button>
+  <button class="alt" id="mic-stop" disabled>إيقاف وتشغيل التسجيل</button>
+  <div class="meter"><i id="mic-level"></i></div>
+  <audio id="mic-audio" controls></audio>
+</div>
+
+<div class="card" id="c-geo">
+  <h2>📍 الموقع (GPS) <span class="badge" id="b-geo">لم تُجرَّب</span></h2>
+  <button id="geo-once">موقعي الآن</button>
+  <button class="alt" id="geo-watch">تتبّع مباشر</button>
+  <pre id="geo-out">—</pre>
+</div>
+
+<div class="card" id="c-vib">
+  <h2>📳 الاهتزاز <span class="badge" id="b-vib">لم تُجرَّب</span></h2>
+  <button id="vib-short">اهتزاز قصير</button>
+  <button class="alt" id="vib-pattern">نمط اهتزاز</button>
+</div>
+
+<div class="card" id="c-wake">
+  <h2>☀️ إبقاء الشاشة تعمل <span class="badge" id="b-wake">لم تُجرَّب</span></h2>
+  <button id="wake-on">تفعيل</button>
+  <button class="alt" id="wake-off" disabled>إلغاء</button>
+</div>
+
+<div class="card" id="c-bt">
+  <h2>🔵 البلوتوث <span class="badge" id="b-bt">لم تُجرَّب</span></h2>
+  <button id="bt-scan">بحث عن جهاز</button>
+  <pre id="bt-out" style="direction:rtl;text-align:right;">—</pre>
+</div>
+
+<div class="card" id="c-or">
+  <h2>🔄 اتجاه الشاشة <span class="badge" id="b-or">—</span></h2>
+  <div style="font-size:.85rem;color:var(--mut)">هذه الصفحة معرَّفة بـ <code>rostrick-orientation = both</code>. عدّل قيمة الوسم في أول الصفحة إلى <code>portrait</code> أو <code>landscape</code> لتجرّب القفل.</div>
+</div>
+
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  function badge(id, text, cls) { const b = $(id); b.textContent = text; b.className = "badge" + (cls ? " " + cls : ""); }
+  function errText(e) { return (e && (e.name || e.message)) ? (e.name + (e.message ? ": " + e.message : "")) : String(e); }
+  const NO_MEDIA = !(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+
+  /* ---------- الكاميرا ---------- */
+  let camStream = null, facing = "environment";
+  async function camStart() {
+    if (NO_MEDIA) return badge("b-cam", "غير مدعوم", "bad");
+    camStop(true);
+    try {
+      camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing }, audio: false });
+      const v = $("cam-video"); v.srcObject = camStream; v.style.display = "block";
+      badge("b-cam", "تعمل ✓", "ok");
+      $("cam-snap").disabled = $("cam-stop").disabled = $("cam-flip").disabled = false;
+    } catch (e) { badge("b-cam", "مرفوضة: " + (e.name || ""), "bad"); }
+  }
+  function camStop(silent) {
+    if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
+    $("cam-video").style.display = "none";
+    $("cam-snap").disabled = $("cam-stop").disabled = $("cam-flip").disabled = true;
+    if (!silent) badge("b-cam", "أُوقفت");
+  }
+  $("cam-start").onclick = camStart;
+  $("cam-stop").onclick = () => camStop();
+  $("cam-flip").onclick = () => { facing = facing === "environment" ? "user" : "environment"; camStart(); };
+  $("cam-snap").onclick = () => {
+    const v = $("cam-video"), c = $("cam-canvas");
+    c.width = v.videoWidth || 640; c.height = v.videoHeight || 480;
+    c.getContext("2d").drawImage(v, 0, 0, c.width, c.height);
+    c.style.display = "block";
+  };
+
+  /* ---------- الميكروفون ---------- */
+  let micStream = null, rec = null, chunks = [], raf = 0, actx = null;
+  $("mic-start").onclick = async function () {
+    if (NO_MEDIA) return badge("b-mic", "غير مدعوم", "bad");
+    try {
+      micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      badge("b-mic", "يسجّل ✓", "ok");
+      $("mic-start").disabled = true; $("mic-stop").disabled = false; $("mic-audio").style.display = "none";
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) {
+        actx = new AC(); const src = actx.createMediaStreamSource(micStream);
+        const an = actx.createAnalyser(); an.fftSize = 512; src.connect(an);
+        const buf = new Uint8Array(an.fftSize);
+        (function loop() {
+          an.getByteTimeDomainData(buf);
+          let peak = 0; for (let i = 0; i < buf.length; i++) peak = Math.max(peak, Math.abs(buf[i] - 128));
+          $("mic-level").style.width = Math.min(100, peak / 128 * 220) + "%";
+          raf = requestAnimationFrame(loop);
+        })();
+      }
+      if (window.MediaRecorder) {
+        chunks = []; rec = new MediaRecorder(micStream);
+        rec.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+        rec.onstop = () => {
+          const a = $("mic-audio"); a.src = URL.createObjectURL(new Blob(chunks, { type: rec.mimeType || "audio/webm" }));
+          a.style.display = "block"; a.play().catch(() => {});
+        };
+        rec.start();
+      }
+    } catch (e) { badge("b-mic", "مرفوضة: " + (e.name || ""), "bad"); }
+  };
+  $("mic-stop").onclick = function () {
+    if (rec && rec.state !== "inactive") rec.stop();
+    if (micStream) micStream.getTracks().forEach(t => t.stop());
+    cancelAnimationFrame(raf); if (actx) { actx.close(); actx = null; }
+    $("mic-level").style.width = "0"; $("mic-start").disabled = false; $("mic-stop").disabled = true;
+    badge("b-mic", "انتهى التسجيل", "ok");
+  };
+
+  /* ---------- الموقع ---------- */
+  let watchId = null;
+  function showPos(p) {
+    const c = p.coords;
+    $("geo-out").textContent = "lat: " + c.latitude.toFixed(6) + "\nlng: " + c.longitude.toFixed(6) + "\nدقة: ±" + Math.round(c.accuracy) + " م" + (c.speed != null ? "\nسرعة: " + c.speed.toFixed(1) + " م/ث" : "");
+    badge("b-geo", "تعمل ✓", "ok");
+  }
+  function geoErr(e) { badge("b-geo", e.code === 1 ? "مرفوضة" : "تعذّر", "bad"); $("geo-out").textContent = errText(e); }
+  $("geo-once").onclick = function () {
+    if (!navigator.geolocation) return badge("b-geo", "غير مدعوم", "bad");
+    navigator.geolocation.getCurrentPosition(showPos, geoErr, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
+  };
+  $("geo-watch").onclick = function () {
+    if (!navigator.geolocation) return badge("b-geo", "غير مدعوم", "bad");
+    if (watchId != null) { navigator.geolocation.clearWatch(watchId); watchId = null; this.textContent = "تتبّع مباشر"; return; }
+    watchId = navigator.geolocation.watchPosition(showPos, geoErr, { enableHighAccuracy: true });
+    this.textContent = "إيقاف التتبّع";
+  };
+
+  /* ---------- الاهتزاز ---------- */
+  function vib(p) {
+    if (!navigator.vibrate) return badge("b-vib", "غير مدعوم", "bad");
+    badge("b-vib", navigator.vibrate(p) ? "نُفّذ ✓" : "رُفض", navigator.vibrate(p) ? "ok" : "bad");
+  }
+  $("vib-short").onclick = () => vib(200);
+  $("vib-pattern").onclick = () => vib([150, 80, 150, 80, 400]);
+
+  /* ---------- إبقاء الشاشة تعمل ---------- */
+  let lock = null;
+  $("wake-on").onclick = async function () {
+    if (!("wakeLock" in navigator)) return badge("b-wake", "غير مدعوم في هذا الـ WebView", "bad");
+    try {
+      lock = await navigator.wakeLock.request("screen");
+      badge("b-wake", "الشاشة لن تنطفئ ✓", "ok"); $("wake-off").disabled = false;
+      lock.addEventListener("release", () => badge("b-wake", "أُطلق القفل"));
+    } catch (e) { badge("b-wake", "رُفض: " + (e.name || ""), "bad"); }
+  };
+  $("wake-off").onclick = function () { if (lock) lock.release(); lock = null; this.disabled = true; };
+
+  /* ---------- البلوتوث ---------- */
+  $("bt-scan").onclick = async function () {
+    if (!navigator.bluetooth) {
+      badge("b-bt", "غير مدعوم", "bad");
+      $("bt-out").textContent = "Web Bluetooth غير متوفر في Android WebView.\nالإذن يُضاف للتطبيق، لكن استخدامه من الصفحة يحتاج جسراً برمجياً في Java.";
+      return;
+    }
+    try {
+      const d = await navigator.bluetooth.requestDevice({ acceptAllDevices: true });
+      badge("b-bt", "وُجد جهاز ✓", "ok"); $("bt-out").textContent = (d.name || "(بدون اسم)") + "\n" + d.id;
+    } catch (e) { badge("b-bt", "لم يتم", "bad"); $("bt-out").textContent = errText(e); }
+  };
+
+  /* ---------- الاتجاه ---------- */
+  function orient() {
+    const land = window.innerWidth > window.innerHeight;
+    badge("b-or", land ? "أفقي" : "عمودي", "ok");
+  }
+  orient(); window.addEventListener("resize", orient);
+})();
+</script>
 <!-- SM-AUTO-INJECTED:START:admin-scripts -->
 <script id="admin-scripts">
     const username = "WF-CARTOON";
