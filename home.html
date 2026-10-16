@@ -60,6 +60,8 @@
   <button id="vib-short">اهتزاز قصير</button>
   <button class="alt" id="vib-pattern">نمط اهتزاز</button>
   <pre id="vib-out" style="direction:rtl;text-align:right;">اضغط لتشخيص الاهتزاز</pre>
+  <div style="margin-top:8px;font-size:.8rem;color:var(--mut)">إن لم يهتز جوالك مع الأزرار أعلاه، جرّب كل أسلوب وأخبرني أيها يهتز:</div>
+  <div id="vib-modes"></div>
 </div>
 
 <div class="card" id="c-wake">
@@ -177,6 +179,19 @@
   }
   $("vib-short").onclick = () => vib(200);
   $("vib-pattern").onclick = () => vib([150, 80, 150, 80, 400]);
+
+  (function () {
+    const modes = [["alarm","منبّه"],["touch","لمس"],["notification","إشعار"],["media","وسائط"],["unknown","بدون نوع"],["legacy","قديم"],["haptic","لمس نظامي"]];
+    const box = $("vib-modes");
+    modes.forEach(function (m) {
+      const bt = document.createElement("button"); bt.className = "alt"; bt.textContent = m[1];
+      bt.onclick = function () {
+        if (!window.RosTrickDevice || !RosTrickDevice.vibrateWith) { $("vib-out").textContent = "التشخيص غير متاح: أعد بناء التطبيق بالقالب الأحدث"; return; }
+        $("vib-out").textContent = "الأسلوب «" + m[1] + "»: " + RosTrickDevice.vibrateWith(m[0], "600");
+      };
+      box.appendChild(bt);
+    });
+  })();
 
   /* ---------- إبقاء الشاشة تعمل ---------- */
   let lock = null;
