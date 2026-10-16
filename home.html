@@ -59,6 +59,7 @@
   <h2>📳 الاهتزاز <span class="badge" id="b-vib">لم تُجرَّب</span></h2>
   <button id="vib-short">اهتزاز قصير</button>
   <button class="alt" id="vib-pattern">نمط اهتزاز</button>
+  <pre id="vib-out" style="direction:rtl;text-align:right;">اضغط لتشخيص الاهتزاز</pre>
 </div>
 
 <div class="card" id="c-wake">
@@ -169,7 +170,10 @@
   function vib(p) {
     if (!navigator.vibrate) return badge("b-vib", "غير مدعوم", "bad");
     const ok = navigator.vibrate(p);
-    badge("b-vib", ok ? "أُرسل للجهاز ✓" : "رُفض", ok ? "ok" : "bad");
+    const bridge = !!window.RosTrickDevice;
+    const st = window.__rtVibStatus || "—";
+    $("vib-out").textContent = "الجسر (RosTrickDevice): " + (bridge ? "موجود" : "غير موجود — التطبيق مبني بقالب قديم، أعد بناءه") + "\nنتيجة الجهاز: " + st;
+    badge("b-vib", !ok ? "رُفض" : (bridge ? (st === "ok" ? "اهتز ✓" : st) : "بلا جسر"), (ok && bridge && st === "ok") ? "ok" : "bad");
   }
   $("vib-short").onclick = () => vib(200);
   $("vib-pattern").onclick = () => vib([150, 80, 150, 80, 400]);
