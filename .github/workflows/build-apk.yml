@@ -91,6 +91,14 @@ jobs:
           echo "RT_KEYSTORE_PASSWORD=$RT_PASS" >> "$GITHUB_ENV"
           echo "RT_KEY_ALIAS=rostrick" >> "$GITHUB_ENV"
 
+      - name: تجهيز منصة أندرويد 36 (إن لم تكن موجودة على الجهاز)
+        run: |
+          SDKM=$(ls "$ANDROID_HOME"/cmdline-tools/*/bin/sdkmanager 2>/dev/null | sort -V | tail -1)
+          if [ -n "$SDKM" ]; then
+            yes | "$SDKM" --licenses >/dev/null 2>&1 || true
+            "$SDKM" "platforms;android-36" >/dev/null 2>&1 || echo "تعذّر تثبيت المنصة يدوياً، سيحاول Gradle تنزيلها"
+          fi
+
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: "8.13"
@@ -127,7 +135,15 @@ jobs:
           ICON_PATH=$("$AAPT2" dump badging "$APK_SRC" | sed -n "s/^application-icon-640:'\(.*\)'.*/\1/p" | head -1)
           [ -z "$ICON_PATH" ] && ICON_PATH=$("$AAPT2" dump badging "$APK_SRC" | sed -n "s/^application-icon-[0-9]*:'\(.*\)'.*/\1/p" | tail -1)
           mkdir -p "$RUNNER_TEMP/apkicon" && unzip -p "$APK_SRC" "$ICON_PATH" > "$RUNNER_TEMP/apkicon/icon.png" || true
-          if [ "${{ steps.apply.outputs.icon_used }}" = "1" ]; then
+          if [ "${{ steps.apply.outputs.icon_used }}" = "1" ] && [ "${{ steps.apply.outputs.icon_style }}" = "adaptive" ]; then
+            ICON_SHA="${{ steps.apply.outputs.icon_sha }}"
+            echo "ICON_NOTE=أيقونة مخصصة تكيّفية (خلفية ${{ steps.apply.outputs.icon_bg }}, sha256: $ICON_SHA)" >> "$GITHUB_ENV"
+            if unzip -l "$APK_SRC" | grep -q "res/mipmap-anydpi-v26/ic_launcher.xml"; then
+              echo "الأيقونة التكيّفية موجودة داخل الـ APK ✓"
+            else
+              echo "::warning::لم أجد الأيقونة التكيّفية داخل الـ APK"
+            fi
+          elif [ "${{ steps.apply.outputs.icon_used }}" = "1" ]; then
             ICON_SHA="${{ steps.apply.outputs.icon_sha }}"
             echo "ICON_NOTE=أيقونة مخصصة (sha256: $ICON_SHA)" >> "$GITHUB_ENV"
             python3 - <<PY
