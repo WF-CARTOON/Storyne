@@ -27,7 +27,7 @@
     "file": "home.html",
     "title": "home",
     "icon": "fa-solid fa-file",
-    "hidden": false,
+    "hidden": true,
     "searchEnabled": true,
     "searchNames": []
   }
