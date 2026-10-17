@@ -1,477 +1,838 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>home</title>
-    <style>
-        * {
-            user-select: none !important;
-            -webkit-user-select: none !important;
-            -moz-user-select: none !important;
-            -ms-user-select: none !important;
-        }
-    </style>
-<!-- SM-AUTO-INJECTED:START:admin-styles -->
-<style id="admin-styles">
-        :root {
-            --header-bg-light: #ffffff;
-            --header-text-light: #333333;
-            --header-bg: var(--header-bg-light);
-            --header-text: var(--header-text-light);
-            --drawer-bg-light: #ffffff;
-            --drawer-text-light: #333333;
-            --drawer-bg: var(--drawer-bg-light);
-            --drawer-text: var(--drawer-text-light);
-        }
-        [data-user-theme="dark"] {
-            --header-bg-dark: #1e1e1e;
-            --header-text-dark: #e0e0e0;
-            --header-bg: var(--header-bg-dark);
-            --header-text: var(--header-text-dark);
-            --drawer-bg-dark: #1e1e1e;
-            --drawer-text-dark: #e0e0e0;
-            --drawer-bg: var(--drawer-bg-dark);
-            --drawer-text: var(--drawer-text-dark);
-        }
-        html {
-            width: 100% !important;
-            height: 100% !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            overflow-x: hidden !important;
-        }
-        * {
-            box-sizing: border-box !important;
-            -webkit-user-select: none !important;
-            -moz-user-select: none !important;
-            -ms-user-select: none !important;
-            user-select: none !important;
-            -webkit-touch-callout: none !important;
-            -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
-        }
-        body {
-            margin: 0 !important;
-            padding: 0 !important;
-            padding-top: 56px !important;
-            width: 100% !important;
-            min-width: 100% !important;
-            max-width: 100% !important;
-            min-height: 100vh !important;
-            overflow-x: hidden !important;
-            display: flex !important;
-            flex-direction: column !important;
-            align-items: stretch !important;
-        }
-        header { position: fixed; top: 0; left: 0; z-index: 1000; background: var(--header-bg); height: 56px !important; line-height: 56px !important; padding: 0 15px !important; color: var(--header-text); display: flex; align-items: center; justify-content: space-between; width: 100% !important; max-width: 100% !important; min-width: 100% !important; box-sizing: border-box; direction: rtl; gap: 15px; overflow: hidden !important; transition: background-color 0.3s, color 0.3s; }
-        .header-brand { display: flex; align-items: center; gap: 15px; width: auto; text-align: right; }
-        
-        .menu-btn-container {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            width: 24px;
-            height: 18px;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            padding: 0;
-            box-sizing: border-box;
-            transition: transform 0.15s ease;
-            margin-top: auto;
-            margin-bottom: auto;
-        }
-        .menu-btn-container:active {
-            transform: scale(0.85);
-        }
-        .menu-bar-line {
-            width: 100%;
-            height: 3px;
-            background-color: var(--header-text);
-            border-radius: 2px;
-            transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
-            transform-origin: right center;
-        }
-        .menu-btn-container.active-icon .menu-bar-line:nth-child(1) {
-            transform: rotate(-45deg);
-        }
-        .menu-btn-container.active-icon .menu-bar-line:nth-child(2) {
-            opacity: 0;
-            transform: scaleX(0);
-        }
-        .menu-btn-container.active-icon .menu-bar-line:nth-child(3) {
-            transform: rotate(45deg);
-        }
-        
-        .drawer-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1001; display: none; }
-        .drawer { position: fixed; top: 0; width: 280px; height: 100%; background: var(--drawer-bg); color: var(--drawer-text); z-index: 1002; transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); display: flex; flex-direction: column; right: -280px; }
-        .drawer.open { right: 0; }
-        .drawer-header { background: var(--drawer-bg); color: var(--drawer-text); height: 56px !important; line-height: 56px !important; padding: 0 15px !important; font-weight: bold; text-align: right; box-sizing: border-box; overflow: hidden !important; border-bottom: 1px solid rgba(0,0,0,0.1); }
-        .drawer-menu-container { flex: 1; overflow-y: auto; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
-        .drawer-menu-container::-webkit-scrollbar { display: none; }
-        .drawer-menu { list-style: none; padding: 10px 0; margin: 0; direction: rtl; }
-        .drawer-item { padding: 15px 20px; border-bottom: 1px solid rgba(0,0,0,0.05); cursor: pointer; display: flex; justify-content: space-between; align-items: center; color: var(--drawer-text); transition: all 0.2s ease; outline: none; -webkit-tap-highlight-color: transparent; }
-        .drawer-item:hover { background-color: rgba(0,0,0,0.05); transform: translateX(-4px); }
-        .drawer-item:active { background-color: rgba(0,0,0,0.1) !important; transform: scale(0.98) !important; transition: transform 0.05s ease; }
-        .drawer-loader { border: 3px solid #f3f3f3; border-top: 3px solid var(--drawer-text); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; margin: 20px auto; }
-.dl123 {
-    background: transparent; border: none; color: var(--header-text); cursor: pointer;
-    font-size: 1.2rem; width: 38px; height: 38px; border-radius: 8px; display: inline-flex;
-    align-items: center; justify-content: center; transition: background-color 0.2s, transform 0.1s;
-    border: 1px solid rgba(255, 255, 255, 0.15); appearance: none; box-sizing: border-box;
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>:root{color-scheme:light}body{margin:0}</style>
+<title>محرر الصفحات</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Aref+Ruqaa:wght@400;700&family=Cairo:wght@400;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Noto+Naskh+Arabic:wght@400;600;700&family=Reem+Kufi:wght@400;600;700&family=Tajawal:wght@400;500;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+/* Layout: sticky toolbar (tabs: text / insert / page) above a gray desk holding one white sheet that scales to fit.
+   The sheet and its ink are fixed colors on purpose: they are the exported document and must not follow the theme. */
+:root {
+  --desk: #e3e8e6;
+  --chrome: #fafbfb;
+  --chrome-2: #eff2f1;
+  --line: #ccd4d1;
+  --text: #19211f;
+  --muted: #5a6763;
+  --accent: #1b6a56;
+  --accent-ink: #ffffff;
+  --accent-soft: #d6ebe4;
+  --danger: #b3261e;
+  --shadow: 0 1px 2px rgba(20,30,28,.12), 0 8px 28px rgba(20,30,28,.14);
+  --paper: #ffffff;
+  --ink: #15191a;
+  --rule: #262b2a;
+  --head-bg: #e8ebea;
+  --ui-font: 'IBM Plex Sans Arabic', 'Tajawal', system-ui, sans-serif;
 }
-.dl123:hover { background-color: rgba(0,0,0,0.08); }
-.dl123:active { transform: scale(0.9); }
-        .sm-search-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 2000; display: none; align-items: flex-start; justify-content: center; padding: 10vh 16px 16px; box-sizing: border-box; }
-        .sm-search-overlay.open { display: flex; }
-        .sm-search-panel { width: 100%; max-width: 520px; background: var(--drawer-bg, #fff); color: var(--drawer-text, #333); border-radius: 14px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); overflow: hidden; max-height: 70vh; display: flex; flex-direction: column; }
-        .sm-search-bar { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid rgba(0,0,0,0.08); }
-        .sm-search-bar i.fa-magnifying-glass { color: #3498db; font-size: 1.1rem; }
-        .sm-search-bar input { flex: 1; border: none; outline: none; background: transparent; font-size: 1rem; color: inherit; }
-        .sm-search-close { background: transparent; border: none; color: inherit; font-size: 1rem; cursor: pointer; opacity: 0.7; padding: 4px; }
-        .sm-search-close:hover { opacity: 1; }
-        .sm-search-results { list-style: none; margin: 0; padding: 6px 0; overflow-y: auto; }
-        .sm-search-result-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; cursor: pointer; transition: background-color 0.15s; }
-        .sm-search-result-item:hover, .sm-search-result-item:active { background-color: rgba(0,0,0,0.06); }
-        .sm-search-result-item i { color: #3498db; width: 20px; text-align: center; }
-        .sm-search-empty { padding: 22px 16px; text-align: center; color: var(--text-muted, #888); font-size: 0.9rem; }
-        .bottom-navbar { display: none; }
-        .bottom-navbar-list { list-style: none; margin: 0; padding: 0; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<!-- SM-AUTO-INJECTED:END:admin-styles -->
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --desk: #141918; --chrome: #1f2524; --chrome-2: #29302e; --line: #3a4441;
+    --text: #e6ecea; --muted: #98a6a1; --accent: #55bfa2; --accent-ink: #0a1511;
+    --accent-soft: #24433b; --danger: #ff8a80;
+    --shadow: 0 1px 2px rgba(0,0,0,.5), 0 8px 28px rgba(0,0,0,.5);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --desk: #141918; --chrome: #1f2524; --chrome-2: #29302e; --line: #3a4441;
+  --text: #e6ecea; --muted: #98a6a1; --accent: #55bfa2; --accent-ink: #0a1511;
+  --accent-soft: #24433b; --danger: #ff8a80;
+  --shadow: 0 1px 2px rgba(0,0,0,.5), 0 8px 28px rgba(0,0,0,.5);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--desk); color: var(--text); font-family: var(--ui-font); font-size: 15px; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--chrome); }
+button, select, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 
+#app { min-height: 100%; display: flex; flex-direction: column; }
 
+/* toolbar */
+.chrome { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--chrome); border-bottom: 1px solid var(--line); }
+.row { padding-block: 8px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; align-items: center; gap: 8px; }
+.row + .row { border-top: 1px solid var(--line); }
+.top h1 { margin: 0; font-size: 17px; font-weight: 600; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tabs { gap: 4px; padding-block: 6px; }
+.tab { border: 0; background: transparent; padding: 6px 14px; border-radius: 6px; color: var(--muted); font-weight: 500; }
+.tab[aria-selected="true"] { background: var(--accent-soft); color: var(--text); }
+.tools { flex-wrap: wrap; align-items: center; }
+.tools[hidden], .ctx[hidden] { display: none; }
+.ctx { flex-wrap: wrap; background: var(--chrome-2); }
+.ctx .lbl { color: var(--muted); font-size: 13px; }
+.grp { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.grp + .grp { padding-inline-start: 8px; margin-inline-start: 4px; border-inline-start: 1px solid var(--line); }
+.b { min-width: 34px; height: 34px; padding: 0 10px; border: 1px solid var(--line); background: var(--chrome-2); border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; }
+.ctx .b { background: var(--chrome); }
+.b:hover { border-color: var(--muted); }
+.b.on { background: var(--accent-soft); border-color: var(--accent); }
+.b.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.b.primary:disabled { opacity: .55; cursor: progress; }
+.b.danger { color: var(--danger); }
+.b.danger.arm { background: var(--danger); color: var(--chrome); border-color: var(--danger); }
+.b svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.sel-in { height: 34px; border: 1px solid var(--line); background: var(--chrome-2); border-radius: 6px; padding: 0 8px; max-width: 100%; }
+.ctx .sel-in { background: var(--chrome); }
+.num { width: 64px; height: 34px; border: 1px solid var(--line); background: var(--chrome-2); border-radius: 6px; padding: 0 8px; text-align: center; }
+input[type="color"] { width: 34px; height: 34px; padding: 2px; border: 1px solid var(--line); background: var(--chrome-2); border-radius: 6px; cursor: pointer; }
+input[type="text"].nm { height: 34px; width: 180px; max-width: 100%; border: 1px solid var(--line); background: var(--chrome-2); border-radius: 6px; padding: 0 10px; }
+input[type="range"] { accent-color: var(--accent); width: 140px; }
+.chk { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; }
+.chk input { accent-color: var(--accent); width: 16px; height: 16px; }
+.fld { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: var(--muted); }
 
+/* desk */
+.stage { direction: ltr; overflow-x: auto; flex: 1; padding-block: 24px 80px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.fit { margin: 0 auto; position: relative; }
+.sheet { position: absolute; top: 0; left: 0; transform-origin: 0 0; box-shadow: var(--shadow); background: #fff; }
+.guides { position: absolute; inset: 0; pointer-events: none; z-index: 3;
+  background-image: repeating-linear-gradient(to bottom, transparent 0, transparent calc(var(--ph) - 2px), rgba(27,106,86,.55) calc(var(--ph) - 2px), rgba(27,106,86,.55) var(--ph)); }
+.handle { position: absolute; width: 18px; height: 18px; border-radius: 50%; background: var(--accent); border: 2px solid #fff; z-index: 6; cursor: nesw-resize; touch-action: none; box-shadow: 0 1px 4px rgba(0,0,0,.4); }
 
+/* the document */
+.paper { position: relative; direction: rtl; background: var(--paper); color: var(--ink); font-family: 'Cairo', sans-serif; font-size: 18px; line-height: 1.7; padding: 56px 64px; outline: none; overflow-wrap: anywhere; }
+.paper p { margin: 0 0 .6em; }
+.paper h1 { font-size: 2em; font-weight: 800; line-height: 1.3; margin: 0 0 .4em; }
+.paper h2 { font-size: 1.5em; font-weight: 700; line-height: 1.35; margin: .6em 0 .3em; }
+.paper h3 { font-size: 1.2em; font-weight: 700; margin: .5em 0 .3em; }
+.paper blockquote { margin: .6em 0; padding: .2em 1em; border-inline-start: 4px solid #8a9692; color: #3d4644; }
+.paper ul, .paper ol { margin: 0 0 .6em; padding-inline-start: 1.6em; }
+.paper hr { border: 0; border-top: 2px solid var(--rule); margin: 1em 0; }
+.paper a { color: #1b5fb0; }
+.paper table { width: 100%; border-collapse: collapse; margin: .8em 0; }
+.paper td, .paper th { border: 1px solid var(--rule); padding: 8px 10px; vertical-align: top; min-width: 28px; }
+.paper th { background: var(--head-bg); font-weight: 700; }
+.paper table.nb td, .paper table.nb th { border-color: transparent; }
+.paper table.zebra tr:nth-child(even) td { background: #f3f4f2; }
+.paper table.tc td, .paper table.tc th { text-align: center; }
+.paper img { max-width: 100%; height: auto; cursor: pointer; }
+.paper img.sel { outline: 3px solid #1b6a56; outline-offset: 2px; }
+.paper img.rd { border-radius: 14px; }
+.paper img.bd { border: 2px solid var(--rule); }
+.paper .pb { position: relative; height: 0; user-select: none; clear: both; }
+.paper .pb::before { content: ""; position: absolute; inset: 0 0 auto; border-top: 2px dashed #1b6a56; }
+.paper .pb::after { content: "فاصل صفحة"; position: absolute; top: 4px; inset-inline-start: 0; font: 600 12px/1 'IBM Plex Sans Arabic', sans-serif; color: #1b6a56; background: #fff; padding: 2px 6px; border-radius: 4px; }
+.paper .pb.sel { background: rgba(27,106,86,.12); }
+.paper.exporting .pb::before, .paper.exporting .pb::after { display: none; }
 
-</head>
-<body>
-<!-- START ADMIN DRAWER -->
-<!-- SM-SEARCH-CONFIG:{"enabled":true,"action":"overlay","accent":"#3498db","position":"after-theme"} -->
-<header>
-    <div style="display: flex; align-items: center; gap: 15px;">
-        <button class="menu-btn-container" id="menuBtnToggle" onclick="toggleDrawer()">
-            <div class="menu-bar-line"></div>
-            <div class="menu-bar-line"></div>
-            <div class="menu-bar-line"></div>
-        </button>
-        <span id="pageMainHeader" style="font-weight:bold; font-size: 1.1rem; display: inline-block; vertical-align: middle;">home</span>
+.toast { position: fixed; z-index: 40; inset-inline: 0; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); display: flex; justify-content: center; pointer-events: none; padding-inline: 16px; }
+.toast span { background: var(--text); color: var(--chrome); padding: 9px 16px; border-radius: 8px; font-size: 14px; opacity: 0; transition: opacity .2s; box-shadow: var(--shadow); max-width: 100%; }
+.toast span.show { opacity: 1; }
+.hint { color: var(--muted); font-size: 13px; }
+.fld select, .fld input { color: var(--text); }
+@media (max-width: 560px) {
+  .top h1 { font-size: 15px; }
+  .b { padding: 0 8px; }
+  .tools, .ctx { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: thin; }
+  .tools .grp, .ctx .grp, .ctx .hint, .ctx .lbl { flex-wrap: nowrap; flex: none; }
+}
+@media (prefers-reduced-motion: reduce) { .toast span { transition: none; } }
+</style>
+
+<div id="app" dir="rtl" lang="ar">
+  <div class="chrome" id="chrome">
+    <div class="row top">
+      <h1>محرر الصفحات</h1>
+      <button class="b primary" id="xPdf" type="button">PDF</button>
+      <button class="b primary" id="xPng" type="button">PNG</button>
+      <button class="b primary" id="xJpg" type="button">JPG</button>
     </div>
-    <div style="display: flex; align-items: center; gap: 8px;">
-    <div class="dl123" id="userThemeToggleBtn" onclick="toggleUserTheme()"><i class="fa-solid fa-moon"></i></div>
-    <div class="dl123" id="smSearchToggleBtn" onclick="smToggleSearchPanel()" title="بحث"><i class="fa-solid fa-magnifying-glass"></i></div>
+    <div class="row tabs" role="tablist">
+      <button class="tab" role="tab" aria-selected="true" data-tab="text" type="button">النص</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="insert" type="button">إدراج</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="page" type="button">الصفحة</button>
     </div>
-</header>
-<div class="drawer-overlay" id="drawerOverlay" onclick="toggleDrawer()"></div>
-<nav class="drawer" id="drawer">
-    <div class="drawer-header" id="drawerSideHeader">home</div>
-    <div id="drawerLoader" class="drawer-loader"></div>
-    <div class="drawer-menu-container">
-        <ul class="drawer-menu" id="drawerDynamicMenu"></ul>
+
+    <div class="row tools" data-panel="text">
+      <div class="grp">
+        <select class="sel-in" id="fontSel" title="الخط" aria-label="الخط">
+          <option value="Cairo">Cairo</option>
+          <option value="Tajawal">Tajawal</option>
+          <option value="Amiri">Amiri (نسخ كلاسيكي)</option>
+          <option value="Noto Naskh Arabic">Noto Naskh (نسخ)</option>
+          <option value="Reem Kufi">Reem Kufi (كوفي)</option>
+          <option value="Aref Ruqaa">Aref Ruqaa (رقعة)</option>
+          <option value="IBM Plex Sans Arabic">IBM Plex Arabic</option>
+          <option value="Georgia">Georgia</option>
+          <option value="Courier New">Courier New</option>
+        </select>
+        <select class="sel-in" id="sizeSel" title="حجم الخط" aria-label="حجم الخط">
+          <option value="">الحجم</option>
+          <option>12</option><option>14</option><option>16</option><option>18</option><option>20</option>
+          <option>24</option><option>28</option><option>32</option><option>40</option><option>48</option><option>64</option><option>72</option>
+        </select>
+        <select class="sel-in" id="blockSel" title="النمط" aria-label="النمط">
+          <option value="p">فقرة</option>
+          <option value="h1">عنوان كبير</option>
+          <option value="h2">عنوان فرعي</option>
+          <option value="h3">عنوان صغير</option>
+          <option value="blockquote">اقتباس</option>
+        </select>
+      </div>
+      <div class="grp">
+        <button class="b" type="button" data-cmd="bold" data-state="bold" title="عريض"><b>B</b></button>
+        <button class="b" type="button" data-cmd="italic" data-state="italic" title="مائل"><i>I</i></button>
+        <button class="b" type="button" data-cmd="underline" data-state="underline" title="تسطير"><u>U</u></button>
+        <button class="b" type="button" data-cmd="strikeThrough" data-state="strikeThrough" title="يتوسطه خط"><s>S</s></button>
+        <label class="b" title="لون الخط" style="padding:0 6px"><span>A</span><input type="color" id="fgColor" value="#15191a" aria-label="لون الخط"></label>
+        <label class="b" title="تظليل" style="padding:0 6px"><span>تظليل</span><input type="color" id="hlColor" value="#fff2a8" aria-label="لون التظليل"></label>
+        <button class="b" type="button" id="hlOff" title="إزالة التظليل">×</button>
+      </div>
+      <div class="grp">
+        <button class="b" type="button" data-cmd="justifyRight" data-state="justifyRight" data-ic="alR" title="محاذاة لليمين"></button>
+        <button class="b" type="button" data-cmd="justifyCenter" data-state="justifyCenter" data-ic="alC" title="توسيط"></button>
+        <button class="b" type="button" data-cmd="justifyLeft" data-state="justifyLeft" data-ic="alL" title="محاذاة لليسار"></button>
+        <button class="b" type="button" data-cmd="justifyFull" data-state="justifyFull" data-ic="alJ" title="ضبط"></button>
+        <button class="b" type="button" data-cmd="insertUnorderedList" data-state="insertUnorderedList" data-ic="ul" title="قائمة نقطية"></button>
+        <button class="b" type="button" data-cmd="insertOrderedList" data-state="insertOrderedList" title="قائمة مرقمة">١.</button>
+      </div>
+      <div class="grp">
+        <button class="b" type="button" id="dirRtl" title="اتجاه الفقرة من اليمين لليسار">عربي ←</button>
+        <button class="b" type="button" id="dirLtr" title="اتجاه الفقرة من اليسار لليمين">→ English</button>
+        <select class="sel-in" id="lhSel" title="تباعد الأسطر" aria-label="تباعد الأسطر">
+          <option value="">الأسطر</option><option>1.3</option><option>1.5</option><option>1.7</option><option>2</option><option>2.4</option>
+        </select>
+      </div>
+      <div class="grp">
+        <button class="b" type="button" data-cmd="undo" title="تراجع">↶</button>
+        <button class="b" type="button" data-cmd="redo" title="إعادة">↷</button>
+      </div>
     </div>
-</nav>
-<nav class="bottom-navbar" id="bottomNavbar">
-    <ul class="bottom-navbar-list" id="bottomNavbarList"></ul>
-</nav>
-<div class="sm-search-overlay" id="smSearchOverlay" onclick="if(event.target===this) smCloseSearchPanel();">
-    <div class="sm-search-panel">
-        <div class="sm-search-bar">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="smSearchInput" placeholder="ابحث عن صفحة..." oninput="smPerformSearch(this.value)" autocomplete="off">
-            <button type="button" class="sm-search-close" onclick="smCloseSearchPanel()"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <ul class="sm-search-results" id="smSearchResults"></ul>
+
+    <div class="row tools" data-panel="insert" hidden>
+      <div class="grp">
+        <button class="b" type="button" id="addImg">إدراج صورة</button>
+        <input type="file" id="imgIn" accept="image/*" multiple hidden>
+        <span class="hint">أو الصق صورة / اسحبها إلى الصفحة</span>
+      </div>
+      <div class="grp">
+        <span class="fld">صفوف <input class="num" id="tr" type="number" min="1" max="40" value="3"></span>
+        <span class="fld">أعمدة <input class="num" id="tc" type="number" min="1" max="12" value="3"></span>
+        <label class="chk"><input type="checkbox" id="th" checked> صف عنوان</label>
+        <button class="b" type="button" id="addTable">إدراج جدول</button>
+      </div>
+      <div class="grp">
+        <button class="b" type="button" id="addPb">فاصل صفحة</button>
+        <button class="b" type="button" id="addHr">خط فاصل</button>
+      </div>
     </div>
+
+    <div class="row tools" data-panel="page" hidden>
+      <div class="grp">
+        <span class="fld">المقاس
+          <select class="sel-in" id="sizeMode">
+            <option value="a4p">A4 طولي</option>
+            <option value="a4l">A4 عرضي</option>
+            <option value="free">طول حر (صفحة واحدة طويلة)</option>
+          </select>
+        </span>
+        <span class="fld">لون الصفحة <input type="color" id="pgColor" value="#ffffff" aria-label="لون الصفحة"></span>
+        <span class="fld">التكبير
+          <select class="sel-in" id="zoomSel">
+            <option value="fit">تلقائي</option><option value="0.5">50%</option><option value="0.75">75%</option><option value="1">100%</option><option value="1.25">125%</option>
+          </select>
+        </span>
+      </div>
+      <div class="grp">
+        <span class="fld">اسم الملف <input type="text" class="nm" id="fname" value="صفحتي" maxlength="60"></span>
+        <span class="fld">الصور المتعددة
+          <select class="sel-in" id="imgMode">
+            <option value="one">صورة واحدة طويلة</option>
+            <option value="each">ملف لكل صفحة</option>
+          </select>
+        </span>
+      </div>
+      <div class="grp">
+        <span class="hint" id="pageInfo"></span>
+        <button class="b danger" type="button" id="newDoc">صفحة جديدة فارغة</button>
+      </div>
+    </div>
+
+    <div class="row ctx" id="ctxTable" hidden>
+      <span class="lbl">الجدول</span>
+      <div class="grp">
+        <button class="b" type="button" data-t="rowBelow">صف تحت</button>
+        <button class="b" type="button" data-t="rowAbove">صف فوق</button>
+        <button class="b danger" type="button" data-t="rowDel">حذف الصف</button>
+      </div>
+      <div class="grp">
+        <button class="b" type="button" data-t="colRight">عمود يمين</button>
+        <button class="b" type="button" data-t="colLeft">عمود يسار</button>
+        <button class="b danger" type="button" data-t="colDel">حذف العمود</button>
+      </div>
+      <div class="grp">
+        <span class="fld">لون الخلية <input type="color" id="cellBg" value="#e8ebea" aria-label="لون الخلية"></span>
+        <span class="fld">الصف <input type="color" id="rowBg" value="#e8ebea" aria-label="لون الصف"></span>
+        <button class="b" type="button" data-t="bgOff" title="إزالة لون الخلية والصف">بدون لون</button>
+      </div>
+      <div class="grp">
+        <button class="b" type="button" data-t="hdr">صف العنوان</button>
+        <button class="b" type="button" data-t="nb">بدون حدود</button>
+        <button class="b" type="button" data-t="zebra">تظليل متبادل</button>
+        <button class="b" type="button" data-t="tc">توسيط النص</button>
+        <button class="b danger" type="button" data-t="tDel">حذف الجدول</button>
+      </div>
+    </div>
+
+    <div class="row ctx" id="ctxImage" hidden>
+      <span class="lbl">الصورة</span>
+      <div class="grp">
+        <span class="fld">العرض <input type="range" id="imgW" min="5" max="100" value="60" aria-label="عرض الصورة"></span>
+        <select class="sel-in" id="imgAl" aria-label="موضع الصورة">
+          <option value="c">في الوسط</option>
+          <option value="r">يمين</option>
+          <option value="l">يسار</option>
+          <option value="fr">يمين والنص حولها</option>
+          <option value="fl">يسار والنص حولها</option>
+        </select>
+      </div>
+      <div class="grp">
+        <label class="chk"><input type="checkbox" id="imgRd"> زوايا مدورة</label>
+        <label class="chk"><input type="checkbox" id="imgBd"> إطار</label>
+        <button class="b danger" type="button" id="imgDel">حذف الصورة</button>
+      </div>
+      <span class="hint">اسحب الدائرة الخضراء لتغيير الحجم</span>
+    </div>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="fit" id="fit">
+      <div class="sheet" id="sheet">
+        <div class="paper" id="paper" contenteditable="true" spellcheck="false" dir="rtl" lang="ar" aria-label="الصفحة"></div>
+        <div class="guides" id="guides"></div>
+        <div class="handle" id="handle" hidden></div>
+      </div>
+    </div>
+  </div>
+  <div class="toast" aria-live="polite"><span id="toast"></span></div>
 </div>
-<!-- END ADMIN DRAWER -->
 
-<main style="padding: 20px;">
-    <h1 id="pageContentTitle">صفحة home</h1>
-    <p>محتوى الصفحة الافتراضي المخصص لك.</p>
-</main>
+<script>
+(function () {
+  var $ = function (s) { return document.querySelector(s); };
+  var $$ = function (s) { return Array.prototype.slice.call(document.querySelectorAll(s)); };
+  var paper = $('#paper'), sheet = $('#sheet'), fit = $('#fit'), stage = $('#stage'), guides = $('#guides'), handle = $('#handle');
+  var SIZES = { a4p: { w: 794, h: 1123 }, a4l: { w: 1123, h: 794 }, free: { w: 794, h: 0 } };
+  var KEY = 'moharrir-alsafahat-v1';
+  var S = { size: 'a4p', bg: '#ffffff', zoom: 'fit', name: 'صفحتي', imgMode: 'one' };
+  var scale = 1, lastRange = null, lastCell = null, selImg = null, selPb = null, drag = null;
 
-<!-- SM-AUTO-INJECTED:START:admin-scripts -->
-<script id="admin-scripts">
-    const username = "WF-CARTOON";
-    const repo = "Storyne";
-    const currentFileName = "home.html";
-    let APP_LOGO_ACTIVE = false;
-    let appLogoLiveHtml = null;
-    let currentPageTitle = null;
-    let smSearchPagesData = [];
+  var IC = {
+    alR: '<path d="M21 6H3M21 12H9M21 18H5"/>',
+    alC: '<path d="M21 6H3M17 12H7M19 18H5"/>',
+    alL: '<path d="M3 6h18M3 12h12M3 18h16"/>',
+    alJ: '<path d="M3 6h18M3 12h18M3 18h18"/>',
+    ul: '<path d="M10 6h11M10 12h11M10 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/>'
+  };
+  $$('[data-ic]').forEach(function (b) { b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + IC[b.dataset.ic] + '</svg>'; });
 
-    function smGoToPage(file) {
-        if (typeof Android !== "undefined" && Android.openLocalPage) {
-            Android.openLocalPage(file);
-        } else {
-            window.location.href = file;
-        }
+  /* ---------- toast ---------- */
+  var toastT;
+  function say(msg, ms) {
+    var t = $('#toast'); t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove('show'); }, ms || 2600);
+  }
+
+  /* ---------- sample content ---------- */
+  function sampleHTML() {
+    var rows = [
+      ['مريم وطه', 'الروم – لقمان', 'الأحقاف – الفتح'], ['الأنبياء', 'السجدة – الأحزاب', 'الحجرات – الذاريات'],
+      ['الحج', 'سبأ – فاطر', 'الطور – القمر'], ['المؤمنون', 'يس', 'الرحمن – الحديد'],
+      ['النور', 'الصافات', 'المجادلة – الصف'], ['الفرقان', 'ص – الزمر', 'الجمعة – التحريم'],
+      ['الشعراء', 'غافر', 'الملك – الجن'], ['النمل', 'فصلت – الشورى', 'المزمل – المرسلات'],
+      ['القصص', 'الزخرف', 'النبأ – الطارق'], ['العنكبوت', 'الدخان – الجاثية', 'الأعلى – الناس']
+    ];
+    var t = '<table class="tc"><tbody><tr><th>اليوم</th><th>القسم الأول</th><th>القسم الثاني</th><th>القسم الثالث</th></tr>';
+    rows.forEach(function (r, i) { t += '<tr><td>' + (i + 1) + '</td><td>' + r.join('</td><td>') + '</td></tr>'; });
+    t += '</tbody></table>';
+    return '<h1 style="text-align:center">جدول مراجعة الحفظ</h1>' +
+      '<p style="text-align:center">من سورة مريم إلى الناس، دورة كل عشرة أيام. هذا مثال جاهز: عدّل النص والجدول كما تشاء أو ابدأ صفحة جديدة من تبويب «الصفحة».</p>' +
+      t + '<p><br></p>';
+  }
+
+  /* ---------- selection helpers ---------- */
+  function inPaper(n) { return !!n && paper.contains(n.nodeType === 1 ? n : n.parentNode); }
+  function placeCaretEnd() {
+    var r = document.createRange(); r.selectNodeContents(paper); r.collapse(false);
+    var s = getSelection(); s.removeAllRanges(); s.addRange(r);
+  }
+  function focusPaper() {
+    paper.focus({ preventScroll: true });
+    if (lastRange && inPaper(lastRange.commonAncestorContainer)) {
+      var s = getSelection(); s.removeAllRanges(); s.addRange(lastRange);
+    } else { placeCaretEnd(); }
+  }
+  document.addEventListener('selectionchange', function () {
+    var s = getSelection(); if (!s.rangeCount) return;
+    var r = s.getRangeAt(0);
+    if (!inPaper(r.commonAncestorContainer)) return;
+    lastRange = r.cloneRange();
+    var el = r.startContainer.nodeType === 1 ? r.startContainer : r.startContainer.parentElement;
+    var c = el && el.closest ? el.closest('td,th') : null;
+    lastCell = c && paper.contains(c) ? c : null;
+    updateCtx(); updateStates();
+  });
+  function cmd(name, val) {
+    focusPaper();
+    try { document.execCommand('styleWithCSS', false, true); } catch (e) {}
+    document.execCommand(name, false, val === undefined ? null : val);
+    changed();
+  }
+  function leafBlocks() {
+    var s = getSelection(); if (!s.rangeCount) return [];
+    var r = s.getRangeAt(0);
+    var cand = $$('#paper p,#paper h1,#paper h2,#paper h3,#paper li,#paper td,#paper th,#paper blockquote,#paper div:not(.pb)').filter(function (b) { return r.intersectsNode(b); });
+    return cand.filter(function (b) { return !cand.some(function (o) { return o !== b && b.contains(o); }); });
+  }
+
+  /* ---------- toolbar wiring ---------- */
+  $('#chrome').addEventListener('mousedown', function (e) { if (e.target.closest('button')) e.preventDefault(); });
+  $$('[data-cmd]').forEach(function (b) { b.addEventListener('click', function () { cmd(b.dataset.cmd, b.dataset.val); }); });
+
+  $$('.tab').forEach(function (t) {
+    t.addEventListener('click', function () {
+      $$('.tab').forEach(function (x) { x.setAttribute('aria-selected', x === t ? 'true' : 'false'); });
+      $$('[data-panel]').forEach(function (p) { p.hidden = p.dataset.panel !== t.dataset.tab; });
+    });
+  });
+
+  $('#fontSel').addEventListener('change', function (e) { cmd('fontName', e.target.value); });
+  $('#sizeSel').addEventListener('change', function (e) {
+    var px = e.target.value; e.target.value = ''; if (!px) return;
+    focusPaper();
+    var s = getSelection();
+    if (!s.rangeCount || s.isCollapsed) { say('حدّد النص أولًا ثم اختر الحجم'); return; }
+    try { document.execCommand('styleWithCSS', false, false); } catch (x) {}
+    document.execCommand('fontSize', false, '7');
+    try { document.execCommand('styleWithCSS', false, true); } catch (x) {}
+    $$('#paper font[size="7"]').forEach(function (f) {
+      var sp = document.createElement('span'); sp.style.fontSize = px + 'px';
+      while (f.firstChild) sp.appendChild(f.firstChild);
+      f.replaceWith(sp);
+    });
+    changed();
+  });
+  $('#blockSel').addEventListener('change', function (e) { cmd('formatBlock', '<' + e.target.value + '>'); });
+  $('#fgColor').addEventListener('input', function (e) { cmd('foreColor', e.target.value); });
+  $('#hlColor').addEventListener('input', function (e) { cmd('hiliteColor', e.target.value); });
+  $('#hlOff').addEventListener('click', function () { cmd('hiliteColor', 'transparent'); });
+  $('#lhSel').addEventListener('change', function (e) {
+    var v = e.target.value; e.target.value = ''; if (!v) return;
+    focusPaper(); leafBlocks().forEach(function (b) { b.style.lineHeight = v; }); changed();
+  });
+  function setDir(d) {
+    focusPaper();
+    var bl = leafBlocks();
+    if (!bl.length) paper.dir = d;
+    bl.forEach(function (b) {
+      b.dir = d;
+      if (b.tagName === 'LI' && b.parentElement) b.parentElement.dir = d;
+    });
+    changed();
+  }
+  $('#dirRtl').addEventListener('click', function () { setDir('rtl'); });
+  $('#dirLtr').addEventListener('click', function () { setDir('ltr'); });
+
+  function updateStates() {
+    $$('[data-state]').forEach(function (b) {
+      var on = false; try { on = document.queryCommandState(b.dataset.state); } catch (e) {}
+      b.classList.toggle('on', on);
+    });
+    try {
+      var v = (document.queryCommandValue('formatBlock') || 'p').toLowerCase().replace(/[<>]/g, '');
+      $('#blockSel').value = ['h1', 'h2', 'h3', 'blockquote'].indexOf(v) >= 0 ? v : 'p';
+    } catch (e) {}
+  }
+
+  /* ---------- insert ---------- */
+  function insertHTML(html) { focusPaper(); document.execCommand('insertHTML', false, html); changed(); }
+  $('#addTable').addEventListener('click', function () {
+    var r = Math.max(1, Math.min(40, +$('#tr').value || 3)), c = Math.max(1, Math.min(12, +$('#tc').value || 3));
+    var head = $('#th').checked, h = '<table><tbody>';
+    for (var i = 0; i < r; i++) {
+      h += '<tr>';
+      for (var j = 0; j < c; j++) h += (head && i === 0 ? '<th><br></th>' : '<td><br></td>');
+      h += '</tr>';
     }
+    h += '</tbody></table><p><br></p>';
+    insertHTML(h);
+  });
+  $('#addHr').addEventListener('click', function () { insertHTML('<hr><p><br></p>'); });
+  $('#addPb').addEventListener('click', function () { insertHTML('<div class="pb" contenteditable="false"></div><p><br></p>'); });
 
-    function smNormalizeSearchText(s) {
-        if (!s) return "";
-        return String(s)
-            .replace(/[\u0660-\u0669]/g, function (d) { return String(d.charCodeAt(0) - 0x0660); })
-            .replace(/[\u06F0-\u06F9]/g, function (d) { return String(d.charCodeAt(0) - 0x06F0); })
-            .replace(/[\u064B-\u0652\u0670]/g, "")
-            .replace(/[إأآا]/g, "ا")
-            .replace(/ة/g, "ه")
-            .replace(/ى/g, "ي")
-            .toLowerCase()
-            .replace(/[\s\-_.,\/]+/g, "")
-            .trim();
+  $('#addImg').addEventListener('click', function () { $('#imgIn').click(); });
+  $('#imgIn').addEventListener('change', function (e) { addImages(e.target.files); e.target.value = ''; });
+  function readImg(f) {
+    return new Promise(function (res, rej) {
+      if (f.type === 'image/svg+xml' || f.type === 'image/gif') {
+        var fr = new FileReader(); fr.onload = function () { res(fr.result); }; fr.onerror = rej; fr.readAsDataURL(f); return;
+      }
+      var u = URL.createObjectURL(f), im = new Image();
+      im.onload = function () {
+        var k = Math.min(1, 1600 / im.width), c = document.createElement('canvas');
+        c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
+        c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(u);
+        res(c.toDataURL(f.type === 'image/png' ? 'image/png' : 'image/jpeg', 0.9));
+      };
+      im.onerror = function () { URL.revokeObjectURL(u); rej(new Error('bad image')); };
+      im.src = u;
+    });
+  }
+  function addImages(files) {
+    var list = Array.prototype.slice.call(files || []).filter(function (f) { return f.type.indexOf('image/') === 0; });
+    if (!list.length) return;
+    list.reduce(function (p, f) {
+      return p.then(function () { return readImg(f).then(insertImg); }).catch(function () { say('تعذر قراءة الصورة'); });
+    }, Promise.resolve());
+  }
+  function insertImg(url) {
+    focusPaper();
+    document.execCommand('insertHTML', false, '<img data-new="1" data-al="c" style="display:block;margin:12px auto;width:60%">');
+    var im = paper.querySelector('img[data-new="1"]');
+    if (!im) return;
+    im.removeAttribute('data-new'); im.src = url;
+    changed(); selectImg(im);
+  }
+  paper.addEventListener('dragover', function (e) { if (e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types, 'Files') >= 0) e.preventDefault(); });
+  paper.addEventListener('drop', function (e) {
+    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) { e.preventDefault(); addImages(e.dataTransfer.files); }
+  });
+  function cleanHTML(html) {
+    var d = new DOMParser().parseFromString(html, 'text/html');
+    Array.prototype.forEach.call(d.querySelectorAll('script,style,meta,link,iframe,object,embed,form,input,button'), function (n) { n.remove(); });
+    Array.prototype.forEach.call(d.body.querySelectorAll('*'), function (el) {
+      Array.prototype.slice.call(el.attributes).forEach(function (a) {
+        var n = a.name.toLowerCase();
+        var keep = n === 'colspan' || n === 'rowspan' || (n === 'href' && /^https?:/i.test(a.value)) || (n === 'src' && /^data:image\//i.test(a.value));
+        if (!keep) el.removeAttribute(a.name);
+      });
+      if (el.tagName === 'IMG' && !el.getAttribute('src')) el.remove();
+    });
+    return d.body.innerHTML;
+  }
+  paper.addEventListener('paste', function (e) {
+    var cd = e.clipboardData; if (!cd) return;
+    var files = Array.prototype.slice.call(cd.files || []).filter(function (f) { return f.type.indexOf('image/') === 0; });
+    e.preventDefault();
+    if (files.length) { addImages(files); return; }
+    var html = cd.getData('text/html'), txt = cd.getData('text/plain');
+    if (html && /<table/i.test(html)) document.execCommand('insertHTML', false, cleanHTML(html));
+    else document.execCommand('insertText', false, txt);
+    changed();
+  });
+
+  /* ---------- image selection and resize ---------- */
+  function contentW(el) {
+    var cs = getComputedStyle(el);
+    return Math.max(50, el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight));
+  }
+  function applyAlign(img, m) {
+    img.dataset.al = m;
+    var st = img.style;
+    st.float = 'none'; st.display = 'block'; st.margin = '12px auto';
+    if (m === 'r') st.margin = '12px 0 12px auto';
+    if (m === 'l') st.margin = '12px auto 12px 0';
+    if (m === 'fr') { st.float = 'right'; st.margin = '4px 0 8px 16px'; }
+    if (m === 'fl') { st.float = 'left'; st.margin = '4px 16px 8px 0'; }
+  }
+  function selectImg(img) {
+    deselect();
+    selImg = img; img.classList.add('sel');
+    $('#imgW').value = parseFloat(img.style.width) || 60;
+    $('#imgAl').value = img.dataset.al || 'c';
+    $('#imgRd').checked = img.classList.contains('rd');
+    $('#imgBd').checked = img.classList.contains('bd');
+    updateCtx(); placeHandle();
+  }
+  function deselect() {
+    if (selImg) selImg.classList.remove('sel');
+    if (selPb) selPb.classList.remove('sel');
+    selImg = null; selPb = null; handle.hidden = true; updateCtx();
+  }
+  function placeHandle() {
+    if (!selImg || !paper.contains(selImg)) { handle.hidden = true; return; }
+    var r = selImg.getBoundingClientRect(), sr = sheet.getBoundingClientRect();
+    var al = selImg.dataset.al || 'c';
+    var left = (al === 'r' || al === 'fr');
+    var x = ((left ? r.left : r.right) - sr.left) / scale, y = (r.bottom - sr.top) / scale;
+    handle.style.left = (x - 9) + 'px'; handle.style.top = (y - 9) + 'px'; handle.hidden = false;
+  }
+  paper.addEventListener('pointerdown', function (e) {
+    var t = e.target;
+    if (t.tagName === 'IMG') { selectImg(t); return; }
+    var pb = t.closest && t.closest('.pb');
+    deselect();
+    if (pb) { selPb = pb; pb.classList.add('sel'); }
+  });
+  document.addEventListener('pointerdown', function (e) {
+    if (!e.target.closest('#paper') && !e.target.closest('#chrome') && !e.target.closest('#handle')) deselect();
+  });
+  paper.addEventListener('keydown', function (e) {
+    if ((e.key === 'Delete' || e.key === 'Backspace') && selImg) { e.preventDefault(); selImg.remove(); deselect(); changed(); }
+    else if ((e.key === 'Delete' || e.key === 'Backspace') && selPb) { e.preventDefault(); selPb.remove(); selPb = null; changed(); }
+  });
+  handle.addEventListener('pointerdown', function (e) { e.preventDefault(); handle.setPointerCapture(e.pointerId); drag = true; });
+  handle.addEventListener('pointermove', function (e) {
+    if (!drag || !selImg) return;
+    var r = selImg.getBoundingClientRect(), al = selImg.dataset.al || 'c', w;
+    if (al === 'r' || al === 'fr') w = r.right - e.clientX;
+    else if (al === 'c') w = 2 * Math.abs(e.clientX - (r.left + r.right) / 2);
+    else w = e.clientX - r.left;
+    var pct = Math.max(5, Math.min(100, (w / scale) / contentW(selImg.parentElement) * 100));
+    selImg.style.width = pct.toFixed(1) + '%'; $('#imgW').value = pct; placeHandle();
+  });
+  handle.addEventListener('pointerup', function () { if (drag) { drag = null; changed(); } });
+  $('#imgW').addEventListener('input', function (e) { if (selImg) { selImg.style.width = e.target.value + '%'; placeHandle(); changed(); } });
+  $('#imgAl').addEventListener('change', function (e) { if (selImg) { applyAlign(selImg, e.target.value); placeHandle(); changed(); } });
+  $('#imgRd').addEventListener('change', function (e) { if (selImg) { selImg.classList.toggle('rd', e.target.checked); changed(); } });
+  $('#imgBd').addEventListener('change', function (e) { if (selImg) { selImg.classList.toggle('bd', e.target.checked); changed(); } });
+  $('#imgDel').addEventListener('click', function () { if (selImg) { selImg.remove(); deselect(); changed(); } });
+
+  /* ---------- table tools ---------- */
+  function isRtl(el) { return getComputedStyle(el).direction === 'rtl'; }
+  function mkCell(tag) { var c = document.createElement(tag); c.innerHTML = '<br>'; return c; }
+  function addCol(side) {
+    if (!lastCell) return;
+    var t = lastCell.closest('table'), idx = lastCell.cellIndex;
+    var before = (side === 'right') === isRtl(t);
+    Array.prototype.forEach.call(t.rows, function (row) {
+      var ref = row.cells[Math.min(idx, row.cells.length - 1)];
+      var nc = mkCell(ref ? ref.tagName : 'TD');
+      if (ref) row.insertBefore(nc, before ? ref : ref.nextSibling); else row.appendChild(nc);
+    });
+  }
+  function tableAction(a) {
+    if (!lastCell) return;
+    var t = lastCell.closest('table'), row = lastCell.parentElement;
+    if (a === 'rowBelow' || a === 'rowAbove') {
+      var nr = document.createElement('tr');
+      Array.prototype.forEach.call(row.cells, function () { nr.appendChild(mkCell('TD')); });
+      row.parentElement.insertBefore(nr, a === 'rowBelow' ? row.nextSibling : row);
+    } else if (a === 'rowDel') { row.remove(); if (!t.rows.length) t.remove(); lastCell = null; }
+    else if (a === 'colRight' || a === 'colLeft') addCol(a === 'colRight' ? 'right' : 'left');
+    else if (a === 'colDel') {
+      var i = lastCell.cellIndex;
+      Array.prototype.forEach.call(t.rows, function (r) { if (r.cells[i]) r.cells[i].remove(); });
+      if (!t.rows[0] || !t.rows[0].cells.length) t.remove();
+      lastCell = null;
     }
-
-    function smToggleSearchPanel() {
-        const overlay = document.getElementById("smSearchOverlay");
-        if (!overlay) return;
-        if (overlay.classList.contains("open")) { smCloseSearchPanel(); return; }
-        overlay.classList.add("open");
-        smPerformSearch("");
-        setTimeout(function () { const inp = document.getElementById("smSearchInput"); if (inp) inp.focus(); }, 50);
+    else if (a === 'tDel') { t.remove(); lastCell = null; }
+    else if (a === 'bgOff') { lastCell.style.background = ''; Array.prototype.forEach.call(row.cells, function (c) { c.style.background = ''; }); }
+    else if (a === 'hdr') {
+      var first = t.rows[0], tag = first.cells[0].tagName === 'TD' ? 'TH' : 'TD';
+      Array.prototype.slice.call(first.cells).forEach(function (c) {
+        var n = document.createElement(tag);
+        Array.prototype.slice.call(c.attributes).forEach(function (at) { n.setAttribute(at.name, at.value); });
+        while (c.firstChild) n.appendChild(c.firstChild);
+        c.replaceWith(n);
+      });
+      lastCell = null;
     }
-
-    function smCloseSearchPanel() {
-        const overlay = document.getElementById("smSearchOverlay");
-        if (overlay) overlay.classList.remove("open");
+    else if (a === 'nb' || a === 'zebra' || a === 'tc') t.classList.toggle(a);
+    changed(); updateCtx();
+  }
+  $$('[data-t]').forEach(function (b) { b.addEventListener('click', function () { tableAction(b.dataset.t); }); });
+  $('#cellBg').addEventListener('input', function (e) { if (lastCell) { lastCell.style.background = e.target.value; changed(); } });
+  $('#rowBg').addEventListener('input', function (e) {
+    if (lastCell) { Array.prototype.forEach.call(lastCell.parentElement.cells, function (c) { c.style.background = e.target.value; }); changed(); }
+  });
+  function updateCtx() {
+    $('#ctxTable').hidden = !lastCell;
+    $('#ctxImage').hidden = !selImg;
+    if (lastCell) {
+      var t = lastCell.closest('table');
+      ['nb', 'zebra', 'tc'].forEach(function (k) { $('[data-t="' + k + '"]').classList.toggle('on', t.classList.contains(k)); });
+      $('[data-t="hdr"]').classList.toggle('on', !!(t.rows[0] && t.rows[0].cells[0] && t.rows[0].cells[0].tagName === 'TH'));
     }
+  }
 
-    function smPerformSearch(query) {
-        const resultsEl = document.getElementById("smSearchResults");
-        if (!resultsEl) return;
-        const nq = smNormalizeSearchText(query);
-        const searchable = (smSearchPagesData || []).filter(function (p) { return p.searchEnabled !== false && p.file !== "searchbyrostrick.html"; });
-        let matches;
-        if (!nq) {
-            matches = searchable.filter(function (p) { return !p.hidden; });
-        } else {
-            matches = searchable.filter(function (p) {
-                const candidates = [p.title, p.file.replace(/\.html$/i, "")].concat(Array.isArray(p.searchNames) ? p.searchNames : []);
-                return candidates.some(function (c) { return smNormalizeSearchText(c).indexOf(nq) !== -1; });
-            });
-        }
-        if (matches.length === 0) {
-            resultsEl.innerHTML = "<li class=\"sm-search-empty\">لا توجد نتائج مطابقة</li>";
-            return;
-        }
-        resultsEl.innerHTML = matches.map(function (p) {
-            const icon = p.icon || "fa-solid fa-file";
-            const title = (p.title || p.file.replace(/\.html$/i, "")).replace(/</g, "&lt;").replace(/>/g, "&gt;");
-            return "<li class=\"sm-search-result-item\" onclick=\"smCloseSearchPanel(); smGoToPage('" + p.file + "');\"><i class=\"" + icon + "\"></i><span>" + title + "</span></li>";
-        }).join("");
+  /* ---------- page settings ---------- */
+  $('#sizeMode').addEventListener('change', function (e) { S.size = e.target.value; changed(); });
+  $('#pgColor').addEventListener('input', function (e) { S.bg = e.target.value; changed(); });
+  $('#zoomSel').addEventListener('change', function (e) { S.zoom = e.target.value; layout(); persist(); });
+  $('#fname').addEventListener('input', function (e) { S.name = e.target.value; persist(); });
+  $('#imgMode').addEventListener('change', function (e) { S.imgMode = e.target.value; persist(); });
+  var armT;
+  $('#newDoc').addEventListener('click', function () {
+    var b = $('#newDoc');
+    if (!b.classList.contains('arm')) {
+      b.classList.add('arm'); b.textContent = 'اضغط مرة أخرى للتأكيد';
+      armT = setTimeout(function () { b.classList.remove('arm'); b.textContent = 'صفحة جديدة فارغة'; }, 3200); return;
     }
+    clearTimeout(armT); b.classList.remove('arm'); b.textContent = 'صفحة جديدة فارغة';
+    paper.innerHTML = '<p><br></p>'; lastCell = null; deselect(); changed(); say('صفحة فارغة جاهزة');
+  });
 
-    function escLogoText(s) {
-        return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-    }
+  /* ---------- layout ---------- */
+  function breaks() {
+    var d = SIZES[S.size];
+    var pbs = $$('#paper .pb');
+    pbs.forEach(function (p) { p.style.height = '0px'; });
+    pbs.forEach(function (p) {
+      if (!d.h) { p.style.height = '28px'; return; }
+      var top = (p.getBoundingClientRect().top - paper.getBoundingClientRect().top) / scale;
+      var rem = top % d.h;
+      p.style.height = (rem < 1 ? 0 : d.h - rem) + 'px';
+    });
+  }
+  var raf = 0;
+  function layout() {
+    var d = SIZES[S.size];
+    paper.style.width = d.w + 'px';
+    paper.style.minHeight = (d.h || 480) + 'px';
+    paper.style.background = S.bg;
+    var avail = stage.clientWidth - 32;
+    scale = S.zoom === 'fit' ? Math.min(1, avail / d.w) : parseFloat(S.zoom);
+    scale = Math.max(0.2, scale || 1);
+    sheet.style.width = d.w + 'px';
+    sheet.style.transform = 'scale(' + scale + ')';
+    breaks();
+    var h = paper.offsetHeight;
+    sheet.style.height = h + 'px';
+    fit.style.width = (d.w * scale) + 'px';
+    fit.style.height = (h * scale) + 'px';
+    guides.style.display = d.h ? 'block' : 'none';
+    guides.style.setProperty('--ph', (d.h || 1) + 'px');
+    $('#pageInfo').textContent = d.h ? ('عدد الصفحات: ' + Math.max(1, Math.ceil((h - 1) / d.h))) : 'صفحة واحدة بطول يتبع المحتوى';
+    placeHandle();
+  }
+  function schedule() { cancelAnimationFrame(raf); raf = requestAnimationFrame(layout); }
+  new ResizeObserver(schedule).observe(paper);
+  window.addEventListener('resize', schedule);
+  if (document.fonts) { document.fonts.ready.then(schedule); document.fonts.addEventListener && document.fonts.addEventListener('loadingdone', schedule); }
 
-    function applyPageHeaderState() {
-        const headerEl = document.getElementById("pageMainHeader");
-        if (!headerEl) return;
-        if (APP_LOGO_ACTIVE && appLogoLiveHtml) {
-            headerEl.innerHTML = appLogoLiveHtml;
-        } else if (!APP_LOGO_ACTIVE && currentPageTitle) {
-            headerEl.innerText = currentPageTitle;
-        }
-    }
+  /* ---------- autosave (per viewer, optional) ---------- */
+  var saveT, warned = false;
+  function persist() {
+    clearTimeout(saveT);
+    saveT = setTimeout(function () {
+      try {
+        var clone = paper.cloneNode(true);
+        $$x(clone, '.sel').forEach(function (n) { n.classList.remove('sel'); });
+        localStorage.setItem(KEY, JSON.stringify({ html: clone.innerHTML, s: S }));
+      } catch (e) {
+        if (!warned) { warned = true; say('تعذّر الحفظ التلقائي (الصور كبيرة). صدّر ملفك قبل الإغلاق.', 4200); }
+      }
+    }, 700);
+  }
+  function $$x(root, s) { return Array.prototype.slice.call(root.querySelectorAll(s)); }
+  function changed() { schedule(); persist(); }
+  paper.addEventListener('input', changed);
 
-    function applyAppLogoConfig(cfg) {
-        if (cfg && cfg.enabled && cfg.type === "text" && cfg.text) {
-            APP_LOGO_ACTIVE = true;
-            appLogoLiveHtml = escLogoText(cfg.text);
-        } else if (cfg && cfg.enabled && cfg.type === "image" && (cfg.image_uploaded_path || cfg.image_url)) {
-            const src = cfg.image_uploaded_path ? `https://raw.githubusercontent.com/${username}/${repo}/main/${cfg.image_uploaded_path}` : cfg.image_url;
-            APP_LOGO_ACTIVE = true;
-            appLogoLiveHtml = '<img src="' + src + '" alt="Logo" style="max-height:32px; max-width:160px; vertical-align:middle; display:inline-block;">';
-        } else {
-            APP_LOGO_ACTIVE = false;
-            appLogoLiveHtml = null;
-        }
-        applyPageHeaderState();
-    }
+  function syncUI() {
+    $('#sizeMode').value = S.size; $('#pgColor').value = S.bg; $('#zoomSel').value = S.zoom;
+    $('#fname').value = S.name; $('#imgMode').value = S.imgMode;
+  }
+  (function boot() {
+    var saved = null;
+    try { saved = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) {}
+    if (saved && saved.html) { paper.innerHTML = saved.html; Object.keys(saved.s || {}).forEach(function (k) { S[k] = saved.s[k]; }); }
+    else paper.innerHTML = sampleHTML();
+    try { document.execCommand('defaultParagraphSeparator', false, 'p'); } catch (e) {}
+    syncUI(); layout();
+  })();
 
-    async function fetchAppLogoConfig() {
-        try {
-            if (typeof Android !== "undefined" && Android.readLocalFile) {
-                const localData = Android.readLocalFile("app_logo.json");
-                if (localData && localData.trim() !== "") {
-                    applyAppLogoConfig(JSON.parse(localData));
-                    return;
-                }
-            }
-            const res = await fetch(`app_logo.json?t=${Date.now()}`);
-            if (res.ok) {
-                applyAppLogoConfig(await res.json());
-                return;
-            }
-            throw new Error();
-        } catch(e) {
-            try {
-                const resAlt = await fetch(`https://raw.githubusercontent.com/${username}/${repo}/main/app_logo.json?t=${Date.now()}`);
-                if (resAlt.ok) applyAppLogoConfig(await resAlt.json());
-            } catch(err) { console.log("خطأ في جلب إعدادات لوجو التطبيق"); }
-        }
-    }
-
-    function initUserTheme() {
-        const toggleBtn = document.getElementById("userThemeToggleBtn");
-        const saved = localStorage.getItem("user-theme") || "light";
-        if(saved === "dark") {
-            document.documentElement.setAttribute("data-user-theme", "dark");
-            if(toggleBtn) toggleBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
-        } else {
-            document.documentElement.removeAttribute("data-user-theme");
-            if(toggleBtn) toggleBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
-        }
-    }
-
-    function toggleUserTheme() {
-        const toggleBtn = document.getElementById("userThemeToggleBtn");
-        const current = document.documentElement.getAttribute("data-user-theme");
-        if(current === "dark") {
-            document.documentElement.removeAttribute("data-user-theme");
-            localStorage.setItem("user-theme", "light");
-            if(toggleBtn) toggleBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
-        } else {
-            document.documentElement.setAttribute("data-user-theme", "dark");
-            localStorage.setItem("user-theme", "dark");
-            if(toggleBtn) toggleBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
-        }
-    }
-
-    function toggleDrawer() {
-        const drawer = document.getElementById("drawer");
-        const overlay = document.getElementById("drawerOverlay");
-        const menuBtn = document.getElementById("menuBtnToggle");
-        
-        drawer.classList.toggle("open");
-        
-        if(drawer.classList.contains("open")) {
-            overlay.style.display = "block";
-            menuBtn.classList.add("active-icon");
-        } else {
-            overlay.style.display = "none";
-            menuBtn.classList.remove("active-icon");
-        }
-    }
-
-    function renderDrawerContent(orderedPages) {
-        const drawerMenu = document.getElementById("drawerDynamicMenu");
-        drawerMenu.innerHTML = "";
-        smSearchPagesData = Array.isArray(orderedPages) ? orderedPages : [];
-        const currentPageData = orderedPages.find(p => p.file === currentFileName);
-        if (currentPageData && currentPageData.title) {
-            currentPageTitle = currentPageData.title;
-            applyPageHeaderState();
-            if(document.getElementById("drawerSideHeader")) document.getElementById("drawerSideHeader").innerText = currentPageData.title;
-            if(document.getElementById("pageContentTitle")) document.getElementById("pageContentTitle").innerText = currentPageData.title;
-            document.title = currentPageData.title;
-        }
-        const bottomNavList = document.getElementById("bottomNavbarList");
-        if (bottomNavList) bottomNavList.innerHTML = "";
-        const goToPage = (file) => {
-            if (typeof Android !== "undefined" && Android.openLocalPage) {
-                Android.openLocalPage(file);
-            } else {
-                window.location.href = file;
-            }
-        };
-        orderedPages.forEach(page => {
-            if (page.hidden) return;
-            const isCurrent = (page.file === currentFileName);
-            const li = document.createElement("li");
-            li.className = "drawer-item";
-            li.innerHTML = "<span>" + page.title + "</span>";
-            li.onclick = () => { if (!isCurrent) goToPage(page.file); };
-            drawerMenu.appendChild(li);
-
-            if (bottomNavList) {
-                const navLi = document.createElement("li");
-                navLi.className = "bottom-navbar-item" + (isCurrent ? " active" : "");
-                const iconName = page.icon || "fa-solid fa-file";
-                navLi.innerHTML = "<i class=\"" + iconName + "\"></i><span>" + page.title + "</span>";
-                navLi.onclick = () => { if (!isCurrent) goToPage(page.file); };
-                bottomNavList.appendChild(navLi);
-            }
+  /* ---------- export ---------- */
+  var busy = false;
+  function cleanName() { return (S.name || 'صفحتي').replace(/[\\\/:*?"<>|]+/g, ' ').trim() || 'صفحتي'; }
+  function setBusy(v) { busy = v; ['xPdf', 'xPng', 'xJpg'].forEach(function (id) { $('#' + id).disabled = v; }); }
+  function saveFile(blob, filename) {
+    return Promise.resolve(window.claude && window.claude.use ? window.claude.use('downloads') : null).catch(function () { return null; }).then(function (dl) {
+      if (dl) {
+        return dl.save({ filename: filename, data: blob }).then(function () { say('تم الحفظ: ' + filename); }, function (err) {
+          say(err && err.code === 'declined' ? 'تم إلغاء الحفظ' : 'تعذّر الحفظ في هذا العرض' + (err && err.code ? ' (' + err.code + ')' : ''), 3600);
         });
-        if (bottomNavList) {
-            const activeNavItem = bottomNavList.querySelector(".bottom-navbar-item.active");
-            if (activeNavItem) {
-                setTimeout(() => {
-                    activeNavItem.scrollIntoView({ behavior: "auto", inline: "center", block: "nearest" });
-                }, 0);
-            }
+      }
+      var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+    });
+  }
+  function build() {
+    if (typeof html2canvas === 'undefined') return Promise.reject(new Error('lib'));
+    var d = SIZES[S.size];
+    deselect();
+    return (document.fonts ? document.fonts.ready : Promise.resolve()).then(function () {
+      var holder = document.createElement('div');
+      holder.style.cssText = 'position:fixed;left:0;top:0;direction:ltr;z-index:-1;pointer-events:none;';
+      var clone = paper.cloneNode(true);
+      clone.removeAttribute('id'); clone.removeAttribute('contenteditable'); clone.classList.add('exporting');
+      clone.style.width = d.w + 'px';
+      $$x(clone, '.sel').forEach(function (n) { n.classList.remove('sel'); });
+      holder.appendChild(clone); document.body.appendChild(holder);
+      var h = clone.offsetHeight;
+      if (d.h) { var n = Math.max(1, Math.ceil((h - 1) / d.h)); h = n * d.h; clone.style.minHeight = h + 'px'; }
+      var k = Math.min(2, Math.sqrt(16e6 / (d.w * h)), 15000 / h, 15000 / d.w);
+      return html2canvas(clone, { scale: k, backgroundColor: S.bg, useCORS: true, logging: false, width: d.w, height: h, windowWidth: d.w, windowHeight: h, scrollX: 0, scrollY: 0 })
+        .then(function (canvas) { holder.remove(); return { canvas: canvas, k: k, d: d, h: h, n: d.h ? h / d.h : 1 }; },
+          function (err) { holder.remove(); throw err; });
+    });
+  }
+  function slice(canvas, i, ph, k) {
+    var c = document.createElement('canvas'); c.width = canvas.width; c.height = Math.round(ph * k);
+    var x = c.getContext('2d'); x.fillStyle = S.bg; x.fillRect(0, 0, c.width, c.height);
+    x.drawImage(canvas, 0, Math.round(i * ph * k), canvas.width, c.height, 0, 0, c.width, c.height);
+    return c;
+  }
+  function toBlob(c, type, q) { return new Promise(function (r) { c.toBlob(r, type, q); }); }
+  function exportPdf() {
+    return build().then(function (r) {
+      var JS = window.jspdf && window.jspdf.jsPDF; if (!JS) throw new Error('lib');
+      var pdf;
+      if (r.d.h) {
+        var ori = r.d.w > r.d.h ? 'l' : 'p';
+        pdf = new JS({ orientation: ori, unit: 'pt', format: 'a4', compress: true });
+        var W = pdf.internal.pageSize.getWidth(), H = pdf.internal.pageSize.getHeight();
+        for (var i = 0; i < r.n; i++) {
+          if (i) pdf.addPage('a4', ori);
+          pdf.addImage(slice(r.canvas, i, r.d.h, r.k).toDataURL('image/jpeg', 0.93), 'JPEG', 0, 0, W, H, undefined, 'FAST');
         }
-        smUpdateBottomNavFit();
-    }
-
-    function smUpdateBottomNavFit() {
-        const bottomNavbar = document.getElementById("bottomNavbar");
-        const bottomNavList = document.getElementById("bottomNavbarList");
-        if (!bottomNavbar || !bottomNavList) return;
-        bottomNavList.classList.remove("sm-nav-fit");
-        const fits = bottomNavList.scrollWidth <= bottomNavbar.clientWidth + 1;
-        bottomNavList.classList.toggle("sm-nav-fit", fits);
-    }
-    window.addEventListener("resize", smUpdateBottomNavFit);
-
-    async function loadGlobalVars() {
-        try {
-            const res = await fetch("var.json");
-            if(res.ok) {
-                const data = await res.json();
-                const styleEl = document.createElement("style");
-                let cssStr = ":root {\n";
-                for(let k in data.light) { cssStr += `  ${k}: ${data.light[k]};\n`; }
-                cssStr += "}\n[data-user-theme='dark'] {\n";
-                for(let k in data.dark) { cssStr += `  ${k}: ${data.dark[k]};\n`; }
-                cssStr += "}";
-                styleEl.innerHTML = cssStr;
-                document.head.appendChild(styleEl);
-            }
-        } catch(e) { console.log("خطأ في تطبيق المتغيرات العامة"); }
-    }
-
-    async function initDrawer() {
-        initUserTheme();
-        await loadGlobalVars();
-        const loader = document.getElementById("drawerLoader");
-        let loadedSuccessfully = false;
-        try {
-            if (typeof Android !== "undefined" && Android.readLocalFile) {
-                const localData = Android.readLocalFile("order.json");
-                if (localData && localData.trim() !== "") {
-                    const orderedPages = JSON.parse(localData);
-                    renderDrawerContent(orderedPages);
-                    loadedSuccessfully = true;
-                }
-            }
-            if (!loadedSuccessfully) {
-                const res = await fetch(`order.json`);
-                if (res.ok) {
-                    const orderedPages = await res.json();
-                    renderDrawerContent(orderedPages);
-                    loadedSuccessfully = true;
-                } else { throw new Error(); }
-            }
-        } catch(e) { 
-            if (!loadedSuccessfully) {
-                try {
-                    const resAlt = await fetch(`https://api.github.com/repos/${username}/${repo}/contents/order.json`);
-                    const dataAlt = await resAlt.json();
-                    const decodedContent = decodeURIComponent(escape(atob(dataAlt.content.replace(/\s/g, ""))));
-                    renderDrawerContent(JSON.parse(decodedContent));
-                } catch(err) { console.log("خطأ في جلب الهيدر"); }
-            }
-        } finally {
-            if(loader) loader.style.display = "none";
-        }
-    }
-    initDrawer();
-    fetchAppLogoConfig();
+      } else {
+        var w = r.d.w * 0.75, hh = r.h * 0.75;
+        pdf = new JS({ orientation: w > hh ? 'l' : 'p', unit: 'pt', format: [w, hh], compress: true });
+        pdf.addImage(r.canvas.toDataURL('image/jpeg', 0.93), 'JPEG', 0, 0, w, hh, undefined, 'FAST');
+      }
+      return saveFile(pdf.output('blob'), cleanName() + '.pdf');
+    });
+  }
+  function exportImg(png) {
+    var type = png ? 'image/png' : 'image/jpeg', ext = png ? 'png' : 'jpg';
+    return build().then(function (r) {
+      if (r.d.h && r.n > 1 && S.imgMode === 'each') {
+        var chain = Promise.resolve();
+        for (var i = 0; i < r.n; i++) (function (i) {
+          chain = chain.then(function () { return toBlob(slice(r.canvas, i, r.d.h, r.k), type, 0.93); })
+            .then(function (b) { return saveFile(b, cleanName() + '-' + (i + 1) + '.' + ext); });
+        })(i);
+        return chain;
+      }
+      return toBlob(r.canvas, type, 0.93).then(function (b) { return saveFile(b, cleanName() + '.' + ext); });
+    });
+  }
+  function run(fn) {
+    return function () {
+      if (busy) return;
+      setBusy(true); say('جارٍ تجهيز الملف…', 20000);
+      fn().catch(function (err) {
+        say(err && err.message === 'lib' ? 'تعذّر تحميل مكتبة التصدير. تحقق من الاتصال وأعد المحاولة.' : 'تعذّر التصدير. جرّب تقليل حجم الصور.', 4200);
+      }).then(function () { setBusy(false); });
+    };
+  }
+  $('#xPdf').addEventListener('click', run(exportPdf));
+  $('#xPng').addEventListener('click', run(function () { return exportImg(true); }));
+  $('#xJpg').addEventListener('click', run(function () { return exportImg(false); }));
+})();
 </script>
-<!-- SM-AUTO-INJECTED:END:admin-scripts -->
-</body>
+
 </html>
