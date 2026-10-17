@@ -1,13 +1,5 @@
 [
   {
-    "file": "well.html",
-    "title": "well",
-    "icon": "fa-solid fa-file",
-    "hidden": false,
-    "searchEnabled": true,
-    "searchNames": []
-  },
-  {
     "file": "to.html",
     "title": "to",
     "icon": "fa-solid fa-file",
@@ -18,6 +10,14 @@
   {
     "file": "too.html",
     "title": "too",
+    "icon": "fa-solid fa-file",
+    "hidden": true,
+    "searchEnabled": true,
+    "searchNames": []
+  },
+  {
+    "file": "well.html",
+    "title": "well",
     "icon": "fa-solid fa-file",
     "hidden": true,
     "searchEnabled": true,
