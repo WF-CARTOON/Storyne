@@ -50,5 +50,9 @@
   "test-permissions.html": {
     "op": "add",
     "timestamp": 1792294673016
+  },
+  "test-ads.html": {
+    "op": "add",
+    "timestamp": 1792294686823
   }
 }
