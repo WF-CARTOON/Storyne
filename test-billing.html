@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>تجربة الشراء — RosTrick</title>
+<style>
+  body{font-family:system-ui,sans-serif;margin:0;padding:16px;background:#f4f7f5;color:#1b2a28;line-height:1.7}
+  @media (prefers-color-scheme:dark){body{background:#071719;color:#e6f3f0}}
+  h1{font-size:1.2rem;margin:0 0 4px} h2{font-size:1rem;margin:20px 0 6px} .sub{opacity:.7;font-size:.85rem}
+  button{display:block;width:100%;padding:12px;margin:6px 0;border:0;border-radius:12px;background:#1f9d8f;color:#fff;font:inherit;font-weight:700}
+  button.alt{background:#5d6f6b}
+  input{width:100%;box-sizing:border-box;padding:10px;border-radius:10px;border:1px solid #9db8b3;font:inherit;direction:ltr;margin:4px 0}
+  .st{padding:8px 12px;border-radius:10px;background:rgba(31,157,143,.12);font-size:.88rem;white-space:pre-wrap}
+  #log{font:12px/1.6 ui-monospace,monospace;direction:ltr;text-align:left;background:rgba(0,0,0,.08);padding:10px;border-radius:10px;height:220px;overflow:auto;white-space:pre-wrap;margin-top:16px}
+  #tok{font:11px ui-monospace,monospace;direction:ltr;word-break:break-all}
+</style>
+</head>
+<body>
+<h1>🛒 تجربة الشراء (Google Play)</h1>
+<div class="sub">افتح هذه الصفحة داخل تطبيق مثبّت من Google Play (الاختبار الداخلي) بحساب مضاف إلى «مختبرو الترخيص». اكتب معرّف منتج أنشأته في Play Console.</div>
+<div class="st" id="bst">…</div>
+<input id="pid" value="premium" placeholder="معرّف المنتج من Play Console">
+<button onclick="prods('inapp')">جلب بيانات المنتج (لمرة واحدة)</button>
+<button onclick="prods('subs')" class="alt">جلب بيانات الاشتراك</button>
+<button onclick="buy({})">شراء (منتج دائم)</button>
+<button onclick="buy({consumable:true})" class="alt">شراء (مستهلك — عملات)</button>
+<button onclick="buy({type:'subs'})" class="alt">اشتراك</button>
+<button onclick="owned()" class="alt">مشترياتي الحالية (استعادة)</button>
+<div id="log"></div>
+
+<script>
+  function log(t){ var l=document.getElementById('log'); l.textContent += t + "\n"; l.scrollTop = l.scrollHeight; }
+  function $(id){ return document.getElementById(id); }
+  function state(){ $('bst').textContent = !window.RosTrickBilling ? 'الواجهة غير موجودة (الصفحة خارج التطبيق).' : window.RosTrickBilling.enabled ? 'مفعّل ✔ (يعمل فقط مع تطبيق مثبّت من Google Play)' : 'الشراء غير مفعّل في هذا التطبيق.'; }
+  async function prods(type){ var r = await RosTrickBilling.getProducts([$('pid').value.trim()], type); log(JSON.stringify(r)); }
+  async function buy(o){ log('جاري الشراء…'); var r = await RosTrickBilling.buy($('pid').value.trim(), o); log(JSON.stringify(r)); if (r.ok) log('✔ تم. امنح المستخدم المنتج الآن.'); else if (r.canceled) log('أُلغيت العملية.'); else if (r.pending) log('⏳ الدفع قيد المعالجة.'); }
+  async function owned(){ log(JSON.stringify(await RosTrickBilling.getPurchases())); }
+  addEventListener('rostrick-purchase', function(e){ log('🛒 شراء وصل لاحقاً: ' + JSON.stringify(e.detail)); });
+  setTimeout(state, 300);
+</script>
+</body>
+</html>
