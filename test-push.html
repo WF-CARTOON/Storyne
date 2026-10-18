@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>تجربة الإشعارات — RosTrick</title>
+<style>
+  body{font-family:system-ui,sans-serif;margin:0;padding:16px;background:#f4f7f5;color:#1b2a28;line-height:1.7}
+  @media (prefers-color-scheme:dark){body{background:#071719;color:#e6f3f0}}
+  h1{font-size:1.2rem;margin:0 0 4px} h2{font-size:1rem;margin:20px 0 6px} .sub{opacity:.7;font-size:.85rem}
+  button{display:block;width:100%;padding:12px;margin:6px 0;border:0;border-radius:12px;background:#1f9d8f;color:#fff;font:inherit;font-weight:700}
+  button.alt{background:#5d6f6b}
+  input{width:100%;box-sizing:border-box;padding:10px;border-radius:10px;border:1px solid #9db8b3;font:inherit;direction:ltr;margin:4px 0}
+  .st{padding:8px 12px;border-radius:10px;background:rgba(31,157,143,.12);font-size:.88rem;white-space:pre-wrap}
+  #log{font:12px/1.6 ui-monospace,monospace;direction:ltr;text-align:left;background:rgba(0,0,0,.08);padding:10px;border-radius:10px;height:220px;overflow:auto;white-space:pre-wrap;margin-top:16px}
+  #tok{font:11px ui-monospace,monospace;direction:ltr;word-break:break-all}
+</style>
+</head>
+<body>
+<h1>🔔 تجربة الإشعارات (Firebase)</h1>
+<div class="sub">افتح هذه الصفحة داخل تطبيقك بعد تفعيل إشعارات Firebase من إعدادات البناء. أرسل إشعاراً من Firebase ← Messaging لتجربته.</div>
+<div class="st" id="pst">…</div>
+<button onclick="getTok()">جلب رمز الجهاز (Token)</button>
+<div id="tok"></div>
+<button class="alt" onclick="perm()">طلب إذن الإشعارات</button>
+<input id="topic" value="news" placeholder="اسم الموضوع">
+<button class="alt" onclick="sub(true)">اشتراك في الموضوع</button>
+<button class="alt" onclick="sub(false)">إلغاء الاشتراك</button>
+<div id="log"></div>
+
+<script>
+  function log(t){ var l=document.getElementById('log'); l.textContent += t + "\n"; l.scrollTop = l.scrollHeight; }
+  function $(id){ return document.getElementById(id); }
+  function state(){ $('pst').textContent = !window.RosTrickPush ? 'الواجهة غير موجودة (الصفحة خارج التطبيق).' : window.RosTrickPush.enabled ? 'مفعّل ✔' : 'Firebase غير مفعّل في هذا التطبيق.'; }
+  async function getTok(){ var t = await RosTrickPush.getToken(); $('tok').textContent = t || ''; log(t ? 'Token: ' + t.slice(0,24) + '…' : '✖ لا يوجد رمز (تحقق من google-services.json والإنترنت)'); }
+  async function perm(){ log('إذن الإشعارات: ' + (await RosTrickPush.requestPermission())); }
+  async function sub(on){ var t=$('topic').value.trim(); log((on?'اشتراك':'إلغاء') + ' "' + t + '": ' + (await (on?RosTrickPush.subscribe(t):RosTrickPush.unsubscribe(t)))); }
+  addEventListener('rostrick-push', function(e){ log('📩 إشعار والتطبيق مفتوح: ' + JSON.stringify(e.detail)); });
+  setTimeout(state, 300);
+</script>
+</body>
+</html>
