@@ -1,23 +1,15 @@
 [
   {
-    "file": "to.html",
-    "title": "to",
+    "file": "home.html",
+    "title": "home",
     "icon": "fa-solid fa-file",
     "hidden": true,
     "searchEnabled": true,
     "searchNames": []
   },
   {
-    "file": "too.html",
-    "title": "too",
-    "icon": "fa-solid fa-file",
-    "hidden": true,
-    "searchEnabled": true,
-    "searchNames": []
-  },
-  {
-    "file": "well.html",
-    "title": "well",
+    "file": "test-permissions.html",
+    "title": "test-permissions",
     "icon": "fa-solid fa-file",
     "hidden": true,
     "searchEnabled": true,
