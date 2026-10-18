@@ -1,15 +1,39 @@
 [
   {
-    "file": "home.html",
-    "title": "home",
+    "file": "test-ads.html",
+    "title": "test-ads",
     "icon": "fa-solid fa-file",
-    "hidden": true,
+    "hidden": false,
+    "searchEnabled": true,
+    "searchNames": []
+  },
+  {
+    "file": "test-billing.html",
+    "title": "test-billing",
+    "icon": "fa-solid fa-file",
+    "hidden": false,
     "searchEnabled": true,
     "searchNames": []
   },
   {
     "file": "test-permissions.html",
     "title": "test-permissions",
+    "icon": "fa-solid fa-file",
+    "hidden": false,
+    "searchEnabled": true,
+    "searchNames": []
+  },
+  {
+    "file": "test-push.html",
+    "title": "test-push",
+    "icon": "fa-solid fa-file",
+    "hidden": false,
+    "searchEnabled": true,
+    "searchNames": []
+  },
+  {
+    "file": "home.html",
+    "title": "home",
     "icon": "fa-solid fa-file",
     "hidden": true,
     "searchEnabled": true,
