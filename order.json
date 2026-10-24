@@ -32,6 +32,14 @@
     "searchNames": []
   },
   {
+    "file": "calculator.html",
+    "title": "calculator",
+    "icon": "fa-solid fa-file",
+    "hidden": true,
+    "searchEnabled": true,
+    "searchNames": []
+  },
+  {
     "file": "home.html",
     "title": "home",
     "icon": "fa-solid fa-file",
