@@ -62,9 +62,5 @@
   "home.html": {
     "op": "add",
     "timestamp": 1792294730942
-  },
-  "calculator.html": {
-    "op": "add",
-    "timestamp": 1792823955557
   }
 }
