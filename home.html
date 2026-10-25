@@ -1,505 +1,223 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>home</title>
-    <style>
-        * {
-            user-select: none !important;
-            -webkit-user-select: none !important;
-            -moz-user-select: none !important;
-            -ms-user-select: none !important;
-        }
-    </style>
-<!-- SM-AUTO-INJECTED:START:admin-styles -->
-<style id="admin-styles">
-        :root {
-            --header-bg-light: #ffffff;
-            --header-text-light: #333333;
-            --header-bg: var(--header-bg-light);
-            --header-text: var(--header-text-light);
-            --drawer-bg-light: #ffffff;
-            --drawer-text-light: #333333;
-            --drawer-bg: var(--drawer-bg-light);
-            --drawer-text: var(--drawer-text-light);
-        }
-        [data-user-theme="dark"] {
-            --header-bg-dark: #1e1e1e;
-            --header-text-dark: #e0e0e0;
-            --header-bg: var(--header-bg-dark);
-            --header-text: var(--header-text-dark);
-            --drawer-bg-dark: #1e1e1e;
-            --drawer-text-dark: #e0e0e0;
-            --drawer-bg: var(--drawer-bg-dark);
-            --drawer-text: var(--drawer-text-dark);
-        }
-        html {
-            width: 100% !important;
-            height: 100% !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            overflow-x: hidden !important;
-        }
-        * {
-            box-sizing: border-box !important;
-            -webkit-user-select: none !important;
-            -moz-user-select: none !important;
-            -ms-user-select: none !important;
-            user-select: none !important;
-            -webkit-touch-callout: none !important;
-            -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
-        }
-        body {
-            margin: 0 !important;
-            padding: 0 !important;
-            padding-top: 56px !important;
-            width: 100% !important;
-            min-width: 100% !important;
-            max-width: 100% !important;
-            min-height: 100vh !important;
-            overflow-x: hidden !important;
-            display: flex !important;
-            flex-direction: column !important;
-            align-items: stretch !important;
-        }
-        header { position: fixed; top: 0; left: 0; z-index: 1000; background: var(--header-bg); height: 56px !important; line-height: 56px !important; padding: 0 15px !important; color: var(--header-text); display: flex; align-items: center; justify-content: space-between; width: 100% !important; max-width: 100% !important; min-width: 100% !important; box-sizing: border-box; direction: rtl; gap: 15px; overflow: hidden !important; transition: background-color 0.3s, color 0.3s; }
-        .header-brand { display: flex; align-items: center; gap: 15px; width: auto; text-align: right; }
-        
-        .menu-btn-container {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            width: 24px;
-            height: 18px;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            padding: 0;
-            box-sizing: border-box;
-            transition: transform 0.15s ease;
-            margin-top: auto;
-            margin-bottom: auto;
-        }
-        .menu-btn-container:active {
-            transform: scale(0.85);
-        }
-        .menu-bar-line {
-            width: 100%;
-            height: 3px;
-            background-color: var(--header-text);
-            border-radius: 2px;
-            transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
-            transform-origin: right center;
-        }
-        .menu-btn-container.active-icon .menu-bar-line:nth-child(1) {
-            transform: rotate(-45deg);
-        }
-        .menu-btn-container.active-icon .menu-bar-line:nth-child(2) {
-            opacity: 0;
-            transform: scaleX(0);
-        }
-        .menu-btn-container.active-icon .menu-bar-line:nth-child(3) {
-            transform: rotate(45deg);
-        }
-        
-        .drawer-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1001; display: none; }
-        .drawer { position: fixed; top: 0; width: 280px; height: 100%; background: var(--drawer-bg); color: var(--drawer-text); z-index: 1002; transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); display: flex; flex-direction: column; right: -280px; }
-        .drawer.open { right: 0; }
-        .drawer-header { background: var(--drawer-bg); color: var(--drawer-text); height: 56px !important; line-height: 56px !important; padding: 0 15px !important; font-weight: bold; text-align: right; box-sizing: border-box; overflow: hidden !important; border-bottom: 1px solid rgba(0,0,0,0.1); }
-        .drawer-menu-container { flex: 1; overflow-y: auto; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
-        .drawer-menu-container::-webkit-scrollbar { display: none; }
-        .drawer-menu { list-style: none; padding: 10px 0; margin: 0; direction: rtl; }
-        .drawer-item { padding: 15px 20px; border-bottom: 1px solid rgba(0,0,0,0.05); cursor: pointer; display: flex; justify-content: space-between; align-items: center; color: var(--drawer-text); transition: all 0.2s ease; outline: none; -webkit-tap-highlight-color: transparent; }
-        .drawer-item:hover { background-color: rgba(0,0,0,0.05); transform: translateX(-4px); }
-        .drawer-item:active { background-color: rgba(0,0,0,0.1) !important; transform: scale(0.98) !important; transition: transform 0.05s ease; }
-        .drawer-loader { border: 3px solid #f3f3f3; border-top: 3px solid var(--drawer-text); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; margin: 20px auto; }
-.dl123 {
-    background: transparent; border: none; color: var(--header-text); cursor: pointer;
-    font-size: 1.2rem; width: 38px; height: 38px; border-radius: 8px; display: inline-flex;
-    align-items: center; justify-content: center; transition: background-color 0.2s, transform 0.1s;
-    border: 1px solid rgba(255, 255, 255, 0.15); appearance: none; box-sizing: border-box;
-}
-.dl123:hover { background-color: rgba(0,0,0,0.08); }
-.dl123:active { transform: scale(0.9); }
-        .sm-search-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 2000; display: none; align-items: flex-start; justify-content: center; padding: 10vh 16px 16px; box-sizing: border-box; }
-        .sm-search-overlay.open { display: flex; }
-        .sm-search-panel { width: 100%; max-width: 520px; background: var(--drawer-bg, #fff); color: var(--drawer-text, #333); border-radius: 14px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); overflow: hidden; max-height: 70vh; display: flex; flex-direction: column; }
-        .sm-search-bar { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid rgba(0,0,0,0.08); }
-        .sm-search-bar i.fa-magnifying-glass { color: #3498db; font-size: 1.1rem; }
-        .sm-search-bar input { flex: 1; border: none; outline: none; background: transparent; font-size: 1rem; color: inherit; }
-        .sm-search-close { background: transparent; border: none; color: inherit; font-size: 1rem; cursor: pointer; opacity: 0.7; padding: 4px; }
-        .sm-search-close:hover { opacity: 1; }
-        .sm-search-results { list-style: none; margin: 0; padding: 6px 0; overflow-y: auto; }
-        .sm-search-result-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; cursor: pointer; transition: background-color 0.15s; }
-        .sm-search-result-item:hover, .sm-search-result-item:active { background-color: rgba(0,0,0,0.06); }
-        .sm-search-result-item i { color: #3498db; width: 20px; text-align: center; }
-        .sm-search-empty { padding: 22px 16px; text-align: center; color: var(--text-muted, #888); font-size: 0.9rem; }
-        .bottom-navbar { display: none; }
-        .bottom-navbar-list { list-style: none; margin: 0; padding: 0; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<!-- SM-AUTO-INJECTED:END:admin-styles -->
-<!-- SM-AUTO-INJECTED:START:header-preset-styles -->
-<style id="header-preset-styles">
-/* HEADER_STYLE_PRESET: gradient */
-/* HEADER_STYLE_OPTIONS: {"angle":135,"endColor":""} */
-header {
-    background: linear-gradient(135deg, var(--header-bg), color-mix(in srgb, var(--header-bg) 60%, black));
-    overflow: hidden;
-    border-radius: 0 0 24px 24px;
-    box-shadow: 0 12px 28px -14px rgba(0,0,0,0.4);
-}
-header::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(120deg, rgba(255,255,255,0.25), rgba(255,255,255,0) 40%, rgba(0,0,0,0.12));
-    pointer-events: none;
-}
-.header-brand, .dl123, .menu-btn-container {
-    position: relative;
-    z-index: 1;
-}
-#pageMainHeader {
-    text-shadow: 0 1px 3px rgba(0,0,0,0.2);
-}
-.bottom-navbar {
-    background: linear-gradient(135deg, var(--header-bg), color-mix(in srgb, var(--header-bg) 60%, black));
-}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>فحص جسور RosTrick</title>
+<style>
+  body{font-family:system-ui,sans-serif;margin:0;padding:16px;background:#f4f7f5;color:#1b2a28;line-height:1.7}
+  @media (prefers-color-scheme:dark){body{background:#071719;color:#e6f3f0}}
+  h1{font-size:1.25rem;margin:0 0 4px} h2{font-size:1.02rem;margin:22px 0 6px;border-top:1px dashed #7aa;padding-top:14px}
+  .sub{opacity:.75;font-size:.85rem}
+  button{display:block;width:100%;padding:12px;margin:6px 0;border:0;border-radius:12px;background:#1f9d8f;color:#fff;font:inherit;font-weight:700}
+  button.alt{background:#5d6f6b}
+  input,textarea{width:100%;box-sizing:border-box;padding:10px;border-radius:10px;border:1px solid #9db8b3;font:inherit;margin:4px 0;direction:ltr;text-align:left}
+  table{width:100%;border-collapse:collapse;font-size:.88rem;margin-top:8px}
+  td{padding:6px 8px;border-bottom:1px solid rgba(120,150,145,.3)}
+  td:last-child{text-align:left;direction:ltr;white-space:nowrap}
+  .ok{color:#1a9a52;font-weight:700}.no{color:#c0392b;font-weight:700}.off{color:#c27a00;font-weight:700}
+  #log{font:12px/1.6 ui-monospace,monospace;direction:ltr;text-align:left;background:rgba(0,0,0,.1);padding:10px;border-radius:10px;height:230px;overflow:auto;white-space:pre-wrap;margin-top:12px}
+  code{direction:ltr;unicode-bidi:embed;background:rgba(0,0,0,.08);padding:1px 5px;border-radius:5px}
 </style>
-<!-- SM-AUTO-INJECTED:END:header-preset-styles -->
-
-
-
-
 </head>
 <body>
-<!-- START ADMIN DRAWER -->
-<!-- SM-SEARCH-CONFIG:{"enabled":true,"action":"overlay","accent":"#3498db","position":"after-theme"} -->
-<header>
-    <div style="display: flex; align-items: center; gap: 15px;">
-        <button class="menu-btn-container" id="menuBtnToggle" onclick="toggleDrawer()">
-            <div class="menu-bar-line"></div>
-            <div class="menu-bar-line"></div>
-            <div class="menu-bar-line"></div>
-        </button>
-        <span id="pageMainHeader" style="font-weight:bold; font-size: 1.1rem; display: inline-block; vertical-align: middle;">home</span>
-    </div>
-    <div style="display: flex; align-items: center; gap: 8px;">
-    <div class="dl123" id="userThemeToggleBtn" onclick="toggleUserTheme()"><i class="fa-solid fa-moon"></i></div>
-    <div class="dl123" id="smSearchToggleBtn" onclick="smToggleSearchPanel()" title="بحث"><i class="fa-solid fa-magnifying-glass"></i></div>
-    </div>
-</header>
-<div class="drawer-overlay" id="drawerOverlay" onclick="toggleDrawer()"></div>
-<nav class="drawer" id="drawer">
-    <div class="drawer-header" id="drawerSideHeader">home</div>
-    <div id="drawerLoader" class="drawer-loader"></div>
-    <div class="drawer-menu-container">
-        <ul class="drawer-menu" id="drawerDynamicMenu"></ul>
-    </div>
-</nav>
-<nav class="bottom-navbar" id="bottomNavbar">
-    <ul class="bottom-navbar-list" id="bottomNavbarList"></ul>
-</nav>
-<div class="sm-search-overlay" id="smSearchOverlay" onclick="if(event.target===this) smCloseSearchPanel();">
-    <div class="sm-search-panel">
-        <div class="sm-search-bar">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="smSearchInput" placeholder="ابحث عن صفحة..." oninput="smPerformSearch(this.value)" autocomplete="off">
-            <button type="button" class="sm-search-close" onclick="smCloseSearchPanel()"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <ul class="sm-search-results" id="smSearchResults"></ul>
-    </div>
-</div>
-<!-- END ADMIN DRAWER -->
+<h1>🧪 فحص جسور RosTrick</h1>
+<div class="sub">افتح هذه الصفحة <b>داخل التطبيق المبني</b> (لا في المتصفح). الجدول يوضح أي جسر موجود وأيها مفعّل في البناء، والأزرار تجرّب كل جسر فعلياً. النتائج تظهر في السجل بالأسفل.</div>
 
-<main style="padding: 20px;">
-    <h1 id="pageContentTitle">صفحة home</h1>
-    <p>محتوى الصفحة الافتراضي المخصص لك.</p>
-</main>
+<table id="tbl"></table>
+<button class="alt" onclick="scan()">🔄 إعادة الفحص</button>
 
-<!-- SM-AUTO-INJECTED:START:admin-scripts -->
-<script id="admin-scripts">
-    const username = "WF-CARTOON";
-    const repo = "Storyne";
-    const currentFileName = "home.html";
-    let APP_LOGO_ACTIVE = false;
-    let appLogoLiveHtml = null;
-    let currentPageTitle = null;
-    let smSearchPagesData = [];
+<h2>📤 المشاركة (RosTrickShare)</h2>
+<button onclick="tShareText()">مشاركة نص + رابط</button>
+<button onclick="tShareImg()">مشاركة صورة</button>
+<button onclick="tShareFile()">مشاركة ملف نصي</button>
 
-    function smGoToPage(file) {
-        if (typeof Android !== "undefined" && Android.openLocalPage) {
-            Android.openLocalPage(file);
-        } else {
-            window.location.href = file;
-        }
-    }
+<h2>⭐ التقييم (RosTrickReview)</h2>
+<button onclick="tReview()">طلب تقييم داخل التطبيق</button>
+<button class="alt" onclick="tStore()">فتح صفحة المتجر</button>
 
-    function smNormalizeSearchText(s) {
-        if (!s) return "";
-        return String(s)
-            .replace(/[\u0660-\u0669]/g, function (d) { return String(d.charCodeAt(0) - 0x0660); })
-            .replace(/[\u06F0-\u06F9]/g, function (d) { return String(d.charCodeAt(0) - 0x06F0); })
-            .replace(/[\u064B-\u0652\u0670]/g, "")
-            .replace(/[إأآا]/g, "ا")
-            .replace(/ة/g, "ه")
-            .replace(/ى/g, "ي")
-            .toLowerCase()
-            .replace(/[\s\-_.,\/]+/g, "")
-            .trim();
-    }
+<h2>🔗 الروابط العميقة (RosTrickLinks)</h2>
+<div class="sub">1) فعّل الروابط في المنصة وأعد البناء. 2) اكتب نفس الـ scheme هنا ثم انسخ الرابط والصقه في «ملاحظاتي» أو واتساب (رسالة لنفسك) واضغط عليه. التطبيق وهو مغلق = اختبار «فتح من الصفر»، وهو يعمل في الخلفية = اختبار الحدث.</div>
+<input id="sch" value="myapp" placeholder="scheme">
+<input id="pg" value="" placeholder="اسم صفحة موجودة في تطبيقك (اختياري) مثل about.html">
+<button onclick="mkLink()">توليد الرابط ونسخه</button>
+<textarea id="lnk" rows="2" readonly></textarea>
+<button class="alt" onclick="readInit()">قراءة رابط الفتح (getInitial)</button>
+<button class="alt" onclick="RosTrickLinks&&RosTrickLinks.clear();log('clear() نُفّذ')">مسح الرابط المخزّن (clear)</button>
 
-    function smToggleSearchPanel() {
-        const overlay = document.getElementById("smSearchOverlay");
-        if (!overlay) return;
-        if (overlay.classList.contains("open")) { smCloseSearchPanel(); return; }
-        overlay.classList.add("open");
-        smPerformSearch("");
-        setTimeout(function () { const inp = document.getElementById("smSearchInput"); if (inp) inp.focus(); }, 50);
-    }
+<h2>📄 الصفحات (RosTrickPages)</h2>
+<input id="pp" value="promo.html" placeholder="اسم صفحة">
+<button onclick="tPages()">isDownloaded + download</button>
+<button class="alt" onclick="RosTrickPages&&RosTrickPages.openPage(pp.value)">openPage</button>
 
-    function smCloseSearchPanel() {
-        const overlay = document.getElementById("smSearchOverlay");
-        if (overlay) overlay.classList.remove("open");
-    }
+<h2>📦 Assets داخل التطبيق (RosTrickAssets)</h2>
+<input id="ap" value="" placeholder="مسار ملف داخل assets.zip">
+<button onclick="tAssets()">exists + read</button>
 
-    function smPerformSearch(query) {
-        const resultsEl = document.getElementById("smSearchResults");
-        if (!resultsEl) return;
-        const nq = smNormalizeSearchText(query);
-        const searchable = (smSearchPagesData || []).filter(function (p) { return p.searchEnabled !== false && p.file !== "searchbyrostrick.html"; });
-        let matches;
-        if (!nq) {
-            matches = searchable.filter(function (p) { return !p.hidden; });
-        } else {
-            matches = searchable.filter(function (p) {
-                const candidates = [p.title, p.file.replace(/\.html$/i, "")].concat(Array.isArray(p.searchNames) ? p.searchNames : []);
-                return candidates.some(function (c) { return smNormalizeSearchText(c).indexOf(nq) !== -1; });
-            });
-        }
-        if (matches.length === 0) {
-            resultsEl.innerHTML = "<li class=\"sm-search-empty\">لا توجد نتائج مطابقة</li>";
-            return;
-        }
-        resultsEl.innerHTML = matches.map(function (p) {
-            const icon = p.icon || "fa-solid fa-file";
-            const title = (p.title || p.file.replace(/\.html$/i, "")).replace(/</g, "&lt;").replace(/>/g, "&gt;");
-            return "<li class=\"sm-search-result-item\" onclick=\"smCloseSearchPanel(); smGoToPage('" + p.file + "');\"><i class=\"" + icon + "\"></i><span>" + title + "</span></li>";
-        }).join("");
-    }
+<h2>📳 الاهتزاز (navigator.vibrate)</h2>
+<button onclick="log('vibrate → '+navigator.vibrate([100,50,100,50,300]))">اهتزاز</button>
 
-    function escLogoText(s) {
-        return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-    }
+<h2>📢 الإعلانات (AdMob / Unity / Facebook)</h2>
+<button onclick="tAd('RosTrickAds','showBanner')">AdMob: بانر</button>
+<button onclick="tAd('RosTrickAds','showInterstitial')">AdMob: بيني</button>
+<button onclick="tAd('RosTrickAds','showRewarded')">AdMob: مكافأة</button>
+<button class="alt" onclick="tAd('RosTrickUnityAds','showInterstitial')">Unity: بيني</button>
+<button class="alt" onclick="tAd('RosTrickUnityAds','showRewarded')">Unity: مكافأة</button>
+<button class="alt" onclick="tAd('RosTrickFbAds','showInterstitial')">Facebook: بيني</button>
+<button class="alt" onclick="tAd('RosTrickFbAds','showRewarded')">Facebook: مكافأة</button>
+<button class="alt" onclick="hideBanners()">إخفاء كل البنرات</button>
 
-    function applyPageHeaderState() {
-        const headerEl = document.getElementById("pageMainHeader");
-        if (!headerEl) return;
-        if (APP_LOGO_ACTIVE && appLogoLiveHtml) {
-            headerEl.innerHTML = appLogoLiveHtml;
-        } else if (!APP_LOGO_ACTIVE && currentPageTitle) {
-            headerEl.innerText = currentPageTitle;
-        }
-    }
+<h2>🔔 الإشعارات (RosTrickPush)</h2>
+<button onclick="tPush()">إذن + توكن</button>
+<button class="alt" onclick="tTopic()">اشتراك في موضوع test</button>
 
-    function applyAppLogoConfig(cfg) {
-        if (cfg && cfg.enabled && cfg.type === "text" && cfg.text) {
-            APP_LOGO_ACTIVE = true;
-            appLogoLiveHtml = escLogoText(cfg.text);
-        } else if (cfg && cfg.enabled && cfg.type === "image" && (cfg.image_uploaded_path || cfg.image_url)) {
-            const src = cfg.image_uploaded_path ? `https://raw.githubusercontent.com/${username}/${repo}/main/${cfg.image_uploaded_path}` : cfg.image_url;
-            APP_LOGO_ACTIVE = true;
-            appLogoLiveHtml = '<img src="' + src + '" alt="Logo" style="max-height:32px; max-width:160px; vertical-align:middle; display:inline-block;">';
-        } else {
-            APP_LOGO_ACTIVE = false;
-            appLogoLiveHtml = null;
-        }
-        applyPageHeaderState();
-    }
+<h2>🛒 الشراء (RosTrickBilling)</h2>
+<input id="pid" value="premium" placeholder="معرّف المنتج">
+<button onclick="tBill()">getProducts + getPurchases</button>
 
-    async function fetchAppLogoConfig() {
-        try {
-            if (typeof Android !== "undefined" && Android.readLocalFile) {
-                const localData = Android.readLocalFile("app_logo.json");
-                if (localData && localData.trim() !== "") {
-                    applyAppLogoConfig(JSON.parse(localData));
-                    return;
-                }
-            }
-            const res = await fetch(`app_logo.json?t=${Date.now()}`);
-            if (res.ok) {
-                applyAppLogoConfig(await res.json());
-                return;
-            }
-            throw new Error();
-        } catch(e) {
-            try {
-                const resAlt = await fetch(`https://raw.githubusercontent.com/${username}/${repo}/main/app_logo.json?t=${Date.now()}`);
-                if (resAlt.ok) applyAppLogoConfig(await resAlt.json());
-            } catch(err) { console.log("خطأ في جلب إعدادات لوجو التطبيق"); }
-        }
-    }
+<h2>🌐 الواجهات القياسية (navigator.*)</h2>
+<button onclick="tClipW()">clipboard.writeText</button>
+<button class="alt" onclick="tClipR()">clipboard.readText</button>
+<button onclick="tWake()">wakeLock.request('screen') (اضغط مرة أخرى للإلغاء)</button>
+<button onclick="tNotif()">Notification: إذن + إشعار</button>
+<button class="alt" onclick="tBatt()">getBattery</button>
+<button onclick="tNavShare()">navigator.share</button>
+<button class="alt" onclick="tContacts()">contacts.select(['name','tel'])</button>
+<button class="alt" onclick="tSW()">serviceWorker.register</button>
 
-    function initUserTheme() {
-        const toggleBtn = document.getElementById("userThemeToggleBtn");
-        const saved = localStorage.getItem("user-theme") || "light";
-        if(saved === "dark") {
-            document.documentElement.setAttribute("data-user-theme", "dark");
-            if(toggleBtn) toggleBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
-        } else {
-            document.documentElement.removeAttribute("data-user-theme");
-            if(toggleBtn) toggleBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
-        }
-    }
+<h2>🔌 العتاد (يحتاج تفعيله في البناء)</h2>
+<button onclick="tBT()">bluetooth.requestDevice + connect</button>
+<button onclick="tUSB()">usb.requestDevice + open</button>
+<button onclick="tSerial()">serial.requestPort + open 9600</button>
 
-    function toggleUserTheme() {
-        const toggleBtn = document.getElementById("userThemeToggleBtn");
-        const current = document.documentElement.getAttribute("data-user-theme");
-        if(current === "dark") {
-            document.documentElement.removeAttribute("data-user-theme");
-            localStorage.setItem("user-theme", "light");
-            if(toggleBtn) toggleBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
-        } else {
-            document.documentElement.setAttribute("data-user-theme", "dark");
-            localStorage.setItem("user-theme", "dark");
-            if(toggleBtn) toggleBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
-        }
-    }
+<div id="log"></div>
 
-    function toggleDrawer() {
-        const drawer = document.getElementById("drawer");
-        const overlay = document.getElementById("drawerOverlay");
-        const menuBtn = document.getElementById("menuBtnToggle");
-        
-        drawer.classList.toggle("open");
-        
-        if(drawer.classList.contains("open")) {
-            overlay.style.display = "block";
-            menuBtn.classList.add("active-icon");
-        } else {
-            overlay.style.display = "none";
-            menuBtn.classList.remove("active-icon");
-        }
-    }
+<script>
+var $=function(i){return document.getElementById(i)};
+function log(m){var l=$('log');l.textContent+=(typeof m==='string'?m:JSON.stringify(m))+'\n';l.scrollTop=l.scrollHeight;}
+function safe(fn){return async function(){try{await fn.apply(null,arguments);}catch(e){log('❌ استثناء: '+e);}};}
+function row(n,state,txt){return '<tr><td>'+n+'</td><td class="'+state+'">'+txt+'</td></tr>';}
+function scan(){
+  var h='';
+  [['RosTrickAds','AdMob'],['RosTrickUnityAds','Unity Ads'],['RosTrickFbAds','Facebook Ads'],['RosTrickPush','Push (Firebase)'],['RosTrickBilling','الشراء'],['RosTrickReview','التقييم (request)']].forEach(function(p){
+    var o=window[p[0]]; h+= !o?row(p[1],'no','❌ الجسر غير موجود'):(o.enabled?row(p[1],'ok','✅ مفعّل'):row(p[1],'off','⚠️ موجود لكن غير مفعّل في البناء'));
+  });
+  [['RosTrickShare','المشاركة'],['RosTrickLinks','الروابط (الجسر)'],['RosTrickPages','الصفحات'],['RosTrickAssets','Assets']].forEach(function(p){
+    h+= window[p[0]]?row(p[1],'ok','✅ موجود'):row(p[1],'no','❌ غير موجود');
+  });
+  h+= (window.RosTrickReview&&typeof RosTrickReview.openStore==='function')?row('openStore','ok','✅ موجود'):row('openStore','no','❌ غير موجود');
+  h+= typeof navigator.vibrate==='function'?row('vibrate','ok','✅'):row('vibrate','no','❌');
+  [['clipboard','navigator.clipboard'],['wakeLock','navigator.wakeLock'],['getBattery','navigator.getBattery'],['share','navigator.share'],['contacts','navigator.contacts'],['serviceWorker','navigator.serviceWorker']].forEach(function(p){
+    h+= (p[0] in navigator)?row(p[1],'ok','✅'):row(p[1],'no','❌');
+  });
+  h+= (typeof Notification!=='undefined')?row('Notification','ok','✅ الإذن: '+Notification.permission):row('Notification','no','❌');
+  [['bluetooth','navigator.bluetooth'],['usb','navigator.usb'],['serial','navigator.serial']].forEach(function(p){
+    h+= (p[0] in navigator)?row(p[1],'ok','✅ مفعّل'):row(p[1],'off','⚠️ غير مفعّل في البناء');
+  });
+  var li=window.RosTrickLinks&&RosTrickLinks.getInitial();
+  h+= row('رابط الفتح الحالي', li?'ok':'off', li?'✅ '+li.url:'— لا يوجد');
+  $('tbl').innerHTML=h;
+}
+scan();
+addEventListener('rostrick-link',function(e){log('📩 rostrick-link: '+JSON.stringify(e.detail));scan();});
+addEventListener('rostrick-push',function(e){log('📩 rostrick-push: '+JSON.stringify(e.detail));});
+addEventListener('rostrick-purchase',function(e){log('📩 rostrick-purchase: '+JSON.stringify(e.detail));});
+addEventListener('rostrick-ad',function(e){log('📩 ad: '+JSON.stringify(e.detail));});
 
-    function renderDrawerContent(orderedPages) {
-        const drawerMenu = document.getElementById("drawerDynamicMenu");
-        drawerMenu.innerHTML = "";
-        smSearchPagesData = Array.isArray(orderedPages) ? orderedPages : [];
-        const currentPageData = orderedPages.find(p => p.file === currentFileName);
-        if (currentPageData && currentPageData.title) {
-            currentPageTitle = currentPageData.title;
-            applyPageHeaderState();
-            if(document.getElementById("drawerSideHeader")) document.getElementById("drawerSideHeader").innerText = currentPageData.title;
-            if(document.getElementById("pageContentTitle")) document.getElementById("pageContentTitle").innerText = currentPageData.title;
-            document.title = currentPageData.title;
-        }
-        const bottomNavList = document.getElementById("bottomNavbarList");
-        if (bottomNavList) bottomNavList.innerHTML = "";
-        const goToPage = (file) => {
-            if (typeof Android !== "undefined" && Android.openLocalPage) {
-                Android.openLocalPage(file);
-            } else {
-                window.location.href = file;
-            }
-        };
-        orderedPages.forEach(page => {
-            if (page.hidden) return;
-            const isCurrent = (page.file === currentFileName);
-            const li = document.createElement("li");
-            li.className = "drawer-item";
-            li.innerHTML = "<span>" + page.title + "</span>";
-            li.onclick = () => { if (!isCurrent) goToPage(page.file); };
-            drawerMenu.appendChild(li);
+var tShareText=safe(async function(){
+  if(!window.RosTrickShare)return log('❌ RosTrickShare غير موجود');
+  log('share(text,url) → '+await RosTrickShare.share({title:'اختبار',text:'رسالة اختبار من RosTrick',url:'https://example.com'}));
+});
+var tShareImg=safe(async function(){
+  if(!window.RosTrickShare)return log('❌ RosTrickShare غير موجود');
+  var c=document.createElement('canvas');c.width=600;c.height=300;var x=c.getContext('2d');
+  x.fillStyle='#1f9d8f';x.fillRect(0,0,600,300);x.fillStyle='#fff';x.font='bold 44px sans-serif';x.fillText('RosTrick',190,165);
+  log('share(image) → '+await RosTrickShare.share({text:'صورة اختبار',file:c.toDataURL('image/png'),fileName:'test.png',mime:'image/png'}));
+});
+var tShareFile=safe(async function(){
+  if(!window.RosTrickShare)return log('❌ RosTrickShare غير موجود');
+  log('share(file) → '+await RosTrickShare.share({file:btoa('hello RosTrick'),fileName:'hello.txt',mime:'text/plain'}));
+});
+var tReview=safe(async function(){
+  if(!window.RosTrickReview)return log('❌ RosTrickReview غير موجود');
+  log('request → '+JSON.stringify(await RosTrickReview.request())+'\n(ok:true = اكتمل بلا خطأ؛ لا يؤكد التقييم. يعمل فقط للتطبيق المثبّت من Play)');
+});
+function tStore(){ if(!window.RosTrickReview)return log('❌ غير موجود'); log('openStore → '+RosTrickReview.openStore()); }
+function mkLink(){
+  var s=($('sch').value||'').trim(), p=($('pg').value||'').trim();
+  var u=s+'://open/'+(p||'test')+'?id=7&from=test';
+  $('lnk').value=u; $('lnk').select();
+  try{navigator.clipboard.writeText(u).then(function(){log('نُسخ: '+u);},function(){log('الرابط (اضغط مطولاً على الصندوق وانسخ): '+u);});}catch(e){log('الرابط (اضغط مطولاً على الصندوق وانسخ): '+u);}
+}
+function readInit(){ if(!window.RosTrickLinks)return log('❌ RosTrickLinks غير موجود'); log('getInitial → '+JSON.stringify(RosTrickLinks.getInitial())); }
+var tPages=safe(async function(){
+  if(!window.RosTrickPages)return log('❌ RosTrickPages غير موجود');
+  var p=$('pp').value; log('isDownloaded('+p+') → '+RosTrickPages.isDownloaded(p));
+  log('download → '+await RosTrickPages.download(p)); log('isDownloaded → '+RosTrickPages.isDownloaded(p));
+});
+function tAssets(){
+  if(!window.RosTrickAssets)return log('❌ RosTrickAssets غير موجود');
+  var p=$('ap').value; if(!p)return log('اكتب مساراً أولاً');
+  var e=RosTrickAssets.exists(p); log('exists → '+e); if(e){var r=RosTrickAssets.read(p);log('read → '+(r?r.length+' base64 chars':r));}
+}
+var tAd=safe(async function(o,fn){
+  var B=window[o]; if(!B)return log('❌ '+o+' غير موجود'); if(!B.enabled)return log('⚠️ '+o+' غير مفعّل في البناء');
+  var r=B[fn]==='x'?0:B[fn]('bottom'); if(r&&r.then)r=await r; log(o+'.'+fn+' → '+r);
+});
+function hideBanners(){['RosTrickAds','RosTrickUnityAds','RosTrickFbAds'].forEach(function(o){try{window[o]&&window[o].hideBanner();}catch(e){}});log('أُخفيت البنرات');}
+var tPush=safe(async function(){
+  var P=window.RosTrickPush; if(!P)return log('❌ RosTrickPush غير موجود'); if(!P.enabled)return log('⚠️ Push غير مفعّل في البناء');
+  log('requestPermission → '+await P.requestPermission()); var t=await P.getToken(); log('token → '+(t?t.slice(0,24)+'… ('+t.length+')':'(فارغ)'));
+});
+var tTopic=safe(async function(){
+  var P=window.RosTrickPush; if(!P||!P.enabled)return log('⚠️ Push غير مفعّل'); log('subscribe(test) → '+await P.subscribe('test'));
+});
+var tBill=safe(async function(){
+  var B=window.RosTrickBilling; if(!B)return log('❌ RosTrickBilling غير موجود'); if(!B.enabled)return log('⚠️ الشراء غير مفعّل في البناء');
+  log('getProducts → '+JSON.stringify(await B.getProducts([$('pid').value]))); log('getPurchases → '+JSON.stringify(await B.getPurchases()));
+});
 
-            if (bottomNavList) {
-                const navLi = document.createElement("li");
-                navLi.className = "bottom-navbar-item" + (isCurrent ? " active" : "");
-                const iconName = page.icon || "fa-solid fa-file";
-                navLi.innerHTML = "<i class=\"" + iconName + "\"></i><span>" + page.title + "</span>";
-                navLi.onclick = () => { if (!isCurrent) goToPage(page.file); };
-                bottomNavList.appendChild(navLi);
-            }
-        });
-        if (bottomNavList) {
-            const activeNavItem = bottomNavList.querySelector(".bottom-navbar-item.active");
-            if (activeNavItem) {
-                setTimeout(() => {
-                    activeNavItem.scrollIntoView({ behavior: "auto", inline: "center", block: "nearest" });
-                }, 0);
-            }
-        }
-        smUpdateBottomNavFit();
-    }
-
-    function smUpdateBottomNavFit() {
-        const bottomNavbar = document.getElementById("bottomNavbar");
-        const bottomNavList = document.getElementById("bottomNavbarList");
-        if (!bottomNavbar || !bottomNavList) return;
-        bottomNavList.classList.remove("sm-nav-fit");
-        const fits = bottomNavList.scrollWidth <= bottomNavbar.clientWidth + 1;
-        bottomNavList.classList.toggle("sm-nav-fit", fits);
-    }
-    window.addEventListener("resize", smUpdateBottomNavFit);
-
-    async function loadGlobalVars() {
-        try {
-            const res = await fetch("var.json");
-            if(res.ok) {
-                const data = await res.json();
-                const styleEl = document.createElement("style");
-                let cssStr = ":root {\n";
-                for(let k in data.light) { cssStr += `  ${k}: ${data.light[k]};\n`; }
-                cssStr += "}\n[data-user-theme='dark'] {\n";
-                for(let k in data.dark) { cssStr += `  ${k}: ${data.dark[k]};\n`; }
-                cssStr += "}";
-                styleEl.innerHTML = cssStr;
-                document.head.appendChild(styleEl);
-            }
-        } catch(e) { console.log("خطأ في تطبيق المتغيرات العامة"); }
-    }
-
-    async function initDrawer() {
-        initUserTheme();
-        await loadGlobalVars();
-        const loader = document.getElementById("drawerLoader");
-        let loadedSuccessfully = false;
-        try {
-            if (typeof Android !== "undefined" && Android.readLocalFile) {
-                const localData = Android.readLocalFile("order.json");
-                if (localData && localData.trim() !== "") {
-                    const orderedPages = JSON.parse(localData);
-                    renderDrawerContent(orderedPages);
-                    loadedSuccessfully = true;
-                }
-            }
-            if (!loadedSuccessfully) {
-                const res = await fetch(`order.json`);
-                if (res.ok) {
-                    const orderedPages = await res.json();
-                    renderDrawerContent(orderedPages);
-                    loadedSuccessfully = true;
-                } else { throw new Error(); }
-            }
-        } catch(e) { 
-            if (!loadedSuccessfully) {
-                try {
-                    const resAlt = await fetch(`https://api.github.com/repos/${username}/${repo}/contents/order.json`);
-                    const dataAlt = await resAlt.json();
-                    const decodedContent = decodeURIComponent(escape(atob(dataAlt.content.replace(/\s/g, ""))));
-                    renderDrawerContent(JSON.parse(decodedContent));
-                } catch(err) { console.log("خطأ في جلب الهيدر"); }
-            }
-        } finally {
-            if(loader) loader.style.display = "none";
-        }
-    }
-    initDrawer();
-    fetchAppLogoConfig();
+var tClipW=safe(async function(){ await navigator.clipboard.writeText('RosTrick '+Date.now()); log('clipboard.writeText ✅ (الصق في أي مكان للتأكد)'); });
+var tClipR=safe(async function(){ log('clipboard.readText → '+JSON.stringify(await navigator.clipboard.readText())); });
+var wl=null;
+var tWake=safe(async function(){
+  if(wl&&!wl.released){ await wl.release(); log('wakeLock أُلغي'); return; }
+  wl=await navigator.wakeLock.request('screen'); wl.addEventListener('release',function(){log('حدث release');}); log('wakeLock فعّال: الشاشة لن تنطفئ');
+});
+var tNotif=safe(async function(){
+  var p=await Notification.requestPermission(); log('Notification.permission → '+p);
+  if(p!=='granted')return;
+  var n=new Notification('اختبار RosTrick',{body:'إشعار محلي من الصفحة',tag:'t1'});
+  n.onclick=function(){log('تم الضغط على الإشعار');}; n.onshow=function(){log('ظهر الإشعار');}; n.onerror=function(){log('خطأ في الإشعار');};
+  scan();
+});
+var tBatt=safe(async function(){ var b=await navigator.getBattery(); log('battery: level='+b.level+' charging='+b.charging+' chargingTime='+b.chargingTime); b.addEventListener('levelchange',function(){log('levelchange '+b.level);}); b.addEventListener('chargingchange',function(){log('chargingchange '+b.charging);}); });
+var tNavShare=safe(async function(){ await navigator.share({title:'اختبار',text:'مشاركة عبر navigator.share',url:'https://example.com'}); log('navigator.share ✅'); });
+var tContacts=safe(async function(){ var c=await navigator.contacts.select(['name','tel']); log('contacts → '+JSON.stringify(c)); });
+var tSW=safe(async function(){ var r=await navigator.serviceWorker.register('sw.js'); log('serviceWorker.register ✅ scope='+r.scope+' (واجهة متوافقة فقط، بلا اعتراض طلبات)'); });
+var tBT=safe(async function(){
+  if(!navigator.bluetooth)return log('⚠️ فعّل Web Bluetooth في إعدادات البناء');
+  var d=await navigator.bluetooth.requestDevice({acceptAllDevices:true,optionalServices:['battery_service']}); log('جهاز: '+d.name+' '+d.id);
+  d.addEventListener('gattserverdisconnected',function(){log('انقطع الاتصال');});
+  var s=await d.gatt.connect(); log('اتصال GATT ✅');
+  try{ var sv=await s.getPrimaryService('battery_service'); var ch=await sv.getCharacteristic('battery_level'); var v=await ch.readValue(); log('مستوى بطارية الجهاز: '+v.getUint8(0)+'%'); }catch(e){ log('لا يوجد battery_service: '+e); }
+  s.disconnect();
+});
+var tUSB=safe(async function(){
+  if(!navigator.usb)return log('⚠️ فعّل WebUSB في إعدادات البناء');
+  var d=await navigator.usb.requestDevice({filters:[]}); log('USB: '+d.productName+' vid='+d.vendorId.toString(16)+' pid='+d.productId.toString(16));
+  await d.open(); log('open ✅ — الإعدادات: '+d.configurations.length);
+  await d.close(); log('close ✅');
+});
+var tSerial=safe(async function(){
+  if(!navigator.serial)return log('⚠️ فعّل Web Serial في إعدادات البناء');
+  var p=await navigator.serial.requestPort({}); log('منفذ: '+JSON.stringify(p.getInfo()));
+  await p.open({baudRate:9600}); log('open ✅ — اكتب شيئاً لمدة 5 ثوان…');
+  var r=p.readable.getReader(), t=Date.now();
+  try{ while(Date.now()-t<5000){ var x=await Promise.race([r.read(),new Promise(function(res){setTimeout(function(){res({timeout:true});},1000);})]); if(x.timeout)continue; if(x.done)break; log('استلمت '+x.value.length+' بايت: '+new TextDecoder().decode(x.value)); } }catch(e){ log('قراءة: '+e); }
+  try{ r.releaseLock(); }catch(e){}
+  await p.close(); log('close ✅');
+});
 </script>
-<!-- SM-AUTO-INJECTED:END:admin-scripts -->
 </body>
 </html>
