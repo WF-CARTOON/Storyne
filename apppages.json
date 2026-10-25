@@ -62,9 +62,5 @@
   "home.html": {
     "op": "add",
     "timestamp": 1792294730942
-  },
-  "sm-custom-styles.json": {
-    "op": "add",
-    "timestamp": 1792842843338
   }
 }
