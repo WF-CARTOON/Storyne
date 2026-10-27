@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.tos.games.plus",
+      "sha256_cert_fingerprints": [
+        "B9:D1:32:A9:33:C4:0B:B4:C9:FB:6D:D7:89:3D:CD:0B:2D:EB:3B:8E:1A:6B:43:EC:D0:9F:E6:2D:D6:DD:DF:F7"
+      ]
+    }
+  }
+]
