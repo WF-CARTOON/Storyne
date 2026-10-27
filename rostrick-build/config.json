@@ -45,7 +45,7 @@
     "hosts": [
       "rocks.docx"
     ],
-    "verify": true,
+    "verify": false,
     "extra_fingerprints": []
   },
   "hardware": {
