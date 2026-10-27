@@ -185,6 +185,31 @@ jobs:
           echo "TAG=apk-${{ steps.apply.outputs.version_code }}" >> "$GITHUB_ENV"
           echo "ICON_NOTE=${ICON_NOTE:-الأيقونة الافتراضية}" >> "$GITHUB_ENV"
 
+      - name: توليد assetlinks.json (الروابط العميقة المتحقَّق منها)
+        if: steps.apply.outputs.assetlinks_enabled == '1'
+        env:
+          RT_PASS: ${{ secrets.RT_KEYSTORE_PASSPHRASE }}
+          AL_PKG: ${{ steps.apply.outputs.package_name }}
+          AL_EXTRA: ${{ steps.apply.outputs.assetlinks_extra }}
+        run: |
+          FP=$(keytool -list -v -keystore "$RT_KEYSTORE_PATH" -storetype PKCS12 -storepass "$RT_PASS" -alias rostrick | sed -n 's/^[[:space:]]*SHA256:[[:space:]]*//p' | head -1)
+          [ -z "$FP" ] && { echo "::error::تعذّر استخراج بصمة SHA-256 من مفتاح التوقيع"; exit 1; }
+          mkdir -p dist
+          AL_FP="$FP" python3 - <<'PY'
+          import json, os
+          fps = [os.environ["AL_FP"]]
+          for x in os.environ.get("AL_EXTRA", "").split(","):
+              x = x.strip()
+              if x and x not in fps:
+                  fps.append(x)
+          data = [{"relation": ["delegate_permission/common.handle_all_urls"],
+                   "target": {"namespace": "android_app", "package_name": os.environ["AL_PKG"], "sha256_cert_fingerprints": fps}}]
+          json.dump(data, open("dist/assetlinks.json", "w"), indent=2)
+          print(open("dist/assetlinks.json").read())
+          PY
+          cp dist/assetlinks.json rostrick-build/assetlinks.json
+          echo "AL_READY=1" >> "$GITHUB_ENV"
+
       - name: نشر الملفات في Releases
         env:
           GH_TOKEN: ${{ github.token }}
@@ -192,6 +217,7 @@ jobs:
           NOTES="بُني بواسطة RosTrick — ${{ steps.apply.outputs.package_name }} الإصدار ${{ steps.apply.outputs.version_name }} (${{ steps.apply.outputs.version_code }}) — بناء رقم ${{ github.run_number }} — $ICON_NOTE — المخرج: ${{ steps.apply.outputs.output_format }}"
           UPLOADS=""
           for F in $OUT_FILES; do UPLOADS="$UPLOADS dist/$F"; done
+          [ "$AL_READY" = "1" ] && UPLOADS="$UPLOADS dist/assetlinks.json"
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" $UPLOADS --clobber
             gh release edit "$TAG" --notes "$NOTES" --latest
@@ -215,5 +241,16 @@ jobs:
           if [ -f "dist/$BASE.aab" ]; then cp "dist/$BASE.aab" "__rostrick_download.aab"; git add "__rostrick_download.aab"; CHANGED=1; fi
           if [ "$CHANGED" = "1" ]; then
             git commit -m "RosTrick: تحديث نسخة التحميل العامة (بناء رقم ${{ github.run_number }})"
+            for i in 1 2 3; do git push && break || { git pull --rebase; sleep 2; }; done
+          fi
+
+      - name: حفظ assetlinks.json في المستودع
+        if: env.AL_READY == '1'
+        run: |
+          git config user.name "rostrick-bot"
+          git config user.email "rostrick-bot@users.noreply.github.com"
+          git add rostrick-build/assetlinks.json
+          if git diff --cached --quiet; then echo "assetlinks.json بلا تغيير"; else
+            git commit -m "RosTrick: تحديث assetlinks.json"
             for i in 1 2 3; do git push && break || { git pull --rebase; sleep 2; }; done
           fi
