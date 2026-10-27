@@ -41,7 +41,7 @@
   },
   "deeplinks": {
     "enabled": true,
-    "scheme": "night.ff",
+    "scheme": "night",
     "hosts": [
       "rocks.docx"
     ],
