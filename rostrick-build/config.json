@@ -34,18 +34,19 @@
     "enabled": false
   },
   "billing": {
-    "enabled": false
+    "enabled": true
   },
   "review": {
     "enabled": true
   },
   "deeplinks": {
     "enabled": true,
-    "scheme": "night",
+    "scheme": "night.ff",
     "hosts": [
       "rocks.docx"
     ],
-    "verify": true
+    "verify": true,
+    "extra_fingerprints": []
   },
   "hardware": {
     "bluetooth": true,
