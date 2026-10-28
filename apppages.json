@@ -62,9 +62,5 @@
   "home.html": {
     "op": "update",
     "timestamp": 1792945872385
-  },
-  "homett.html": {
-    "op": "add",
-    "timestamp": 1793131906625
   }
 }
