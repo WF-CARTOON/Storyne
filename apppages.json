@@ -67,10 +67,6 @@
     "op": "update",
     "timestamp": 1793131822413
   },
-  "sm-custom-styles.json": {
-    "op": "add",
-    "timestamp": 1793131715115
-  },
   "homett.html": {
     "op": "add",
     "timestamp": 1793131906625
