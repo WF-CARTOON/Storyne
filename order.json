@@ -32,16 +32,24 @@
     "searchNames": []
   },
   {
-    "file": "fas.html",
-    "title": "fas",
+    "file": "home.html",
+    "title": "home",
     "icon": "fa-solid fa-file",
     "hidden": true,
     "searchEnabled": true,
     "searchNames": []
   },
   {
-    "file": "home.html",
-    "title": "home",
+    "file": "homet.html",
+    "title": "homet",
+    "icon": "fa-solid fa-file",
+    "hidden": true,
+    "searchEnabled": true,
+    "searchNames": []
+  },
+  {
+    "file": "homett.html",
+    "title": "homett",
     "icon": "fa-solid fa-file",
     "hidden": true,
     "searchEnabled": true,
