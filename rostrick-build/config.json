@@ -40,7 +40,7 @@
     "enabled": true
   },
   "webview_check": {
-    "enabled": false,
+    "enabled": true,
     "min_version": 120,
     "force_version": 0
   },
