@@ -40,16 +40,16 @@
     "searchNames": []
   },
   {
-    "file": "homet.html",
-    "title": "homet",
+    "file": "homett.html",
+    "title": "homett",
     "icon": "fa-solid fa-file",
     "hidden": true,
     "searchEnabled": true,
     "searchNames": []
   },
   {
-    "file": "homett.html",
-    "title": "homett",
+    "file": "loading.html",
+    "title": "loading",
     "icon": "fa-solid fa-file",
     "hidden": true,
     "searchEnabled": true,
