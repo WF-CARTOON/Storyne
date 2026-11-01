@@ -74,9 +74,5 @@
   "loading.html": {
     "op": "add",
     "timestamp": 1793531406983
-  },
-  "splash.html": {
-    "op": "add",
-    "timestamp": 1793531420724
   }
 }
