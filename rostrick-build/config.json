@@ -39,14 +39,13 @@
   "review": {
     "enabled": true
   },
+  "webview_check": {
+    "enabled": false,
+    "min_version": 120,
+    "force_version": 0
+  },
   "deeplinks": {
-    "enabled": true,
-    "scheme": "night",
-    "hosts": [
-      "rocks.docx"
-    ],
-    "verify": false,
-    "extra_fingerprints": []
+    "enabled": false
   },
   "hardware": {
     "bluetooth": true,
