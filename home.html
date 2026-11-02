@@ -1,80 +1,146 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>اختبار showSaveFilePicker</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>تجربة تنزيل اللعبة h1</title>
 <style>
-  :root{color-scheme:dark light}
-  body{margin:0;padding:16px;font-family:system-ui,sans-serif;background:#0f1419;color:#e6edf3}
-  h1{font-size:18px;margin:0 0 12px}
-  .row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
-  button{flex:1 1 140px;padding:12px;border:0;border-radius:10px;background:#2563eb;color:#fff;font-size:15px;font-weight:700}
-  button.alt{background:#334155}
-  #status{padding:10px 12px;border-radius:10px;background:#1c2530;margin-bottom:12px;font-size:14px;line-height:1.8}
-  #log{background:#0b0f14;border-radius:10px;padding:10px;min-height:160px;font:13px/1.8 ui-monospace,monospace;direction:ltr;text-align:left;white-space:pre-wrap;word-break:break-word}
-  .ok{color:#4ade80}.bad{color:#f87171}
+  :root{
+    --bg:#0b0f1a; --card:#141b2d; --line:#26314d; --text:#eef2fb; --muted:#93a0ba;
+    --accent:#2dd4bf; --accent2:#0d9488; --bad:#f87171; --ok:#4ade80;
+  }
+  *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
+  body{
+    background:var(--bg); color:var(--text); min-height:100vh;
+    font-family:system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;
+    padding:20px 16px calc(24px + env(safe-area-inset-bottom,0px));
+    max-width:520px; margin:0 auto; line-height:1.8;
+  }
+  h1{font-size:20px; margin-bottom:4px;}
+  .sub{color:var(--muted); font-size:13px; margin-bottom:18px;}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; margin-bottom:14px;}
+  .card h2{font-size:14px; margin-bottom:6px;}
+  .card p{font-size:12.5px; color:var(--muted); margin-bottom:12px;}
+  label{display:block; font-size:12.5px; color:var(--muted); margin-bottom:6px;}
+  input{
+    width:100%; padding:11px 12px; border-radius:12px; border:1px solid var(--line);
+    background:#0f1526; color:var(--text); font:inherit; font-size:14px; direction:ltr; text-align:left;
+  }
+  .state{margin-top:10px; font-size:12px; color:var(--muted);}
+  .state b{color:var(--text); font-family:ui-monospace,Menlo,Consolas,monospace;}
+
+  /* الزر نفسه: النص يتغير من السمات rtnd / rtid، والتقدم عبر المتغير --rt-progress */
+  .game-btn{
+    all:unset; box-sizing:border-box; cursor:pointer; width:100%; text-align:center;
+    padding:14px 18px; border-radius:14px; font-size:15px; font-weight:700; color:#fff;
+    background:linear-gradient(90deg, var(--accent) var(--rt-progress, 0%), var(--accent2) 0);
+    box-shadow:0 8px 22px rgba(13,148,136,.30);
+    transition:opacity .15s, transform .15s;
+  }
+  .game-btn:active{transform:scale(.98);}
+  .game-btn[rostrick-state="downloading"]{opacity:.85; pointer-events:none;}
+  .game-btn[rostrick-state="ready"]{background:linear-gradient(135deg,#16a34a,#4ade80); color:#04210f;}
+  .game-btn[rostrick-state="error"]{background:linear-gradient(135deg,#b91c1c,#f87171);}
+  .game-btn.plain{background:var(--accent2);}
+  .game-btn.plain[rostrick-state="ready"]{background:linear-gradient(135deg,#16a34a,#4ade80);}
+
+  #log{
+    background:#070a13; border-radius:12px; padding:10px; min-height:90px; max-height:220px; overflow:auto;
+    font:12px/1.8 ui-monospace,Menlo,Consolas,monospace; direction:ltr; text-align:left; white-space:pre-wrap;
+    color:#c7d2e8; -webkit-user-select:text; user-select:text;
+  }
+  #log .e{color:var(--bad);} #log .k{color:var(--ok);}
+  #warn{display:none; background:rgba(248,113,113,.12); border:1px solid rgba(248,113,113,.4); color:#fecaca;
+        padding:12px; border-radius:12px; font-size:12.5px; margin-bottom:14px;}
+  code{direction:ltr; unicode-bidi:isolate; background:rgba(127,127,127,.18); padding:1px 6px; border-radius:5px; font-size:12px;}
 </style>
 </head>
 <body>
-<h1>اختبار showSaveFilePicker</h1>
-<div id="status">جارٍ الفحص…</div>
-<div class="row">
-  <button id="bCheck" class="alt">إعادة الفحص</button>
-  <button id="bTxt">حفظ ملف نصي</button>
-  <button id="bJson">حفظ JSON</button>
-  <button id="bClear" class="alt">مسح السجل</button>
-</div>
-<div id="log"></div>
-<script>
-const $ = id => document.getElementById(id);
-function log(msg, cls){
-  const d = new Date(), p = n => String(n).padStart(2,'0');
-  const line = document.createElement('div');
-  if (cls) line.className = cls;
-  line.textContent = p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds())+'  '+msg;
-  $('log').appendChild(line);
-}
-function check(tag){
-  const bridge = typeof window.RosTrickSaveBridge;
-  const picker = typeof window.showSaveFilePicker;
-  const ok = picker === 'function';
-  log('['+tag+'] RosTrickSaveBridge: '+bridge+' | showSaveFilePicker: '+picker+' | secure: '+window.isSecureContext, ok ? 'ok' : 'bad');
-  $('status').innerHTML =
-    'الجسر (RosTrickSaveBridge): <b>'+bridge+'</b><br>'+
-    'الدالة (showSaveFilePicker): <b class="'+(ok?'ok':'bad')+'">'+picker+'</b>';
-  return ok;
-}
-async function save(name, text, mime){
-  if (typeof window.showSaveFilePicker !== 'function'){
-    log('showSaveFilePicker غير متاحة الآن — أعد الفحص بعد ثانيتين من فتح الصفحة', 'bad');
-    return;
-  }
-  try{
-    log('فتح نافذة الحفظ…');
-    const h = await window.showSaveFilePicker({
-      suggestedName: name,
-      types: [{description: name, accept: {[mime]: [name.slice(name.lastIndexOf('.'))]}}]
-    });
-    log('تم اختيار: '+h.name);
-    const w = await h.createWritable();
-    await w.write(text);
-    await w.close();
-    log('تمت الكتابة والإغلاق بنجاح', 'ok');
-  }catch(e){
-    if (e && e.name === 'AbortError') log('أُلغي الحفظ من المستخدم');
-    else log('فشل: '+(e && e.name)+' — '+(e && e.message), 'bad');
-  }
-}
-$('bCheck').onclick = () => check('يدوي');
-$('bClear').onclick = () => { $('log').textContent = ''; };
-$('bTxt').onclick = () => save('اختبار.txt', 'مرحباً من RosTrick\n'+new Date().toISOString(), 'text/plain');
-$('bJson').onclick = () => save('test.json', JSON.stringify({ok:true,time:Date.now()},null,2), 'application/json');
 
-log('UA: '+navigator.userAgent.slice(0,90));
-check('فوري');
-setTimeout(() => check('بعد 1.5ث'), 1500);
-setTimeout(() => check('بعد 4ث'), 4000);
+<h1>تجربة التنزيل اليدوي للعبة</h1>
+<p class="sub">يعمل داخل تطبيق مبني بالقالب الأحدث فقط. الصفحة المراد تنزيلها يجب أن تكون <b>يدوية</b> في اللوحة.</p>
+
+<div id="warn">لا يوجد جسر <code>RosTrickPages</code> هنا: افتح هذه الصفحة داخل التطبيق (في المتصفح العادي لا يحدث تنزيل).</div>
+
+<div class="card">
+  <label for="gameName">اسم صفحة اللعبة (كما هو في اللوحة)</label>
+  <input id="gameName" value="h1.html" spellcheck="false" autocapitalize="off" autocomplete="off">
+</div>
+
+<!-- 1) مع نسبة التحميل -->
+<div class="card">
+  <h2>١) مع نسبة التحميل</h2>
+  <p>قبل التنزيل: «حمّل اللعبة». أثناءه: النسبة. بعده: «العب الآن».</p>
+  <button class="game-btn" id="btnA" onCreate="rostrickpages" rostrick="h1.html"
+          rtnd="حمّل اللعبة" rtid="العب الآن" progress="true">حمّل اللعبة</button>
+  <div class="state">الحالة: <b id="stA">—</b></div>
+</div>
+
+<!-- 2) بدون نسبة (progress غير موجود = false) -->
+<div class="card">
+  <h2>٢) بدون نسبة</h2>
+  <p>بلا <code>progress</code> يظهر «جاري التحميل…» أثناء التنزيل، ونصاه الافتراضيان «تحميل» و«دخول».</p>
+  <button class="game-btn plain" id="btnB" onCreate="rostrickpages" rostrick="h1.html">تحميل</button>
+  <div class="state">الحالة: <b id="stB">—</b></div>
+</div>
+
+<div class="card">
+  <h2>سجل الأحداث</h2>
+  <div id="log"></div>
+</div>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var log = $('log');
+  function add(msg, cls) {
+    var d = new Date(), p = function (n) { return String(n).padStart(2, '0'); };
+    var line = document.createElement('div');
+    if (cls) line.className = cls;
+    line.textContent = p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds()) + '  ' + msg;
+    log.appendChild(line); log.scrollTop = log.scrollHeight;
+  }
+
+  /* اسم الصفحة يُقرأ من الحقل: تغييره يحدّث السمة rostrick وتتجدد الأزرار وحدها */
+  var input = $('gameName'), btns = [$('btnA'), $('btnB')];
+  function applyName() {
+    var v = String(input.value || '').trim();
+    btns.forEach(function (b) { b.setAttribute('rostrick', v); });
+  }
+  input.addEventListener('input', applyName);
+  applyName();
+
+  /* عرض حالة كل زر (rostrick-state) */
+  function refreshStates() {
+    $('stA').textContent = $('btnA').getAttribute('rostrick-state') || '—';
+    $('stB').textContent = $('btnB').getAttribute('rostrick-state') || '—';
+  }
+  setInterval(refreshStates, 300);
+
+  /* أحداث الجسر */
+  var lastPct = {};
+  document.addEventListener('rtpages', function (e) {
+    var d = e.detail || {}, who = e.target && e.target.id || '?';
+    if (d.state === 'downloading' && d.percent != null) {
+      var step = d.percent < 0 ? -1 : Math.floor(d.percent / 10) * 10;
+      if (lastPct[who] === step) return;
+      lastPct[who] = step;
+      add(who + ': downloading ' + (d.percent < 0 ? '(unknown size)' : d.percent + '%'));
+      return;
+    }
+    lastPct[who] = null;
+    add(who + ': ' + d.state + (d.path ? ' — ' + d.path : '') + (d.message ? ' (' + d.message + ')' : ''),
+        d.state === 'error' ? 'e' : (d.state === 'ready' || d.state === 'open') ? 'k' : '');
+  });
+
+  add('RosTrickPages: ' + (typeof window.RosTrickPages) + ' | RosTrickPagesBridge: ' + (typeof window.RosTrickPagesBridge));
+  setTimeout(function () {
+    var ok = typeof window.RosTrickPages === 'object';
+    $('warn').style.display = ok ? 'none' : 'block';
+    add('بعد ثانيتين: RosTrickPages = ' + (typeof window.RosTrickPages), ok ? 'k' : 'e');
+    refreshStates();
+  }, 2000);
+})();
 </script>
 </body>
 </html>
