@@ -64,11 +64,20 @@ button{font:inherit;color:inherit}
 #btn-pause{pointer-events:auto;width:38px;height:38px;border-radius:50%;border:1px solid rgba(214,165,74,.55);background:rgba(5,7,12,.5);padding:0;cursor:pointer;opacity:.7;display:flex;align-items:center;justify-content:center}
 #btn-pause svg{width:100%;height:100%}
 #btn-pause .t{stroke:rgba(214,165,74,.6);stroke-width:1}
-#btn-pause .b{stroke:var(--ink);stroke-width:2.4;stroke-linecap:round}
+#btn-pause .b{fill:var(--ink)}
 #btn-pause:active{background:rgba(47,214,196,.2);border-color:var(--teal)}
 #perf{position:absolute;left:8px;bottom:8px;margin:0;z-index:6;display:none;pointer-events:none;direction:ltr;text-align:left;
   font:11px/1.35 ui-monospace,Menlo,Consolas,monospace;color:#9fffe8;background:rgba(0,0,0,.55);padding:5px 8px;border-radius:4px;white-space:pre}
 #perf.on{display:block}
+#stage.nograin #grain,#stage.novig #vig,#stage.nonear #bg-near{display:none}
+#stage.dx-far #bg-far,#stage.dx-mid #bg-mid,#stage.dx-near #bg-near,#stage.dx-grain #grain,#stage.dx-vig #vig,#stage.dx-game #game,#stage.dx-gears .gr{display:none!important}
+html.noanim *{animation:none!important;transition:none!important}
+#dx{position:absolute;top:3px;left:50%;transform:translateX(-50%);z-index:9;display:none;flex-wrap:wrap;gap:3px;justify-content:center;max-width:46%;pointer-events:auto;direction:ltr}
+#dx.on{display:flex}
+#dx button{font:600 10px/1 ui-monospace,Menlo,Consolas,monospace;padding:5px 6px;border-radius:4px;border:1px solid rgba(228,221,204,.55);background:rgba(5,7,12,.72);color:#e4ddcc;cursor:pointer;min-width:30px}
+#dx button.x{color:#ff9a8a;border-color:#ff9a8a;text-decoration:line-through;opacity:.85}
+#dx button.a{color:#06121a;background:var(--teal);border-color:var(--teal)}
+
 #toast{position:absolute;left:50%;top:15%;transform:translateX(-50%) translateY(-6px);opacity:0;z-index:30;pointer-events:none;
   background:rgba(5,8,14,.82);border-top:1px solid rgba(47,214,196,.6);border-bottom:1px solid var(--line);padding:9px 24px;font-size:16px;font-weight:300;
   letter-spacing:.02em;transition:opacity .3s,transform .3s;max-width:90%;text-align:center}
@@ -236,9 +245,10 @@ table.res th{color:var(--dim);font-weight:400;font-size:12px}
       <div id="sp"><i id="sp-fill"></i></div>
       <div id="gears"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.6 2.4 2.8-.8.9 2.8 2.8.9-.8 2.8L21 12l-2.4 1.6.8 2.8-2.8.9-.9 2.8-2.8-.8L12 21l-1.6-2.4-2.8.8-.9-2.8-2.8-.9.8-2.8L3 12l2.4-1.6-.8-2.8 2.8-.9.9-2.8 2.8.8z"/><circle cx="12" cy="12" r="3"/></svg><b id="gear-n">0</b></div>
     </div>
-    <button id="btn-pause" type="button" aria-label="pause"><svg viewBox="0 0 40 40" aria-hidden="true"><circle class="t" cx="20" cy="20" r="16" pathLength="60" stroke-dasharray="0.4 0.6" fill="none" stroke-width="3"/><path class="b" d="M16 14v12M24 14v12"/></svg></button>
+    <button id="btn-pause" type="button" aria-label="pause"><svg viewBox="0 0 40 40" aria-hidden="true"><circle class="t" cx="20" cy="20" r="16" pathLength="60" stroke-dasharray="0.4 0.6" fill="none" stroke-width="3"/><rect class="b" x="14.8" y="13" width="2.6" height="14" rx="1.3"/><rect class="b" x="22.6" y="13" width="2.6" height="14" rx="1.3"/></svg></button>
   </div>
   <pre id="perf"></pre>
+  <div id="dx"></div>
   <div id="toast"></div>
   <div id="stress-live"></div>
 
@@ -531,6 +541,8 @@ const Snd = (function () {
   let active = 0, canPan = false, duck = 1, listenX = 0;
   let dest = null, cPan = 0, cVol = 1, cWet = 0;          // routing state of the voice currently being built
   const beds = { on: false };
+  let off = false;                                          // true while a voice is being built for an OfflineAudioContext (baking)
+  const baked = {}, bake = { q: [], started: false, OAC: null };
 
   /* a seamless looping noise buffer (equal-power-ish crossfade of the tail into the head) */
   function loopBuf(sec, brown) {
@@ -578,6 +590,7 @@ const Snd = (function () {
     noiseBuf = loopBuf(1, false); brownBuf = loopBuf(4, true); windBuf = loopBuf(5, false);
     makeReverb();
     dest = master;
+    setTimeout(startBake, 800);
     return ctx;
   }
   function resume() { const c = ensure(); if (c && c.state === 'suspended') c.resume().catch(function () { }); }
@@ -589,6 +602,7 @@ const Snd = (function () {
     ambMaster.gain.setTargetAtTime(S.mute ? 0 : S.ambVol, t, 0.05);
   }
   function done() { active--; }
+  function hold(n) { if (!off) { active++; n.onended = done; } }          // live voices are counted; baked ones are not
 
   /* ---- voice building blocks (all honour the routing state: pan / distance volume / reverb send) ---- */
   function wetScale() { return S.mute ? 0 : (dest === master ? S.sfxVol : S.ambVol * duck); }
@@ -596,7 +610,7 @@ const Snd = (function () {
     let n = g;
     if (cPan !== 0 && canPan) { const p = ctx.createStereoPanner(); p.pan.value = cPan; g.connect(p); n = p; }
     n.connect(dest);
-    if (cWet > 0.001 && rvIn) { const s = ctx.createGain(); s.gain.value = cWet * wetScale(); n.connect(s); s.connect(rvIn); }
+    if (!off && cWet > 0.001 && rvIn) { const s = ctx.createGain(); s.gain.value = cWet * wetScale(); n.connect(s); s.connect(rvIn); }
   }
   function tone(type, f0, f1, dur, gain, delay, attack) {
     const t0 = ctx.currentTime + (delay || 0), at = attack || 0.004;
@@ -605,7 +619,7 @@ const Snd = (function () {
     if (f1 !== f0) o.frequency.exponentialRampToValueAtTime(Math.max(1, f1), t0 + dur);
     g.gain.setValueAtTime(0.0001, t0); g.gain.linearRampToValueAtTime(Math.max(0.0002, gain * cVol), t0 + at);
     g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-    o.connect(g); route(g); active++; o.onended = done; o.start(t0); o.stop(t0 + dur + 0.03);
+    o.connect(g); route(g); hold(o); o.start(t0); o.stop(t0 + dur + 0.03);
   }
   function noise(dur, gain, ftype, f0, f1, q, delay, attack) {
     const t0 = ctx.currentTime + (delay || 0), at = attack || 0.003;
@@ -615,7 +629,7 @@ const Snd = (function () {
     if (f1 !== f0) f.frequency.exponentialRampToValueAtTime(Math.max(20, f1), t0 + dur);
     g.gain.setValueAtTime(0.0001, t0); g.gain.linearRampToValueAtTime(Math.max(0.0002, gain * cVol), t0 + at);
     g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-    src.connect(f); f.connect(g); route(g); active++; src.onended = done;
+    src.connect(f); f.connect(g); route(g); hold(src);
     src.start(t0, Math.random() * 0.9); src.stop(t0 + dur + 0.03);
   }
   function bell(base, gain, len, delay) {
@@ -658,7 +672,7 @@ const Snd = (function () {
     wob.gain.value = 1 - depth; lfo.type = 'triangle'; lfo.frequency.value = hz; lg.gain.value = depth;
     lfo.connect(lg); lg.connect(wob.gain);
     src.connect(fl); fl.connect(wob); wob.connect(env); route(env);
-    active++; src.onended = done; src.start(t0, Math.random() * 2); src.stop(t0 + dur + 0.05); lfo.start(t0); lfo.stop(t0 + dur + 0.05);
+    hold(src); src.start(t0, Math.random() * 2); src.stop(t0 + dur + 0.05); lfo.start(t0); lfo.stop(t0 + dur + 0.05);
   }
   function creak(dur, gain, f0, f1) {                        // dry friction squeal of a stiff hinge
     const t0 = ctx.currentTime, gg = Math.max(0.0002, gain * cVol);
@@ -671,7 +685,7 @@ const Snd = (function () {
     wob.gain.value = 0.6; lfo.type = 'triangle'; lfo.frequency.value = rnd(14, 26); lg.gain.value = 0.4;
     lfo.connect(lg); lg.connect(wob.gain);
     o.connect(fl); fl.connect(wob); wob.connect(env); route(env);
-    active++; o.onended = done; o.start(t0); o.stop(t0 + dur + 0.05); lfo.start(t0); lfo.stop(t0 + dur + 0.05);
+    hold(o); o.start(t0); o.stop(t0 + dur + 0.05); lfo.start(t0); lfo.stop(t0 + dur + 0.05);
   }
 
   /* ---- sound effects ---- */
@@ -746,7 +760,8 @@ const Snd = (function () {
       const dx = wx - listenX;
       cPan = clamp(dx / (11 * U), -1, 1) * 0.85; cVol = clamp(1.15 - Math.abs(dx) / (20 * U), 0.2, 1);
     }
-    try { f(a); } catch (e) { /* ignore audio errors */ }
+    if (name === 'land' && a) cWet = 0.22;
+    try { if (!playBaked(keyOf(name, a))) f(a); } catch (e) { /* ignore audio errors */ }
     cPan = 0; cVol = 1; cWet = 0;
   }
   function test(name, a) {                                   // used by buttons: wake the audio context first, then play
@@ -781,7 +796,7 @@ const Snd = (function () {
     if (!ctx || ctx.state !== 'running' || S.mute || S.ambVol <= 0 || active > 28) return;
     const f = ambFx[name]; if (!f) return;
     dest = ambDuck; cPan = pan || 0; cVol = vol === undefined ? 1 : vol; cWet = wet || 0;
-    try { f(a); } catch (e) { /* ignore audio errors */ }
+    try { if (!playBaked(keyOf(name, a))) f(a); } catch (e) { /* ignore audio errors */ }
     dest = master; cPan = 0; cVol = 1; cWet = 0;
   }
   function startBeds() {                                     // endless soft beds: room tone, thin air, wind
@@ -822,6 +837,62 @@ const Snd = (function () {
     const go = function () { ambPlay(name, a, 1, 0, 0.2); };
     if (c.state === 'running') go(); else c.resume().then(go).catch(function () { });
   }
+  /* ---- baking: every effect is synthesized once, in the background, into a short AudioBuffer (a few variants each, so repeats still differ).
+     Playing one is then 2-3 audio nodes instead of 10-130 freshly built ones — no hitches while running or at a save clock.
+     Until a buffer is ready (or if the browser cannot render offline) the same code simply synthesizes the sound live. ---- */
+  function keyOf(name, a) {
+    switch (name) {
+      case 'step': return 'step:' + (a === 2 ? 2 : (a === 4 ? 4 : 0));
+      case 'swing': return 'swing:' + (a === 2 ? 2 : 0);
+      case 'land': case 'hit': case 'tick': case 'tickBig': case 'beat': return name + ':' + (a ? 1 : 0);
+      default: return name;
+    }
+  }
+  function playBaked(key) {
+    const list = baked[key]; if (!list || !list.length) return false;
+    const src = ctx.createBufferSource(), g = ctx.createGain();
+    src.buffer = list[(Math.random() * list.length) | 0]; g.gain.value = cVol;
+    src.connect(g); route(g); hold(src); src.start();
+    return true;
+  }
+  const JOBS = [                                           // [key, builder, argument, variants, seconds to render]
+    ['step:0', fx.step, 0, 4, 0.18], ['step:2', fx.step, 2, 3, 0.18], ['step:4', fx.step, 4, 3, 0.18],
+    ['jump', fx.jump, undefined, 3, 0.25], ['land:0', fx.land, false, 3, 0.3], ['land:1', fx.land, true, 3, 0.5],
+    ['swing:0', fx.swing, 0, 3, 0.25], ['swing:2', fx.swing, 2, 3, 0.5], ['hit:0', fx.hit, false, 3, 0.45], ['hit:1', fx.hit, true, 3, 0.5],
+    ['dodge', fx.dodge, undefined, 2, 0.35], ['hurt', fx.hurt, undefined, 2, 0.4], ['pickup', fx.pickup, undefined, 2, 0.3], ['barrel', fx.barrel, undefined, 2, 0.5],
+    ['ui', fx.ui, undefined, 2, 0.15], ['deny', fx.deny, undefined, 1, 0.3], ['pit', fx.pit, undefined, 1, 0.55], ['interact', fx.interact, undefined, 2, 0.6],
+    ['lever', fx.lever, undefined, 1, 0.55], ['special', fx.special, undefined, 1, 1.4], ['door', fx.door, undefined, 1, 1.2],
+    ['save', fx.save, undefined, 1, 2.7], ['death', fx.death, undefined, 1, 2.2],
+    ['tick:0', ambFx.tick, false, 2, 0.12], ['tick:1', ambFx.tick, true, 2, 0.12], ['tickBig:0', ambFx.tickBig, false, 2, 0.35], ['tickBig:1', ambFx.tickBig, true, 2, 0.35],
+    ['beat:0', ambFx.beat, false, 2, 0.1], ['beat:1', ambFx.beat, true, 2, 0.1], ['stutter', ambFx.stutter, undefined, 1, 0.3],
+    ['ratchet', ambFx.ratchet, undefined, 4, 1.5], ['grind', ambFx.grind, undefined, 3, 2.5], ['groan', ambFx.groan, undefined, 3, 2.9],
+    ['chain', ambFx.chain, undefined, 3, 0.8], ['creak', ambFx.creak, undefined, 3, 1.0], ['steam', ambFx.steam, undefined, 2, 1.0],
+    ['clunk', ambFx.clunk, undefined, 2, 0.5], ['debris', ambFx.debris, undefined, 3, 0.8]
+  ];
+  function bakeOne(job, next) {
+    const real = ctx, rDest = dest, rPan = cPan, rVol = cVol, rWet = cWet, sr = real.sampleRate;
+    let oc = null;
+    try { oc = new bake.OAC(1, Math.ceil(sr * job.sec), sr); } catch (e) { next(); return; }
+    const m = oc.createGain(); m.connect(oc.destination);
+    ctx = oc; dest = m; off = true; cPan = 0; cVol = 1; cWet = 0;
+    try { job.fn(job.arg); } catch (e) { /* this variant is skipped */ }
+    ctx = real; dest = rDest; off = false; cPan = rPan; cVol = rVol; cWet = rWet;
+    const fin = function (buf) { if (buf) (baked[job.key] || (baked[job.key] = [])).push(buf); next(); };
+    try {
+      const pr = oc.startRendering();
+      if (pr && pr.then) pr.then(fin, function () { next(); }); else oc.oncomplete = function (e) { fin(e.renderedBuffer); };
+    } catch (e) { next(); }
+  }
+  function pump() {
+    const job = bake.q.shift(); if (!job) return;
+    setTimeout(function () { if (ctx) bakeOne(job, pump); }, 30);
+  }
+  function startBake() {
+    if (bake.started || !ctx) return; bake.started = true;
+    bake.OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext; if (!bake.OAC) return;
+    JOBS.forEach(function (j) { for (let v = 0; v < j[3]; v++) bake.q.push({ key: j[0], fn: j[1], arg: j[2], sec: j[4] }); });
+    pump();
+  }
   function peakOf(an) {
     if (!an) return 0;
     if (!abuf || abuf.length < an.fftSize) abuf = new Float32Array(an.fftSize);
@@ -841,7 +912,8 @@ const Snd = (function () {
     peak: function () { return peakOf(analyser); }, ambPeak: function () { return peakOf(ambAnalyser); }, ambRms: function () { return rmsOf(ambAnalyser); },
     ambPlay: ambPlay, ambEnv: ambEnv, ambTest: ambTest, listen: function (x) { listenX = x; },
     names: Object.keys(fx), ambNames: Object.keys(ambFx),
-    get state() { return ctx ? ctx.state : 'none'; }, get beds() { return beds.on; }
+    get state() { return ctx ? ctx.state : 'none'; }, get beds() { return beds.on; },
+    get baked() { let n = 0; for (const k in baked) n += baked[k].length; return n; }, get bakeTotal() { return JOBS.reduce(function (a, j) { return a + j[3]; }, 0); }
   };
 })();
 
@@ -852,7 +924,7 @@ const Game = {
   scale: 1, viewW: 1280, cssScale: 1, dpr: 1, resScale: 1, cw: 1280, ch: 720,
   fade: { a: 0, target: 0, speed: 3, cb: null },
   portrait: false, pausedByRotate: false, touchSeen: false,
-  particleCap: 4096, lowFx: false, stress: null, resizeLock: 0
+  particleCap: 4096, lowFx: false, fxTier: 0, stress: null, resizeLock: 0
 };
 
 /* ---------- 7. input (keyboard + touch → one action layer) ---------- */
@@ -1082,7 +1154,7 @@ const Remap = {
 const LW = 190, LH = 26, G = 18;          // columns, rows, ground-surface row
 const Level = {
   w: LW, h: LH, grid: new Uint8Array(LW * LH), ents: [], drops: [], signs: [], clocks: [],
-  doorOpen: false, doorAnim: 0, doorTx: 125, spawn: { x: 4.5 * U, y: G * U }
+  doorOpen: false, doorAnim: 0, doorTx: 125, spawn: { x: 4.5 * U, y: G * U }, ver: 0
 };
 const CLOCK_TX = [26, 66, 96, 131, 176];
 function tileAt(tx, ty) {
@@ -1095,6 +1167,7 @@ function fill(x0, y0, x1, y1, v) {
   for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) if (x >= 0 && x < LW && y >= 0 && y < LH) Level.grid[y * LW + x] = v;
 }
 function buildLevel() {
+  Level.ver++;                                                       // the cached ground blocks (see drawTiles) are rebuilt for the new layout
   Level.grid.fill(0); Level.ents.length = 0; Level.signs.length = 0; Level.clocks.length = 0;
   Level.doorOpen = false; Level.doorAnim = 0;
   fill(0, 0, 1, LH, 1); fill(LW - 1, 0, LW, LH, 1);                    // outer walls
@@ -1261,7 +1334,7 @@ function saveAtClock(e) {
     if (q.t === 'gear' && q.got) got.push(q.uid); else if (q.t === 'barrel' && q.dead) brk.push(q.uid);
   }
   S.progress = { cp: { x: checkpoint.x, y: checkpoint.y }, hp: P.hpMax, gears: P.gears, savedAt: Date.now(), got: got, brk: brk, door: Level.doorOpen };
-  persist();
+  setTimeout(persist, 200);                               // the disk write waits until the save sound and effects are on screen
   e.wind = 1;
   FX.glow(e.x, e.y - 70, 60, 1, 0.8); FX.sparks(e.x, e.y - 100, 14, 4); FX.ring(e.x, e.y - 90, 70, 4, 0.6);
   Snd.play('save', 0, e.x); UI.toast(t('m_saved')); HUD.dirty = true;
@@ -2108,21 +2181,45 @@ function drawSigns(c, cx) {                       // quiet hints: light text on 
     c.fillStyle = '#e4ddcc'; c.font = '400 18px ' + FONT; c.fillText(t(s.key), s.x, y + 1);
   }
 }
-function drawTiles(c, cx, cy) {
-  const tx0 = Math.max(0, Math.floor(cx / U)), tx1 = Math.min(LW - 1, Math.floor((cx + Game.viewW) / U));
-  const ty0 = Math.max(0, Math.floor(cy / U)), ty1 = Math.min(LH - 1, Math.floor((cy + VIEW_H) / U));
-  const A = Atlas.cv;
-  for (let ty = ty0; ty <= ty1; ty++) for (let tx = tx0; tx <= tx1; tx++) {
-    const v = Level.grid[ty * LW + tx];
-    if (v === 0 || v === 4) continue;
-    const h = (tx * 7 + ty * 13) & 3;
-    let idx = 0;
-    if (v === 1) idx = (ty > 0 && Level.grid[(ty - 1) * LW + tx] === 1) ? h : 4 + (h & 1);
-    else if (v === 2) idx = 6; else if (v === 3) idx = 7;
-    c.drawImage(A, idx * TS, 0, TS, TS, tx * U, ty * U, U + 1, U + 1);
+/* The ground never changes while you play, so it is painted once into 8×8-tile blocks (one small canvas each) and each frame just blits the
+   handful of blocks on screen instead of ~500 single tiles. Blocks are built when first needed, and the next one is prepared one frame ahead. */
+const CHK = 8, CHK_PX = CHK * U + 1;                   // tiles per side; pixel size (+1 so neighbouring blocks overlap by a pixel, no seams)
+const Chunks = { map: new Map(), ver: -1, k: 1 };
+function tileIdx(tx, ty) {                             // atlas cell for this tile, or -1 when nothing is drawn there (air / the door, which has its own sprite)
+  const v = Level.grid[ty * LW + tx];
+  if (v === 0 || v === 4) return -1;
+  const h = (tx * 7 + ty * 13) & 3;
+  if (v === 1) return (ty > 0 && Level.grid[(ty - 1) * LW + tx] === 1) ? h : 4 + (h & 1);
+  return v === 2 ? 6 : 7;
+}
+function chunkAt(ci, cj) {
+  const key = cj * 64 + ci, got = Chunks.map.get(key);
+  if (got !== undefined) return got;
+  const k = Chunks.k, px = Math.ceil(CHK_PX * k), t0x = ci * CHK, t0y = cj * CHK;
+  let cv = null, g = null;
+  for (let ty = t0y; ty < t0y + CHK && ty < LH; ty++) for (let tx = t0x; tx < t0x + CHK && tx < LW; tx++) {
+    const idx = tileIdx(tx, ty); if (idx < 0) continue;
+    if (!cv) { cv = mk(px, px); g = cv.getContext('2d'); g.scale(k, k); }
+    g.drawImage(Atlas.cv, idx * TS, 0, TS, TS, (tx - t0x) * U, (ty - t0y) * U, U + 1, U + 1);
   }
+  Chunks.map.set(key, cv || false);
+  return cv || false;
+}
+function drawTiles(c, cx, cy) {
+  const k = (Game.cw / Game.viewW) > 1.3 ? 2 : 1;      // keep the blocks crisp on big or sharp screens, small on phones
+  if (Chunks.ver !== Level.ver || Chunks.k !== k) { Chunks.map.clear(); Chunks.ver = Level.ver; Chunks.k = k; }
+  const span = CHK * U, vw = Game.viewW;
+  const i0 = Math.max(0, Math.floor(cx / span)), i1 = Math.min(Math.ceil(LW / CHK) - 1, Math.floor((cx + vw) / span));
+  const j0 = Math.max(0, Math.floor(cy / span)), j1 = Math.min(Math.ceil(LH / CHK) - 1, Math.floor((cy + VIEW_H) / span));
+  for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
+    const ch = chunkAt(i, j);
+    if (ch) c.drawImage(ch, i * span, j * span, CHK_PX, CHK_PX);
+  }
+  // prepare the next block row/column a frame early so walking never builds anything on screen
+  const ia = Math.max(0, i0 - 1), ib = Math.min(Math.ceil(LW / CHK) - 1, i1 + 1);
+  for (let i = ia; i <= ib; i++) for (let j = j0; j <= j1; j++) if (!Chunks.map.has(j * 64 + i)) { chunkAt(i, j); i = 1e9; break; }
   // sliding door
-  const dx = Level.doorTx * U, dy = (G - 4) * U;
+  const A = Atlas.cv, dx = Level.doorTx * U, dy = (G - 4) * U;
   if (dx + U > cx && dx < cx + Game.viewW) {
     c.save(); c.beginPath(); c.rect(dx, dy, U, 4 * U); c.clip();
     const lift = Level.doorAnim * 3.75 * U;
@@ -2522,6 +2619,7 @@ function applyQuality() {
   Game.particleCap = q === 'low' ? 800 : (q === 'medium' ? 2000 : PMAX);
   Game.dprCap = q === 'low' ? 1 : (q === 'medium' ? 1.5 : 2);
   $('#stage').classList.toggle('lowfx', Game.lowFx);
+  unshedLoad();
 }
 function resize() {
   const vw = Math.max(1, window.innerWidth), vh = Math.max(1, window.innerHeight);
@@ -2553,6 +2651,20 @@ function applyLangDOM() {
 }
 function applyPerfHud() { $('#perf').classList.toggle('on', !!S.perfHud); }
 
+/* Auto quality: when frames stay slow, drop the cheapest-to-lose layers first, then resolution */
+const SHED = ['grain', 'vig', 'res', 'near', 'res', 'res'];
+function shedLoad() {
+  const st = SHED[Game.fxTier];
+  if (st === undefined) { if (Game.resScale > 0.55) { Game.resScale = Math.max(0.55, +(Game.resScale - 0.05).toFixed(2)); resize(); } return; }
+  Game.fxTier++;
+  const stage = $('#stage');
+  if (st === 'grain') stage.classList.add('nograin');
+  else if (st === 'vig') stage.classList.add('novig');
+  else if (st === 'near') stage.classList.add('nonear');
+  else if (Game.resScale > 0.55) { Game.resScale = Math.max(0.55, +(Game.resScale - 0.15).toFixed(2)); resize(); }
+}
+function unshedLoad() { Game.fxTier = 0; const c = $('#stage').classList; c.remove('nograin'); c.remove('novig'); c.remove('nonear'); }
+
 /* ---------- 20. performance monitor, adaptive resolution, stress test ---------- */
 const Perf = {
   ft: new Float32Array(240), n: 0, i: 0, upd: 0, ren: 0, avg: 16.7, p95: 16.7, max: 16.7, fps: 60, calcT: 0, low: 0, hi: 0, hudT: 0, tmp: new Float32Array(120),
@@ -2562,7 +2674,7 @@ const Perf = {
     this.calcT += raw;
     if (this.calcT >= 500) { this.calcT = 0; this.calc(); this.adapt(); }
     this.hudT += raw;
-    if (this.hudT >= 250 && S.perfHud) { this.hudT = 0; this.show(); }
+    if (this.hudT >= 250) { this.hudT = 0; DX.sync(); if (S.perfHud) this.show(); }
   },
   calc() {
     const m = Math.min(this.n, 120); let sum = 0, mx = 0;
@@ -2570,12 +2682,15 @@ const Perf = {
     const sorted = this.tmp.subarray(0, m).slice().sort();
     this.avg = sum / m; this.max = mx; this.p95 = sorted[Math.min(m - 1, Math.floor(m * 0.95))]; this.fps = 1000 / this.avg;
   },
+  cool: 0,
   adapt() {
-    if (S.quality !== 'auto' || Game.state === 'stress' || Game.state === 'pause' || document.hidden || this.n < 60) return;
+    if (S.quality !== 'auto' || Game.state !== 'play' || document.hidden || this.n < 120) return;
+    if (Game.time < 20 && Snd.baked < Snd.bakeTotal) return;           // start-up hitches (building chunks, baking sounds) must not cost the visuals for good
+    if (this.cool > 0) { this.cool--; return; }                       // wait for the rolling window to reflect the last step
     const cpu = this.upd + this.ren;
     if (this.fps < 48 || cpu > 13) this.low++; else this.low = 0;
     if (this.fps >= 57 && cpu < 6) this.hi++; else this.hi = 0;
-    if (this.low >= 3 && Game.resScale > 0.55) { Game.resScale = Math.max(0.55, +(Game.resScale - 0.1).toFixed(2)); this.low = 0; resize(); }
+    if (this.low >= 3) { this.low = 0; this.cool = 8; shedLoad(); }
     else if (this.hi >= 12 && Game.resScale < 1) { Game.resScale = Math.min(1, +(Game.resScale + 0.1).toFixed(2)); this.hi = 0; resize(); }
   },
   show() {
@@ -2585,7 +2700,7 @@ const Perf = {
       'update ' + this.upd.toFixed(2) + ' ms   draw ' + this.ren.toFixed(2) + ' ms\n' +
       'view ' + Game.viewW + 'x' + VIEW_H + '  canvas ' + Game.cw + 'x' + Game.ch + '  dpr ' + Game.dpr.toFixed(2) + '  res ' + Game.resScale.toFixed(2) + '\n' +
       'entities ' + Level.ents.length + '  particles ' + pAliveN + '/' + Game.particleCap + '  sprites ' + Bots.n + '\n' +
-      'heap ' + heap + '   audio ' + Snd.state + '   quality ' + S.quality;
+      'heap ' + heap + '   audio ' + Snd.state + '   quality ' + S.quality + (S.quality === 'auto' ? '  fx ' + Game.fxTier : '');
   }
 };
 
@@ -2831,11 +2946,61 @@ function toMenu() {
 }
 function restartFromSave() { newWorld(!!S.progress); UI.resume(); }
 
+/* ---------- 22b. diagnostics panel: shows with the performance HUD while playing; finds what costs frames on a given phone ---------- */
+const DX = {
+  on: { far: 1, mid: 1, near: 1, gears: 1, grain: 1, vig: 1, hud: 1, touch: 1, canvas: 1, css: 1, audio: 1, fps30: 0, walk: 0 },
+  def: { far: 1, mid: 1, near: 1, gears: 1, grain: 1, vig: 1, hud: 1, touch: 1, canvas: 1, css: 1, audio: 1, fps30: 0, walk: 0 },
+  keys: ['far', 'mid', 'near', 'gears', 'grain', 'vig', 'hud', 'touch', 'canvas', 'css', 'audio', 'fps30', 'walk'],
+  btn: {}, walking: false, dir: 1, lastX: 0, stuck: 0,
+  build() {
+    const box = $('#dx'), self = this;
+    this.keys.forEach(function (k) {
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = k; self.btn[k] = b;
+      b.addEventListener('click', function (e) { e.stopPropagation(); self.on[k] = self.on[k] ? 0 : 1; self.apply(); });
+      box.appendChild(b);
+    });
+    this.apply();
+  },
+  changed() { for (const k in this.def) if (this.on[k] !== this.def[k]) return true; return false; },
+  apply() {
+    const o = this.on;
+    const vis = function (sel, v) { const e = $(sel); if (e) e.style.visibility = v ? '' : 'hidden'; };
+    const cl = $('#stage').classList;
+    cl.toggle('dx-far', !o.far); cl.toggle('dx-mid', !o.mid); cl.toggle('dx-near', !o.near); cl.toggle('dx-grain', !o.grain);
+    cl.toggle('dx-vig', !o.vig); cl.toggle('dx-game', !o.canvas); cl.toggle('dx-gears', !o.gears);
+    vis('#hud', o.hud); vis('#touch', o.touch);
+    document.documentElement.classList.toggle('noanim', !o.css);
+    if (!o.audio) Snd.suspend(); else if (Snd.state === 'suspended') Snd.resume();
+    for (const k in this.btn) { const feat = (k === 'fps30' || k === 'walk'); this.btn[k].className = feat ? (o[k] ? 'a' : '') : (o[k] ? '' : 'x'); }
+  },
+  reset() { for (const k in this.def) this.on[k] = this.def[k]; this.apply(); },
+  sync() {
+    $('#dx').classList.toggle('on', !!S.perfHud && Game.state === 'play');
+    if (!S.perfHud && this.changed()) this.reset();                           // never leave things switched off once the HUD is hidden
+    if (!this.on.audio && Snd.state === 'running') Snd.suspend();
+  },
+  drive() {                                                                  // "walk": the hero paces the flat training yard by himself (no finger on the screen)
+    const T = Input.touch, w = this.on.walk && Game.state === 'play';
+    if (!w) { if (this.walking) { T.right = false; T.left = false; this.walking = false; } return; }
+    if (!this.walking) {
+      this.walking = true; this.dir = 1; this.stuck = 0;
+      if (P.x / U < 96 || P.x / U > 118) { resetPlayer(100 * U, 18 * U); Cam.update(0.016, true); }
+      this.lastX = P.x;
+    }
+    const tx = P.x / U;
+    if (tx > 117.5) this.dir = -1; else if (tx < 98.5) this.dir = 1;
+    if (Math.abs(P.x - this.lastX) < 0.5) { if (++this.stuck > 40) { this.dir = -this.dir; this.stuck = 0; } } else this.stuck = 0;
+    this.lastX = P.x;
+    T.right = this.dir > 0; T.left = this.dir < 0;
+  }
+};
+
 /* ---------- 23. main loop ---------- */
 function update(dt) {
   fadeStep(dt);
   Amb.setState(Game.state);
   if (Game.state === 'pause' || Game.testHold) return;
+  DX.drive();
   Game.time += dt;
   if (Game.hitStop > 0) { Game.hitStop -= dt; Cam.update(dt, false); return; }
   Input.enabled = (Game.state === 'play');
@@ -2863,8 +3028,10 @@ let lastTs = 0;
 function frame(ts) {
   requestAnimationFrame(frame);
   if (!lastTs) { lastTs = ts; return; }
-  const raw = ts - lastTs; lastTs = ts;
+  const raw = ts - lastTs;
   if (raw <= 0) return;
+  if (DX.on.fps30 && raw < 30) return;                                       // diagnostic: even 30 fps pacing (skips alternate vsyncs, time accumulates)
+  lastTs = ts;
   const dt = Math.min(raw / 1000, MAX_FRAME);
   const t0 = performance.now();
   update(dt);
@@ -2920,7 +3087,7 @@ Art.load(ART_CONFIG);
 Input.rebuild(); applyQuality(); HUD.build();
 newWorld(false);
 resize();
-applyLangDOM(); applyPerfHud();
+applyLangDOM(); applyPerfHud(); DX.build();
 (function () {                                  // start-screen emblem: 60 minute ticks with one stolen (the gap at 12), hands stopped at 11:59
   const g = $('#emb-ticks'); let h = '';
   for (let i = 1; i < 60; i++) {
@@ -2935,9 +3102,10 @@ requestAnimationFrame(frame);
 
 /* test hooks used by the automated checks (read-only helpers; they do not change gameplay rules) */
 window.__KSM = {
+  DX: DX, shed: shedLoad, unshed: unshedLoad,
   U: U, TUNE: TUNE, P: P, Game: Game, Level: Level, Input: Input, Art: Art, Snd: Snd, Amb: Amb, Cam: Cam, Perf: Perf, Stress: Stress, UI: UI, S: function () { return S; },
   start: startGame,
-  dbg: function () { return { ctx: ctx, BG: BG, updateBackdrop: updateBackdrop, drawTiles: drawTiles, drawEntities: drawEntities, drawNader: drawNader, drawSigns: drawSigns, drawParticles: drawParticles, render: render, VIEW_H: VIEW_H }; },
+  dbg: function () { return { ctx: ctx, BG: BG, updateBackdrop: updateBackdrop, drawTiles: drawTiles, drawEntities: drawEntities, drawNader: drawNader, drawSigns: drawSigns, drawParticles: drawParticles, drawPrompt: drawPrompt, render: render, VIEW_H: VIEW_H }; },
   hold: function (v) { Game.testHold = !!v; },
   sim: function (sec, step) {
     const h = step || (1 / 120), n = Math.round(sec / h);
