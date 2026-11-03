@@ -936,7 +936,7 @@ const Game = {
   scale: 1, viewW: 1280, cssScale: 1, dpr: 1, resScale: 1, cw: 1280, ch: 720,
   fade: { a: 0, target: 0, speed: 3, cb: null },
   portrait: false, pausedByRotate: false, touchSeen: false,
-  particleCap: 4096, lowFx: false, fxTier: 0, fx: { grain: 1, vig: 1, near: 1, lo: 0 }, reduceMotion: false, stress: null, resizeLock: 0
+  particleCap: 4096, lowFx: false, fxTier: 0, fx: { grain: 1, vig: 1, near: 1 }, reduceMotion: false, stress: null, resizeLock: 0
 };
 
 /* ---------- 7. input (keyboard + touch → one action layer) ---------- */
@@ -2031,7 +2031,7 @@ function buildAtlas() {
   Atlas.cv = cv;
 }
 
-const BG = { lo: null, sky: null, mid: null, near: null, vig: null, gear: null, gears: [], W: 1680, H: 800, ovl: {}, ovlKey: '', noise: null, fadeA: -1 };
+const BG = { sky: null, mid: null, near: null, vig: null, gear: null, gears: [], W: 1680, H: 800, ovl: {}, ovlKey: '', noise: null, fadeA: -1 };
 function wrapDraw(W, x, w, fn) { fn(x); if (x + w > W) fn(x - W); if (x < 0) fn(x + W); }
 function buildBackgrounds() {
   /* the backdrops are painted once, as one seamless period each (1680 = the widest view), and blitted into the game canvas each frame (a strip is at most
@@ -2113,12 +2113,6 @@ function buildBackgrounds() {
   gc.fillStyle = '#ffe9a8'; gc.beginPath(); gc.arc(20, 18, 4, 0, 6.3); gc.fill();
   gc.globalCompositeOperation = 'destination-out'; gc.beginPath(); gc.arc(24, 24, 4, 0, 6.3); gc.fill();
   BG.gear = gs;
-  // static sources become GPU-friendly bitmaps when the browser can (the canvases stay as the fallback until then)
-  if (window.createImageBitmap) {
-    [['sky', BG.sky], ['mid', BG.mid], ['near', BG.near]].forEach(function (e) {
-      try { window.createImageBitmap(e[1]).then(function (bm) { BG[e[0] + 'Src'] = bm; }, function () { }); } catch (err) { /* keep the canvas */ }
-    });
-  }
 }
 /* called from resize(): the canvas size changed, so the film-grain/vignette overlays are rebuilt on next use */
 function layoutBackdrop(cssW, cssH) {
@@ -2154,30 +2148,46 @@ function overlayFor(vig, grain) {
 /* ---------- 17. drawing ---------- */
 let ctx = null;
 const BG_SPEED = [0.28, 0.52];
-function drawStrip(c, src, x0, vy) { const W = BG.W; for (let x = x0; x < Game.viewW; x += W) c.drawImage(src, x, vy, W, BG.H); }
-function drawBackdrop(c, cx, cy) {              // sky -> middle strip + wall gears -> near pillars; all pre-rendered, so this is a handful of blits
-  const on = DX.on, vy = -Math.min(cy * 0.14, 78), W = BG.W;
-  if (on.far) c.drawImage(BG.skySrc || BG.sky, 0, -40, W, BG.H); else { c.fillStyle = '#05070c'; c.fillRect(0, 0, Game.viewW, VIEW_H); }
+/* ---- backdrops ----
+   The three backdrop strips and the wall gears are re-cut at the canvas' own scale (BGS) whenever that scale changes, so every frame they are plain
+   1:1 pixel copies at whole-pixel positions. That is the cheap path for a canvas on weak GPUs or software rendering (a scaled or sub-pixel blit is filtered
+   per pixel, which is several times slower); on strong phones it simply costs less memory bandwidth. Drawn with an identity transform, in canvas pixels. */
+const BGS = { key: -1, s: 1, wp: 0, hp: 0, sky: null, mid: null, near: null, gears: [] };
+function backdropAt(s) {
+  const key = Math.round(s * 1000); if (BGS.key === key) return BGS;
+  const W = BG.W, H = BG.H, wp = Math.max(1, Math.round(W * s)), hp = Math.max(1, Math.round(H * s));
+  const cut = function (src) {
+    if (wp === W && hp === H) return src;
+    const cv = mk(wp, hp), g = cv.getContext('2d'); g.imageSmoothingQuality = 'high'; g.drawImage(src, 0, 0, wp, hp); return cv;
+  };
+  BGS.key = key; BGS.s = s; BGS.wp = wp; BGS.hp = hp; BGS.sky = cut(BG.sky); BGS.mid = cut(BG.mid); BGS.near = cut(BG.near);
+  BGS.gears = BG.gears.map(function (g) { const n = Math.ceil(g.sz * s) + 2, cv = mk(n, n); return { cv: cv, n: n, rot: 1e9 }; });
+  return BGS;
+}
+function drawStrip(c, src, x0, vy, wp, cw) { for (let x = x0; x < cw; x += wp) c.drawImage(src, x, vy); }
+function drawBackdrop(c, cx, cy) {              // sky -> middle strip + wall gears -> near pillars (c has an identity transform here)
+  const on = DX.on, cw = c.canvas.width, ch = c.canvas.height, B = backdropAt(cw / Game.viewW), s = B.s, wp = B.wp;
+  const vy = Math.max(ch - B.hp, -Math.round(Math.min(cy * 0.14, 78) * s));
+  if (on.far) c.drawImage(B.sky, 0, Math.max(ch - B.hp, Math.round(-40 * s))); else { c.fillStyle = '#05070c'; c.fillRect(0, 0, cw, ch); }
   if (on.mid) {
-    let x0 = -((cx * BG_SPEED[0]) % W); if (x0 > 0) x0 -= W;
-    drawStrip(c, BG.midSrc || BG.mid, x0, vy);
+    let x0 = -(Math.round(cx * BG_SPEED[0] * s) % wp); if (x0 > 0) x0 -= wp;
+    drawStrip(c, B.mid, x0, vy, wp, cw);
     if (on.gears) {
       const gp = Amb.gearPos();
       for (let k = 0; k < BG.gears.length; k++) {
-        const g = BG.gears[k], rot = g.dir * gp * 6.2832 / g.teeth;
-        for (let x = x0; x < Game.viewW; x += W) {
-          const gx = x + g.x; if (gx + g.half < 0 || gx - g.half > Game.viewW) continue;
-          c.save(); c.translate(gx, g.y + vy); c.rotate(rot); c.drawImage(g.cv, -g.half, -g.half); c.restore();
+        const g = BG.gears[k], gc = B.gears[k], rot = g.dir * gp * 6.2832 / g.teeth;
+        for (let x = x0; x < cw; x += wp) {
+          const gx = x + g.x * s; if (gx + gc.n < 0 || gx - gc.n > cw) continue;
+          if (gc.rot !== rot) {                      // re-draw the rotated sprite only when its angle changes (the gears sit still between beats)
+            gc.rot = rot; const q = gc.cv.getContext('2d'); q.setTransform(1, 0, 0, 1, 0, 0); q.clearRect(0, 0, gc.n, gc.n);
+            q.translate(gc.n / 2, gc.n / 2); q.rotate(rot); q.scale(s, s); q.drawImage(g.cv, -g.half, -g.half);
+          }
+          c.drawImage(gc.cv, Math.round(gx - gc.n / 2), Math.round(g.y * s + vy - gc.n / 2));
         }
       }
     }
   }
-  if (on.near && !Game.lowFx && Game.fx.near) { let x0 = -((cx * BG_SPEED[1]) % W); if (x0 > 0) x0 -= W; drawStrip(c, BG.nearSrc || BG.near, x0, vy); }
-}
-function loCanvas() {                                      // the half-resolution backdrop target (opaque), rebuilt only when the canvas size changes
-  const w = Math.max(160, Math.ceil(Game.cw / 2)), h = Math.max(90, Math.ceil(Game.ch / 2));
-  if (!BG.lo || BG.lo.width !== w || BG.lo.height !== h) { BG.lo = mk(w, h); BG.lo.getContext('2d', { alpha: false }); }
-  return BG.lo;
+  if (on.near && !Game.lowFx && Game.fx.near) { let x0 = -(Math.round(cx * BG_SPEED[1] * s) % wp); if (x0 > 0) x0 -= wp; drawStrip(c, B.near, x0, vy, wp, cw); }
 }
 let signCache = {};
 function rrect(c, x, y, w, h, r) {
@@ -2214,7 +2224,7 @@ function tileIdx(tx, ty) {                             // atlas cell for this ti
 function chunkAt(ci, cj) {
   const key = cj * 64 + ci, got = Chunks.map.get(key);
   if (got !== undefined) return got;
-  const k = Chunks.k, px = Math.ceil(CHK_PX * k), t0x = ci * CHK, t0y = cj * CHK;
+  const k = Chunks.k, px = Math.ceil(CHK_PX * k) + 1, t0x = ci * CHK, t0y = cj * CHK;
   let cv = null, g = null;
   for (let ty = t0y; ty < t0y + CHK && ty < LH; ty++) for (let tx = t0x; tx < t0x + CHK && tx < LW; tx++) {
     const idx = tileIdx(tx, ty); if (idx < 0) continue;
@@ -2225,15 +2235,17 @@ function chunkAt(ci, cj) {
   return cv || false;
 }
 function drawTiles(c, cx, cy) {
-  const k = (Game.cw / Game.viewW) > 1.3 ? 2 : 1;      // keep the blocks crisp on big or sharp screens, small on phones
-  if (Chunks.ver !== Level.ver || Chunks.k !== k) { Chunks.map.clear(); Chunks.ver = Level.ver; Chunks.k = k; }
+  const k = Game.cw / Game.viewW;                      // blocks are painted at the canvas' own scale, so each frame is a 1:1 copy at a whole-pixel position
+  if (Chunks.ver !== Level.ver || Math.abs(Chunks.k - k) > 1e-6) { Chunks.map.clear(); Chunks.ver = Level.ver; Chunks.k = k; }
   const span = CHK * U, vw = Game.viewW;
   const i0 = Math.max(0, Math.floor(cx / span)), i1 = Math.min(Math.ceil(LW / CHK) - 1, Math.floor((cx + vw) / span));
   const j0 = Math.max(0, Math.floor(cy / span)), j1 = Math.min(Math.ceil(LH / CHK) - 1, Math.floor((cy + VIEW_H) / span));
+  c.save(); c.setTransform(1, 0, 0, 1, 0, 0);
   for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
     const ch = chunkAt(i, j);
-    if (ch) c.drawImage(ch, i * span, j * span, CHK_PX, CHK_PX);
+    if (ch) c.drawImage(ch, Math.round((i * span - cx) * k), Math.round((j * span - cy) * k));
   }
+  c.restore();
   // prepare the next block row/column a frame early so walking never builds anything on screen
   const ia = Math.max(0, i0 - 1), ib = Math.min(Math.ceil(LW / CHK) - 1, i1 + 1);
   for (let i = ia; i <= ib; i++) for (let j = j0; j <= j1; j++) if (!Chunks.map.has(j * 64 + i)) { chunkAt(i, j); i = 1e9; break; }
@@ -2580,14 +2592,10 @@ function setBots(n) {
 function render() {
   const c = ctx, cvs = c.canvas;
   c.setTransform(1, 0, 0, 1, 0, 0);
-  const s = cvs.width / Game.viewW;
-  c.setTransform(s, 0, 0, s, 0, 0);                         // the canvas is opaque and the backdrop covers it entirely, so there is nothing to clear
+  const s = cvs.width / Game.viewW;                         // the canvas is opaque and the backdrop covers it entirely, so there is nothing to clear
   const cx = Math.round(Cam.x + Cam.ox), cy = Math.round(Cam.y + Cam.oy);
-  if (DX.on.bglo || Game.fx.lo) {                           // half-resolution backdrop: composed at 1/4 of the pixels, then one stretched blit (auto-quality step / diagnostic chip)
-    const lo = loCanvas(), lc = lo.getContext('2d'), k = lo.width / Game.viewW;
-    lc.setTransform(k, 0, 0, k, 0, 0); drawBackdrop(lc, cx, cy);
-    c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(lo, 0, 0, cvs.width, cvs.height); c.setTransform(s, 0, 0, s, 0, 0);
-  } else drawBackdrop(c, cx, cy);
+  drawBackdrop(c, cx, cy);
+  c.setTransform(s, 0, 0, s, 0, 0);
   if (DX.on.world) {
     c.save(); c.translate(-cx, -cy);
     if (Game.state !== 'menu' && Game.state !== 'pause') drawSigns(c, cx);
@@ -2654,8 +2662,8 @@ function resize() {
   const cssW = Math.floor(Game.viewW * cs), cssH = Math.floor(VIEW_H * cs);
   const stage = $('#stage'); stage.style.width = cssW + 'px'; stage.style.height = cssH + 'px';
   Game.cssScale = cs; Game.dpr = Math.min(window.devicePixelRatio || 1, Game.dprCap || 2);
-  const k = Game.dpr * Game.resScale;
-  const bw = Math.max(320, Math.round(cssW * k)), bh = Math.max(180, Math.round(cssH * k));
+  const sc = clamp(Math.min(cs * Game.dpr, 1) * Game.resScale, 0.3, 1);      // canvas pixels per game unit: never finer than 1:1 (the browser stretches the canvas; weak GPUs/software canvases stay cheap)
+  const bw = Math.max(2, Math.round(Game.viewW * sc)), bh = Math.max(2, Math.round(VIEW_H * sc));
   if (canvas.width !== bw || canvas.height !== bh) { canvas.width = bw; canvas.height = bh; }
   Game.cw = bw; Game.ch = bh;
   layoutBackdrop(cssW, cssH);
@@ -2676,28 +2684,32 @@ function applyLangDOM() {
 }
 function applyPerfHud() { $('#perf').classList.toggle('on', !!S.perfHud); }
 
-/* Auto quality: when frames stay slow, drop the cheapest-to-lose layers first, then resolution */
-const SHED = ['grain', 'vig', 'lo', 'res', 'near', 'res', 'res'];
+/* Auto quality: when frames stay slow, lower the canvas resolution first (it scales every cost at once), and drop the cheapest-to-lose layers in between.
+   The resolution only moves between fixed steps, because the backdrops and ground blocks are re-cut for each one. */
+const RES = [1, 0.85, 0.72, 0.6, 0.5, 0.42];
+const SHED = ['res', 'grain', 'res', 'vig', 'res', 'near', 'res', 'res'];
+function resTo(i) { Perf.lvl = clamp(i, 0, RES.length - 1); Game.resScale = RES[Perf.lvl]; resize(); }
 function shedLoad() {
-  const st = SHED[Game.fxTier];
-  if (st === undefined) { if (Game.resScale > 0.55) { Game.resScale = Math.max(0.55, +(Game.resScale - 0.05).toFixed(2)); resize(); } return; }
-  Game.fxTier++;
-  if (st === 'grain') Game.fx.grain = 0;
-  else if (st === 'vig') Game.fx.vig = 0;
-  else if (st === 'near') Game.fx.near = 0;
-  else if (st === 'lo') Game.fx.lo = 1;
-  else if (Game.resScale > 0.55) { Game.resScale = Math.max(0.55, +(Game.resScale - 0.15).toFixed(2)); resize(); }
+  while (Game.fxTier < SHED.length) {
+    const st = SHED[Game.fxTier++];
+    if (st === 'res') { if (Perf.lvl < RES.length - 1) { resTo(Perf.lvl + 1); return true; } }
+    else { if (st === 'grain') Game.fx.grain = 0; else if (st === 'vig') Game.fx.vig = 0; else if (st === 'near') Game.fx.near = 0; return true; }
+  }
+  return false;
 }
-function unshedLoad() { Game.fxTier = 0; Game.fx.grain = 1; Game.fx.vig = 1; Game.fx.near = 1; Game.fx.lo = 0; }
+function unshedLoad() { Game.fxTier = 0; Game.fx.grain = 1; Game.fx.vig = 1; Game.fx.near = 1; Perf.lvl = 0; Perf.ceil = 0; Perf.noRestore = false; Game.resScale = 1; }
 
 /* ---------- 20. performance monitor, adaptive resolution, stress test ---------- */
 const Perf = {
   ft: new Float32Array(240), n: 0, i: 0, upd: 0, ren: 0, avg: 16.7, p95: 16.7, max: 16.7, fps: 60, calcT: 0, low: 0, hi: 0, hudT: 0, tmp: new Float32Array(120),
+  lvl: 0, ceil: 0, wT: 0, wN: 0, cool: 0, upAt: -99, upFrom: 0, restoredAt: -99, noRestore: false,
   record(raw, u, r) {
     this.ft[this.i] = raw; this.i = (this.i + 1) % 240; if (this.n < 240) this.n++;
     this.upd += (u - this.upd) * 0.08; this.ren += (r - this.ren) * 0.08;
     this.calcT += raw;
-    if (this.calcT >= 500) { this.calcT = 0; this.calc(); this.adapt(); }
+    if (this.calcT >= 500) { this.calcT = 0; this.calc(); }
+    this.wT += raw; this.wN++;
+    if (this.wN >= 24 || (this.wT >= 700 && this.wN >= 6)) { const a = this.wT / this.wN; this.wT = 0; this.wN = 0; this.adapt(a); }
     this.hudT += raw;
     if (this.hudT >= 250) { this.hudT = 0; DX.sync(); if (S.perfHud) this.show(); }
   },
@@ -2707,23 +2719,34 @@ const Perf = {
     const sorted = this.tmp.subarray(0, m).slice().sort();
     this.avg = sum / m; this.max = mx; this.p95 = sorted[Math.min(m - 1, Math.floor(m * 0.95))]; this.fps = 1000 / this.avg;
   },
-  cool: 0,
-  adapt() {
-    if (S.quality !== 'auto' || Game.state !== 'play' || document.hidden || this.n < 120) return;
-    if (Game.time < 20 && Snd.baked < Snd.bakeTotal) return;           // start-up hitches (building chunks, baking sounds) must not cost the visuals for good
-    if (this.cool > 0) { this.cool--; return; }                       // wait for the rolling window to reflect the last step
-    const cpu = this.upd + this.ren;
-    if (this.fps < 48 || cpu > 13) this.low++; else this.low = 0;
-    if (this.fps >= 57 && cpu < 6) this.hi++; else this.hi = 0;
-    if (this.low >= 3) { this.low = 0; this.cool = 8; shedLoad(); }
-    else if (this.hi >= 12 && Game.resScale < 1) { Game.resScale = Math.min(1, +(Game.resScale + 0.1).toFixed(2)); this.hi = 0; resize(); }
+  /* Called with the average frame time of each short window (24 frames or ~0.7 s). Two slow windows in a row step down at once; a long calm stretch steps back
+     up, but never to a level that already failed. */
+  adapt(avg) {
+    if (S.quality !== 'auto' || Game.state !== 'play' || document.hidden) { this.low = 0; this.hi = 0; return; }
+    if (Game.time < 8 && Snd.baked < Snd.bakeTotal) return;            // the first seconds (building blocks, baking sounds) must not cost the visuals for good
+    if (this.cool > 0) { this.cool--; return; }                       // let the last step settle
+    if (avg > 25) {
+      this.hi = 0;
+      if (++this.low >= 2) {
+        this.low = 0; this.cool = 1;
+        if (Game.time - this.upAt < 12 && this.upFrom > this.ceil) this.ceil = this.upFrom;       // we climbed and fell straight back: that level is too much for this device
+        if (Game.time - this.restoredAt < 12) this.noRestore = true;                                // same for the effects we put back
+        shedLoad();
+      }
+    } else if (avg < 18.5) {
+      this.low = 0;
+      if (++this.hi >= 10) {
+        if (this.lvl > this.ceil) { this.hi = 0; this.cool = 1; this.upAt = Game.time; this.upFrom = this.lvl; resTo(this.lvl - 1); }
+        else if (this.lvl === 0 && Game.fxTier > 0 && !this.noRestore) { this.hi = 0; this.cool = 1; this.restoredAt = Game.time; Game.fx.grain = 1; Game.fx.vig = 1; Game.fx.near = 1; Game.fxTier = 0; }
+      }
+    } else { this.low = 0; this.hi = 0; }
   },
   show() {
     const heap = (performance && performance.memory) ? (performance.memory.usedJSHeapSize / 1048576).toFixed(1) + ' MB' : 'n/a';
     $('#perf').textContent =
       'FPS ' + this.fps.toFixed(0) + '   frame ' + this.avg.toFixed(1) + ' ms  (p95 ' + this.p95.toFixed(1) + ', max ' + this.max.toFixed(0) + ')\n' +
       'update ' + this.upd.toFixed(2) + ' ms   draw ' + this.ren.toFixed(2) + ' ms\n' +
-      'view ' + Game.viewW + 'x' + VIEW_H + '  canvas ' + Game.cw + 'x' + Game.ch + '  dpr ' + Game.dpr.toFixed(2) + '  res ' + Game.resScale.toFixed(2) + '\n' +
+      'view ' + Game.viewW + 'x' + VIEW_H + '  canvas ' + Game.cw + 'x' + Game.ch + '  dpr ' + Game.dpr.toFixed(2) + '  res ' + Game.resScale.toFixed(2) + '  px/unit ' + (Game.cw / Game.viewW).toFixed(2) + '\n' +
       'entities ' + Level.ents.length + '  particles ' + pAliveN + '/' + Game.particleCap + '  sprites ' + Bots.n + '\n' +
       'heap ' + heap + '   audio ' + Snd.state + '   quality ' + S.quality + (S.quality === 'auto' ? '  fx ' + Game.fxTier : '');
   }
@@ -2736,7 +2759,7 @@ const Stress = {
     if (this.active) return;
     this.active = true; this.prev = Game.state; this.results = [];
     this.saveRes = Game.resScale; this.saveCap = Game.particleCap;
-    Game.state = 'stress'; Game.resScale = 1; Game.particleCap = PMAX; resize();
+    Game.state = 'stress'; Game.resScale = 1; Perf.lvl = 0; Game.particleCap = PMAX; resize();
     UI.hideAll(); $('#hud').classList.remove('on'); Input.clearAll(); Touch.refresh();
     this.begin(0);
   },
@@ -2772,7 +2795,7 @@ const Stress = {
   },
   end(cancel) {
     this.active = false; setBots(0);
-    Game.resScale = this.saveRes; Game.particleCap = this.saveCap; resize();
+    Game.resScale = this.saveRes; Perf.lvl = Math.max(0, RES.indexOf(this.saveRes)); Game.particleCap = this.saveCap; resize();
     $('#stress-live').classList.remove('on');
     Game.state = this.prev;
     if (this.prev === 'play') $('#hud').classList.add('on');
@@ -2973,9 +2996,9 @@ function restartFromSave() { newWorld(!!S.progress); UI.resume(); }
 
 /* ---------- 22b. diagnostics panel: shows with the performance HUD while playing; finds what costs frames on a given phone ---------- */
 const DX = {
-  on: { far: 1, mid: 1, near: 1, gears: 1, grain: 1, vig: 1, world: 1, hud: 1, touch: 1, css: 1, audio: 1, bglo: 0, fps30: 0, walk: 0 },
-  def: { far: 1, mid: 1, near: 1, gears: 1, grain: 1, vig: 1, world: 1, hud: 1, touch: 1, css: 1, audio: 1, bglo: 0, fps30: 0, walk: 0 },
-  keys: ['far', 'mid', 'near', 'gears', 'grain', 'vig', 'world', 'hud', 'touch', 'css', 'audio', 'bglo', 'fps30', 'walk'],
+  on: { far: 1, mid: 1, near: 1, gears: 1, grain: 1, vig: 1, world: 1, hud: 1, touch: 1, css: 1, audio: 1, fps30: 0, walk: 0 },
+  def: { far: 1, mid: 1, near: 1, gears: 1, grain: 1, vig: 1, world: 1, hud: 1, touch: 1, css: 1, audio: 1, fps30: 0, walk: 0 },
+  keys: ['far', 'mid', 'near', 'gears', 'grain', 'vig', 'world', 'hud', 'touch', 'css', 'audio', 'fps30', 'walk'],
   btn: {}, walking: false, dir: 1, lastX: 0, stuck: 0,
   build() {
     const box = $('#dx'), self = this;
@@ -2993,7 +3016,7 @@ const DX = {
     vis('#hud', o.hud); vis('#touch', o.touch);
     document.documentElement.classList.toggle('noanim', !o.css);
     if (!o.audio) Snd.suspend(); else if (Snd.state === 'suspended') Snd.resume();
-    for (const k in this.btn) { const feat = (k === 'fps30' || k === 'walk' || k === 'bglo'); this.btn[k].className = feat ? (o[k] ? 'a' : '') : (o[k] ? '' : 'x'); }
+    for (const k in this.btn) { const feat = (k === 'fps30' || k === 'walk'); this.btn[k].className = feat ? (o[k] ? 'a' : '') : (o[k] ? '' : 'x'); }
   },
   reset() { for (const k in this.def) this.on[k] = this.def[k]; this.apply(); },
   sync() {
@@ -3125,7 +3148,7 @@ requestAnimationFrame(frame);
 
 /* test hooks used by the automated checks (read-only helpers; they do not change gameplay rules) */
 window.__KSM = {
-  DX: DX, shed: shedLoad, unshed: unshedLoad, applyQuality: function () { Game.resScale = 1; applyQuality(); resize(); },
+  DX: DX, shed: shedLoad, unshed: unshedLoad, applyQuality: function () { applyQuality(); resize(); }, RES: RES,
   U: U, TUNE: TUNE, P: P, Game: Game, Level: Level, Input: Input, Art: Art, Snd: Snd, Amb: Amb, Cam: Cam, Perf: Perf, Stress: Stress, UI: UI, S: function () { return S; },
   start: startGame,
   dbg: function () { return { ctx: ctx, BG: BG, drawBackdrop: drawBackdrop, drawTiles: drawTiles, drawEntities: drawEntities, drawNader: drawNader, drawSigns: drawSigns, drawParticles: drawParticles, drawPrompt: drawPrompt, overlayFor: overlayFor, render: render, VIEW_H: VIEW_H }; },
