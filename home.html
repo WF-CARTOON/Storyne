@@ -56,6 +56,23 @@ button{font:inherit;color:inherit}
 #lostc.pop b{animation:pop .3s}
 #boss{position:absolute;left:50%;top:14px;top:calc(env(safe-area-inset-top,0px) + 14px);width:34vw;max-width:440px;min-width:200px;transform:translateX(-50%);z-index:5;pointer-events:none;opacity:0;visibility:hidden;transition:opacity .5s,visibility .5s;text-align:center}
 #boss.on{opacity:1;visibility:visible}
+#cyc{position:absolute;left:50%;top:10px;top:calc(env(safe-area-inset-top,0px) + 10px);transform:translateX(-50%);z-index:5;pointer-events:none;display:none;flex-direction:column;align-items:center;transition:opacity .5s}
+#cyc.on{display:flex}
+#cyc svg{width:64px;height:64px;display:block;overflow:visible}
+#cyc .rim{fill:rgba(5,7,12,.62);stroke:rgba(214,165,74,.7);stroke-width:1.4}
+#cyc .arc{fill:none;stroke:var(--teal);stroke-width:3.2;stroke-linecap:butt}
+#cyc.late .arc{stroke:#e0564a}
+#cyc .hand{stroke:var(--ink);stroke-width:1.6;stroke-linecap:round}
+#cyc .ev{fill:var(--brass);stroke:#07090f;stroke-width:1}
+#cyc .ev.next{fill:#fff}
+#cyc b{font-weight:400;font-size:14px;line-height:1.1;color:var(--ink);font-family:system-ui,sans-serif;direction:ltr;text-shadow:0 1px 3px #000;margin-top:-2px}
+#cyc span{font-size:12px;color:var(--dim);text-shadow:0 1px 3px #000;white-space:nowrap}
+#cyc.flash svg{animation:pop .5s}
+#scr-stages{background:rgba(4,6,10,.84)}
+.strow{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 2px;border-bottom:1px solid rgba(228,221,204,.1)}
+.strow .nm{font-size:18px;color:#f1ead8}
+.strow .nm small{display:block;font-size:13px;color:var(--dim);margin-top:3px}
+.strow .bt{display:flex;gap:16px}
 #boss-name{font-size:14px;letter-spacing:.06em;color:var(--ink);margin-bottom:5px;text-shadow:0 1px 3px #000}
 #boss-bar{position:relative;height:9px;border:1px solid var(--brass);background:rgba(5,7,12,.7);direction:ltr}
 #boss-fill{display:block;height:100%;width:100%;background:#c9573f;transition:width .25s}
@@ -85,7 +102,7 @@ html.noanim *{animation:none!important;transition:none!important}
   background:rgba(5,8,14,.9);border:1px solid var(--line);border-top:1px solid rgba(47,214,196,.55);padding:12px 22px 14px;text-align:center;transition:opacity .25s,transform .25s;cursor:pointer}
 #talk.on{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
 #talk-who{font-size:13px;letter-spacing:.06em;color:var(--teal);min-height:1em;margin-bottom:4px}
-#talk-who.w-tik{color:#6fe0ff}#talk-who.w-nader{color:var(--brass)}#talk-who.w-master{color:var(--danger)}
+#talk-who.w-tik{color:#6fe0ff}#talk-who.w-nader{color:var(--brass)}#talk-who.w-master{color:var(--danger)}#talk-who.w-auct{color:#ffb347}
 #talk-text{font-size:19px;line-height:1.7;font-weight:300}
 #talk.card{left:0;top:0;right:0;bottom:0;width:auto;transform:none;border:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6%;transition:opacity .6s}
 #talk.card.on{transform:none;transition:opacity .12s}
@@ -151,6 +168,8 @@ html.noanim *{animation:none!important;transition:none!important}
 #tb-dodge{right:calc(var(--k)*6);bottom:calc(var(--k)*32);width:calc(var(--k)*18);height:calc(var(--k)*18)}
 #tb-special{right:calc(var(--k)*27);bottom:calc(var(--k)*29);width:calc(var(--k)*15);height:calc(var(--k)*15)}
 #tb-interact{right:calc(var(--k)*54);bottom:calc(var(--k)*18);width:calc(var(--k)*15);height:calc(var(--k)*15)}
+#tb-hook{display:none;right:calc(var(--k)*44);bottom:calc(var(--k)*36);width:calc(var(--k)*16);height:calc(var(--k)*16)}
+#touch.hk #tb-hook{display:block}
 
 /* ---------- screens: flat, dark, text-first ---------- */
 .screen{position:absolute;left:0;top:0;right:0;bottom:0;z-index:20;display:flex;align-items:center;justify-content:center;padding:10px;
@@ -289,6 +308,7 @@ table.res th{color:var(--dim);font-weight:400;font-size:12px}
     </div>
     <button id="btn-pause" type="button" aria-label="pause"><svg viewBox="0 0 40 40" aria-hidden="true"><circle class="t" cx="20" cy="20" r="16" pathLength="60" stroke-dasharray="0.4 0.6" fill="none" stroke-width="3"/><rect class="b" x="14.8" y="13" width="2.6" height="14" rx="1.3"/><rect class="b" x="22.6" y="13" width="2.6" height="14" rx="1.3"/></svg></button>
   </div>
+  <div id="cyc"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="rim" cx="32" cy="32" r="28"/><circle class="arc" id="cyc-arc" cx="32" cy="32" r="28" pathLength="120" stroke-dasharray="0 120" transform="rotate(-90 32 32)"/><g id="cyc-evs"></g><line class="hand" id="cyc-hand" x1="32" y1="32" x2="32" y2="10"/><circle cx="32" cy="32" r="2.4" fill="#e4ddcc"/></svg><b id="cyc-t">0:00</b><span id="cyc-n"></span></div>
   <div id="boss"><div id="boss-name"></div><div id="boss-bar"><i id="boss-fill"></i><u></u></div></div>
   <pre id="perf"></pre>
   <div id="dx"></div>
@@ -322,6 +342,7 @@ table.res th{color:var(--dim);font-weight:400;font-size:12px}
         <nav class="menu">
           <button class="mi main" id="b-continue" type="button"><i></i><span data-i18n="continue"></span></button>
           <button class="mi main" id="b-new" type="button"><i></i><span data-i18n="newgame"></span></button>
+          <button class="mi" id="b-stages" type="button"><i></i><span data-i18n="stages"></span></button>
           <button class="mi" id="b-lab" type="button"><i></i><span data-i18n="lab"></span></button>
           <button class="mi" id="b-controls" type="button"><i></i><span data-i18n="controls"></span></button>
           <button class="mi" id="b-settings" type="button"><i></i><span data-i18n="settings"></span></button>
@@ -365,6 +386,14 @@ table.res th{color:var(--dim);font-weight:400;font-size:12px}
           <button class="lnk main" id="c-back" type="button" data-i18n="back"></button>
           <button class="lnk" id="c-reset" type="button" data-i18n="resetkeys"></button>
         </footer>
+      </div>
+    </div>
+
+    <div class="screen" id="scr-stages">
+      <div class="sheet">
+        <header><h2 data-i18n="stages"></h2></header>
+        <div class="body" id="stages-body"></div>
+        <footer><button class="lnk main" id="st-back" type="button" data-i18n="back"></button></footer>
       </div>
     </div>
 
@@ -449,17 +478,17 @@ const Store = (function () {
 })();
 
 const SAVE_KEY = 'ksm_phase5_v1';
-const ACTIONS = ['left', 'right', 'down', 'jump', 'attack', 'dodge', 'interact', 'special', 'walk', 'pause'];
+const ACTIONS = ['left', 'right', 'down', 'jump', 'attack', 'dodge', 'interact', 'special', 'hook', 'walk', 'pause'];
 const DEFAULT_KEYS = {
   left: ['ArrowLeft', 'KeyA'], right: ['ArrowRight', 'KeyD'], down: ['ArrowDown', 'KeyS'],
-  jump: ['Space', 'KeyW', 'ArrowUp'], attack: ['KeyJ'], dodge: ['KeyK'], interact: ['KeyE'], special: ['KeyL'],
+  jump: ['Space', 'KeyW', 'ArrowUp'], attack: ['KeyJ'], dodge: ['KeyK'], interact: ['KeyE'], special: ['KeyL'], hook: ['KeyI'],
   walk: ['ShiftLeft', 'ShiftRight'], pause: ['Escape', 'KeyP']
 };
 function defaults() {
   return {
     v: 1, lang: 'auto', sfxVol: 0.7, ambVol: 0.6, mute: false, touch: 'auto', touchScale: 1, touchAlpha: 0.75, touchLabels: true,
     quality: 'auto', perfHud: false, shake: true,
-    keys: JSON.parse(JSON.stringify(DEFAULT_KEYS)), progress: null, lab: null, done: {}, stress: null
+    keys: JSON.parse(JSON.stringify(DEFAULT_KEYS)), progress: null, lab: null, sl_s2: null, done: {}, stress: null
   };
 }
 function loadSettings() {
@@ -501,6 +530,7 @@ function loadSettings() {
   };
   const pm = cleanSlot(o.progress), lb = cleanSlot(o.lab);
   d.lab = lb; d.progress = null;
+  const s2 = cleanSlot(o.sl_s2); d.sl_s2 = (s2 && s2.stage === 's2') ? s2 : null;
   if (pm) { if (pm.stage === 'lab') { if (!d.lab) d.lab = pm; } else d.progress = pm; }
   if (o.done && typeof o.done === 'object') for (const k in o.done) if (/^s[0-9]$/.test(k) && o.done[k] === true) d.done[k] = true;
   if (o.stress && typeof o.stress === 'object') d.stress = o.stress;
@@ -539,7 +569,7 @@ function persist() { if (Hitch.on) Hitch.note('save'); Store.set(SAVE_KEY, S); }
 /* ---------- 4. language ---------- */
 const STR = {
   ar: {
-    title: 'مملكة الدقائق المسروقة', subtitle: 'نموذج اللعب · المرحلة 7 · بناء المراحل (الدفعة أ-٢: ورشة نادر)',
+    title: 'مملكة الدقائق المسروقة', subtitle: 'نموذج اللعب · المرحلة 7 · بناء المراحل (الدفعة ب: سوق اللحظة)',
     continue: 'متابعة من آخر ساعة حفظ', newgame: 'لعبة جديدة', controls: 'التحكم', settings: 'الإعدادات', perftest: 'اختبار الأداء',
     startnote: 'نموذج تجريبي: الأشكال مؤقتة مرسومة بالكود، وكل الأصوات مولّدة بالكود، ولا توجد موسيقى.',
     paused: 'إيقاف مؤقت', resume: 'استئناف', restart: 'العودة إلى آخر ساعة حفظ', tomenu: 'القائمة الرئيسية', back: 'رجوع',
@@ -547,9 +577,9 @@ const STR = {
     touchhelp: 'اللمس (للجوال والتابلت): عصا الحركة في النصف الأيسر من الشاشة وتظهر تحت إصبعك، وأزرار الساعات في الجهة اليمنى. يمكن استخدام عدة أصابع معًا.',
     resetkeys: 'استعادة المفاتيح الافتراضية', perftitle: 'اختبار الأداء', perfrun: 'تشغيل الاختبار (حوالي 10 ثوانٍ)',
     rotate: 'أدِر الجهاز إلى الوضع الأفقي لمتابعة اللعب',
-    a_jump: 'قفز', a_attack: 'ضرب', a_dodge: 'مراوغة', a_special_s: 'خاص', a_interact: 'تفاعل',
+    a_jump: 'قفز', a_attack: 'ضرب', a_dodge: 'مراوغة', a_special_s: 'خاص', a_interact: 'تفاعل', a_hook: 'خطّاف',
     al_left: 'يسار', al_right: 'يمين', al_down: 'أسفل (النزول من منصة)', al_jump: 'قفز', al_attack: 'ضرب بالمفتاح', al_dodge: 'مراوغة',
-    al_interact: 'تفاعل', al_special: 'هجوم خاص', al_walk: 'مشي (اضغط مطولًا)', al_pause: 'إيقاف مؤقت',
+    al_interact: 'تفاعل', al_special: 'هجوم خاص', al_hook: 'الخطّاف', al_walk: 'مشي (اضغط مطولًا)', al_pause: 'إيقاف مؤقت',
     s_lang: 'اللغة', lang_auto: 'تلقائي', lang_ar: 'العربية', lang_en: 'English',
     s_vol: 'مستوى المؤثرات الصوتية', s_amb: 'مستوى الأجواء (تكتكة وتروس وريح)', s_tlabels: 'أسماء على أزرار اللمس', s_mute: 'كتم الصوت',
     snd_a_tick: 'تكتكة ساعة', snd_a_ratchet: 'ترس يدور', snd_a_grind: 'احتكاك تروس', snd_a_groan: 'أنين معدن', snd_a_chain: 'سلسلة', snd_a_creak: 'صرير مفصلة',
@@ -581,7 +611,7 @@ const STR = {
     pf_none: 'لم يُجرَ اختبار بعد. اضغط «تشغيل الاختبار».', pf_device: 'الجهاز', pf_last: 'آخر نتيجة محفوظة'
   },
   en: {
-    title: 'The Kingdom of Stolen Minutes', subtitle: 'Gameplay prototype · Phase 7 · Building the stages (batch A-2: Nader\'s workshop)',
+    title: 'The Kingdom of Stolen Minutes', subtitle: 'Gameplay prototype · Phase 7 · Building the stages (batch B: the Moment Market)',
     continue: 'Continue from last save clock', newgame: 'New game', controls: 'Controls', settings: 'Settings', perftest: 'Performance test',
     startnote: 'A test build: shapes are temporary code-drawn placeholders, all sound is synthesized in code, and there is no music.',
     paused: 'Paused', resume: 'Resume', restart: 'Return to last save clock', tomenu: 'Main menu', back: 'Back',
@@ -589,9 +619,9 @@ const STR = {
     touchhelp: 'Touch (phone and tablet): movement stick on the left half of the screen, appearing under your finger; watch-dial buttons on the right. Several fingers work together.',
     resetkeys: 'Restore default keys', perftitle: 'Performance test', perfrun: 'Run test (about 10 seconds)',
     rotate: 'Rotate your device to landscape to keep playing',
-    a_jump: 'Jump', a_attack: 'Hit', a_dodge: 'Dodge', a_special_s: 'Special', a_interact: 'Use',
+    a_jump: 'Jump', a_attack: 'Hit', a_dodge: 'Dodge', a_special_s: 'Special', a_interact: 'Use', a_hook: 'Hook',
     al_left: 'Left', al_right: 'Right', al_down: 'Down (drop through platform)', al_jump: 'Jump', al_attack: 'Key-hammer attack', al_dodge: 'Dodge',
-    al_interact: 'Interact', al_special: 'Special attack', al_walk: 'Walk (hold)', al_pause: 'Pause',
+    al_interact: 'Interact', al_special: 'Special attack', al_hook: 'Grapple hook', al_walk: 'Walk (hold)', al_pause: 'Pause',
     s_lang: 'Language', lang_auto: 'Auto', lang_ar: 'العربية', lang_en: 'English',
     s_vol: 'Sound effects volume', s_amb: 'Ambience volume (ticking, gears, wind)', s_tlabels: 'Names on touch buttons', s_mute: 'Mute',
     snd_a_tick: 'Clock tick', snd_a_ratchet: 'Gear turning', snd_a_grind: 'Gears grinding', snd_a_groan: 'Metal groan', snd_a_chain: 'Chain', snd_a_creak: 'Hinge creak',
@@ -629,9 +659,10 @@ function resolveLang() {
   return String(l).toLowerCase().indexOf('ar') === 0 ? 'ar' : 'en';
 }
 let LANG = resolveLang();
-function t(k, a) {
+function t(k, a, b) {
   let s = (STR[LANG] && STR[LANG][k]) || STR.en[k] || k;
   if (a !== undefined) s = s.replace('%s', a);
+  if (b !== undefined) s = s.replace('%s', b);
   return s;
 }
 
@@ -913,10 +944,28 @@ const Snd = (function () {
     ringShot() { bell(1318, 0.12, 0.45); tone('sine', 1800, 900, 0.25, 0.08); noise(0.1, 0.12, 'highpass', 3500, 2000, 0.8); },
     sandSlow() { noise(0.7, 0.2, 'lowpass', 3000, 400, 0.8, 0, 0.1); tone('sine', 520, 130, 0.7, 0.14); ratchet(4, 0.1, 1.25, 0.5, 1400, -60); },
     bladeOn() { metal(rnd(880, 940), 0.12, 0.5); noise(0.18, 0.16, 'highpass', 3000, 6000, 0.8, 0, 0.02); },
-    jolt() { tone('sine', 85, 38, 0.4, 0.45); noise(0.3, 0.4, 'lowpass', 1200, 150, 0.8); metal(rnd(200, 260), 0.1, 0.5); }
+    jolt() { tone('sine', 85, 38, 0.4, 0.45); noise(0.3, 0.4, 'lowpass', 1200, 150, 0.8); metal(rnd(200, 260), 0.1, 0.5); },
+    /* ---- Phase 7b: the grapple hook and the Moment Market ---- */
+    hookThrow() { noise(0.2, 0.2, 'highpass', 2500, 5200, 0.8, 0, 0.01); ratchet(6, 0.025, 1, 0.5, 1900, 90); tone('triangle', 420, 820, 0.12, 0.08, 0, 0.01); },
+    hookLatch() { metal(rnd(700, 780), 0.2, 0.5); click(0, 0.8, 2200); click(0.03, 0.6, 1700); noise(0.05, 0.25, 'highpass', 3000, 2000, 0.8, 0, 0.001); },
+    hookBack() { ratchet(7, 0.02, 1, 0.4, 2100, -70); noise(0.12, 0.1, 'highpass', 4000, 2500, 0.8, 0, 0.005); },
+    cartTip() { tone('sine', 95, 40, 0.35, 0.5); noise(0.4, 0.45, 'lowpass', 1400, 200, 0.8); for (let i = 0; i < 6; i++) { tone('sine', rnd(260, 420), rnd(120, 200), 0.07, 0.12, 0.12 + i * 0.09, 0.002); noise(0.04, 0.15, 'lowpass', 1500, 600, 1, 0.12 + i * 0.09, 0.001); } },
+    balloon() { tone('sine', 140, 300, 0.9, 0.12, 0, 0.2); noise(0.8, 0.12, 'bandpass', 600, 1700, 1.4, 0, 0.3); tone('triangle', 520, 700, 0.5, 0.05, 0.1, 0.1); },
+    ropeTense() { tone('sawtooth', 130, 180, 0.5, 0.1, 0, 0.05); noise(0.35, 0.1, 'bandpass', 1500, 2600, 3, 0, 0.1); tone('sine', 880, 870, 0.8, 0.07, 0.15, 0.002); },
+    rewind() { noise(1.0, 0.25, 'bandpass', 4200, 300, 1.2, 0, 0.1); tone('sawtooth', 900, 60, 0.9, 0.12, 0, 0.05); ratchet(14, 0.05, 0.93, 0.6, 2400, -90); bell(392, 0.1, 1.1, 0.5); },
+    guardCharge() { for (let i = 0; i < 6; i++) click(i * 0.04, 0.5, 1500 + i * 120); tone('sawtooth', 120, 260, 0.35, 0.08, 0, 0.1); noise(0.3, 0.12, 'bandpass', 900, 2600, 1.5, 0, 0.1); },
+    bidderGlow() { bell(1760, 0.07, 0.5); ratchet(4, 0.07, 0.9, 0.5, 1900, 60); },
+    bladeThrow() { noise(0.18, 0.25, 'highpass', 3500, 6500, 0.8, 0, 0.005); metal(rnd(1180, 1280), 0.1, 0.35); },
+    auctWake() { tone('sawtooth', 70, 160, 1.2, 0.18, 0, 0.3); metal(220, 0.12, 1.2); bell(330, 0.1, 1.4, 0.35); ratchet(8, 0.08, 0.95, 0.8, 1600, 50); noise(1.0, 0.1, 'lowpass', 400, 1200, 0.8, 0, 0.4); },
+    bidTone() { bell(rnd(520, 560), 0.12, 0.6); tone('triangle', 880, 880, 0.25, 0.05, 0, 0.01); },
+    bidBurst() { noise(0.35, 0.5, 'bandpass', 2200, 400, 0.9, 0, 0.003); tone('sine', 320, 70, 0.35, 0.3); metal(rnd(760, 860), 0.1, 0.5); },
+    gavelUp() { ratchet(8, 0.06, 0.9, 0.7, 1700, 70); tone('triangle', 200, 520, 0.5, 0.09, 0, 0.1); },
+    gavelSlam() { tone('sine', 80, 30, 0.7, 0.6); noise(0.5, 0.55, 'lowpass', 1800, 150, 0.8); metal(150, 0.14, 0.9); metal(310, 0.07, 0.6, 0.04); },
+    soldCry() { bell(784, 0.16, 1.3); bell(587, 0.14, 1.5, 0.12); tone('square', 200, 160, 0.3, 0.07, 0, 0.02); noise(0.3, 0.2, 'bandpass', 1200, 700, 2, 0, 0.02); },
+    collectorHum() { tone('sine', 98, 92, 1.2, 0.1, 0, 0.3); tone('sine', 147, 139, 1.2, 0.05, 0, 0.3); noise(1.2, 0.05, 'lowpass', 500, 300, 1, 0, 0.4); }
   };
   const WET = { land: 0.06, hit: 0.2, hurt: 0.1, death: 0.35, interact: 0.08, save: 0.35, lever: 0.12, door: 0.3, pickup: 0.15, barrel: 0.15, special: 0.4, pit: 0.3,
-    lost: 0.3, powGet: 0.25, jolt: 0.2, pulse: 0.4, wallBreak: 0.2, tankGlow: 0.35, bossLand: 0.2, bossBreak: 0.25, bossDie: 0.4, bossWake: 0.25, steamBlast: 0.15, puff: 0.15, toolLand: 0.15 };
+    lost: 0.3, powGet: 0.25, jolt: 0.2, pulse: 0.4, wallBreak: 0.2, tankGlow: 0.35, bossLand: 0.2, bossBreak: 0.25, bossDie: 0.4, bossWake: 0.25, steamBlast: 0.15, puff: 0.15, toolLand: 0.15, rewind: 0.4, gavelSlam: 0.25, soldCry: 0.35, auctWake: 0.25, bidTone: 0.3, bidBurst: 0.15 };
 
   function play(name, a, wx) {                               // wx (optional): world x of the source → stereo pan + distance volume
     if (S.mute || S.sfxVol <= 0 || !ctx || ctx.state !== 'running' || active > 40) return;
@@ -1049,6 +1098,11 @@ const Snd = (function () {
     ['blipN', fx.blipN, undefined, 4, 0.1], ['blipT', fx.blipT, undefined, 4, 0.1], ['blipM', fx.blipM, undefined, 4, 0.2], ['blipS', fx.blipS, undefined, 3, 0.06],
     ['rotor', fx.rotor, undefined, 1, 0.65], ['powGet', fx.powGet, undefined, 1, 1.3], ['powEnd', fx.powEnd, undefined, 1, 0.55], ['ringShot', fx.ringShot, undefined, 2, 0.6],
     ['sandSlow', fx.sandSlow, undefined, 1, 0.9], ['bladeOn', fx.bladeOn, undefined, 1, 0.7], ['jolt', fx.jolt, undefined, 2, 0.55],
+    ['hookThrow', fx.hookThrow, undefined, 2, 0.4], ['hookLatch', fx.hookLatch, undefined, 2, 0.5], ['hookBack', fx.hookBack, undefined, 1, 0.3], ['cartTip', fx.cartTip, undefined, 1, 0.8],
+    ['balloon', fx.balloon, undefined, 1, 1.1], ['ropeTense', fx.ropeTense, undefined, 1, 1.0], ['rewind', fx.rewind, undefined, 1, 1.7], ['guardCharge', fx.guardCharge, undefined, 1, 0.5],
+    ['bidderGlow', fx.bidderGlow, undefined, 1, 0.7], ['bladeThrow', fx.bladeThrow, undefined, 2, 0.5], ['auctWake', fx.auctWake, undefined, 1, 1.9], ['bidTone', fx.bidTone, undefined, 2, 0.8],
+    ['bidBurst', fx.bidBurst, undefined, 2, 0.6], ['gavelUp', fx.gavelUp, undefined, 1, 0.8], ['gavelSlam', fx.gavelSlam, undefined, 1, 1.0], ['soldCry', fx.soldCry, undefined, 1, 1.8],
+    ['collectorHum', fx.collectorHum, undefined, 1, 1.7],
     ['tick:0', ambFx.tick, false, 2, 0.12], ['tick:1', ambFx.tick, true, 2, 0.12], ['tickBig:0', ambFx.tickBig, false, 2, 0.35], ['tickBig:1', ambFx.tickBig, true, 2, 0.35],
     ['beat:0', ambFx.beat, false, 2, 0.1], ['beat:1', ambFx.beat, true, 2, 0.1], ['stutter', ambFx.stutter, undefined, 1, 0.3],
     ['ratchet', ambFx.ratchet, undefined, 4, 1.5], ['grind', ambFx.grind, undefined, 3, 2.5], ['groan', ambFx.groan, undefined, 3, 2.9],
@@ -1206,12 +1260,13 @@ const Touch = (function () {
     attack: '<path d="M33 69L56 46"/><rect x="55" y="30" width="17" height="12" rx="2.5" transform="rotate(45 63.5 36)"/>',
     dodge: '<path d="M33 36l14 14-14 14M52 36l14 14-14 14"/>',
     special: '<circle cx="50" cy="50" r="8.5"/><path d="M50 28v8M50 64v8M28 50h8M64 50h8M35.5 35.5l5.5 5.5M59 59l5.5 5.5M64.5 35.5L59 41M41 59l-5.5 5.5"/>',
-    interact: '<circle cx="37" cy="50" r="9"/><path d="M46 50h23M62 50v8M54 50v6"/>'
+    interact: '<circle cx="37" cy="50" r="9"/><path d="M46 50h23M62 50v8M54 50v6"/>',
+    hook: '<path d="M50 66V40"/><path d="M50 40a10 10 0 1 1 10 10"/><path d="M40 30l10-10 10 10" opacity=".6"/>'
   };
   function build() {
     base.innerHTML = '<svg viewBox="0 0 100 100" aria-hidden="true">' + dial('dial-face', 44, 43) + '<line id="stick-hand" x1="50" y1="50" x2="50" y2="50"/></svg><div id="stick-knob"><i></i></div>';
     knob = $('#stick-knob'); hand = $('#stick-hand');
-    [['jump', 'a_jump', 1], ['attack', 'a_attack', 1], ['dodge', 'a_dodge', 1], ['special', 'a_special_s', 0], ['interact', 'a_interact', 0]].forEach(function (s) {
+    [['jump', 'a_jump', 1], ['attack', 'a_attack', 1], ['dodge', 'a_dodge', 1], ['special', 'a_special_s', 0], ['interact', 'a_interact', 0], ['hook', 'a_hook', 0]].forEach(function (s) {
       const el = document.createElement('div'); el.className = 'tb' + (s[2] ? ' lbl' : ''); el.id = 'tb-' + s[0]; el.setAttribute('data-act', s[0]); el.setAttribute('role', 'button');
       el.innerHTML = '<svg viewBox="0 0 100 100" aria-hidden="true">' + dial('face', 38.5, 37.5) + '<g class="ic">' + ICONS[s[0]] + '</g>' +
         (s[0] === 'dodge' ? '<circle class="cd" cx="50" cy="50" r="22" pathLength="100" stroke-width="44" stroke-dasharray="0 100 0 100"' + ROT + '/>' : '') +
@@ -1298,7 +1353,9 @@ const Touch = (function () {
     const v = Math.round(clamp(frac, 0, 1) * 100); if (chCache[name] === v) return; chCache[name] = v;
     const c = root.querySelector('#tb-' + name + ' .ring'); if (c) c.style.strokeDasharray = v + ' 100';
   }
-  return { refresh: refresh, setReady: setReady, setCooldown: setCooldown, setCharge: setCharge, layout: layout };
+  let hookShown = null;
+  function setHook(v) { v = !!v; if (hookShown === v) return; hookShown = v; root.classList.toggle('hk', v); }          // the hook button exists only once Nader owns the hook
+  return { refresh: refresh, setReady: setReady, setCooldown: setCooldown, setCharge: setCharge, layout: layout, setHook: setHook };
 })();
 
 /* ---------- 9. key remapping ---------- */
@@ -1346,7 +1403,7 @@ const Level = {
   w: LW, h: LH, grid: new Uint8Array(LW * LH), hid: new Uint8Array(LW * LH), ents: [], drops: [], signs: [], clocks: [],
   stage: 'lab', doors: [], dOpen: [false, false, false, false], deco: [], trig: [], flags: {}, spawn0: null,
   doorOpen: false, doorAnim: 0, doorTx: 125, spawn: { x: 4.5 * U, y: G * U }, ver: 0,
-  shots: [], tools: [], boss: null, lostN: 0, lostTotal: 0, gateShut: false, gateAnim: 0, bossDown: false, fwalls: []
+  shots: [], tools: [], boss: null, lostN: 0, lostTotal: 0, gateShut: false, gateAnim: 0, bossDown: false, fwalls: [], movers: [], S2: null
 };
 const CLOCK_TX = [26, 66, 96, 131, 176];
 function tileAt(tx, ty) {
@@ -1492,10 +1549,11 @@ function entBox(e) {
     case 'boss': return e.state === 'sleep' ? null : [e.x - BOSS.hw, e.y - e.jy - 3.4 * U, e.x + BOSS.hw, e.y - e.jy];
     case 'fwall': return [e.tx * U - 6, e.ty * U, (e.tx + 1) * U + 6, (e.ty + e.rows) * U];
   }
-  return null;
+  return s2EntBox(e);
 }
 function damageEnt(e, dmg, dir, heavy, atkId) {
   if (e.t === 'boss') return damageBoss(e, dmg, dir, heavy, atkId);
+  if (e.s2) return s2Damage(e, dmg, dir, heavy, atkId);
   if (e.dead || e.lastAtk === atkId) return false;
   e.lastAtk = atkId;
   e.shake = heavy ? 0.35 : 0.22; e.flash = 0.1;
@@ -1539,7 +1597,7 @@ function snapshotProgress() {                              // what the save file
   }
   const slot = { cp: { x: checkpoint.x, y: checkpoint.y }, hp: P.hpMax, gears: P.gears, savedAt: Date.now(), got: got, brk: brk, door: Level.doorOpen, lost: lost, fw: fw, boss: Level.bossDown,
     stage: Level.stage, flags: JSON.parse(JSON.stringify(Level.flags)), d: Level.dOpen.slice(0, 4) };
-  if (Level.stage === 'lab') S.lab = slot; else S.progress = slot;
+  S[slotKey(Level.stage)] = slot;
 }
 function saveAtClock(e) {
   P.hp = P.hpMax; P.special = 100;
@@ -1817,6 +1875,7 @@ function popShot(s) {
   s.on = false; Snd.play('bubblePop', 0, s.x); FX.chips(s.x, s.y + 20, 6, 3); FX.glow(s.x, s.y, 30, 1, 0.25);
 }
 function popBubbles(box, cx, cy, r) {                       // the player's swing (or the special) pops oil bubbles it touches
+  if (Level.S2) popBlades(box, cx, cy, r);
   for (let i = 0; i < Level.shots.length; i++) {
     const s = Level.shots[i]; if (!s.on) continue;
     if (box) { if (rectsOverlap(box[0], box[1], box[2], box[3], s.x - s.r, s.y - s.r, s.x + s.r, s.y + s.r)) popShot(s); }
@@ -1870,7 +1929,7 @@ function updTools(dt) {
 /* ---------- lost minutes ---------- */
 function updLost(e, dt) {
   e.ph += dt * 2.2;
-  if (e.got || Game.state !== 'play') return;
+  if (e.got || e.off || Game.state !== 'play') return;
   const dx = Math.abs(e.x - P.x), dy = Math.abs(e.y - (P.y - 0.55 * U)), d = Math.hypot(dx, dy);
   const near = dx < 6 * U && dy < 5 * U;
   e.rev = approach(e.rev, near ? 1 : 0, dt * 2.5);
@@ -2090,7 +2149,7 @@ function startBossFight(b) {
 }
 function arenaTrigger() {
   const b = Level.boss;
-  if (!b || Level.bossDown || b.state !== 'sleep') return;
+  if (!b || b.s2 || Level.bossDown || b.state !== 'sleep') return;                    // the Auctioneer wakes through the stage-2 code
   if (P.x > AR.trig * U && live()) startBossFight(b);
 }
 
@@ -2126,6 +2185,7 @@ function resetEncounters() {
   for (let i = 0; i < Level.tools.length; i++) Level.tools[i].on = false;
   if (!Level.bossDown) { Level.gateShut = false; Level.gateAnim = 0; }
   Cam.lock = null; HUD.bossDirty = true; Pow.resetEncounter();
+  if (Level.S2) s2ResetFoes(!Cyc.soft);
 }
 
 /* ---------- 14. player (Nader) ---------- */
@@ -2145,7 +2205,7 @@ const P = {
   combo: 0, nextCombo: 0, comboWin: 0, phase: '', atkId: 0, atkHit: false, airUsed: false,
   landT: 0, hardLand: false, landLock: 0, drop: 0, stable: 0, safeX: 0, safeY: 0,
   stepDist: 0, squash: 0, target: null, didAct: false, dead: false, respawning: false,
-  trail: [], trailT: 0, noGrav: false, lastAxis: 0
+  trail: [], trailT: 0, noGrav: false, lastAxis: 0, ride: null
 };
 for (let i = 0; i < 6; i++) P.trail.push({ x: 0, y: 0, a: 0, dir: 1 });
 
@@ -2153,7 +2213,7 @@ function resetPlayer(x, y, hp) {
   P.x = x; P.y = y; P.vx = 0; P.vy = 0; P.dir = 1; P.state = 'idle'; P.st = 0; P.animT = 0; P.idleT = 0;
   P.onGround = false; P.wasGround = false; P.coyote = 0; P.jumped = false; P.inv = 0; P.blink = 0; P.flash = 0; P.stun = 0;
   P.dodgeCd = 0; P.combo = 0; P.comboWin = 0; P.phase = ''; P.airUsed = false; P.landT = 0; P.landLock = 0; P.drop = 0; P.stable = 0;
-  P.safeX = x; P.safeY = y; P.squash = 0; P.target = null; P.dead = false; P.respawning = false; P.noGrav = false;
+  P.safeX = x; P.safeY = y; P.squash = 0; P.target = null; P.dead = false; P.respawning = false; P.noGrav = false; P.ride = null; Hook.reset();
   if (hp !== undefined) P.hp = hp;
 }
 
@@ -2179,7 +2239,7 @@ function moveX(dx) {
 }
 function moveY(dy) {
   const hw = P.w / 2, prevBottom = P.y, prevTop = P.y - P.h;
-  P.onGround = false;
+  P.onGround = false; P.ride = null;
   P.y += dy;
   if (dy >= 0) {
     const tx0 = Math.floor((P.x - hw + 0.5) / U), tx1 = Math.floor((P.x + hw - 0.5) / U);
@@ -2192,6 +2252,7 @@ function moveY(dy) {
         if (solidT(v) || (v === 2 && P.drop <= 0)) { P.y = top; P.vy = 0; P.onGround = true; }
       }
     }
+    if (Level.movers.length) landOnMovers(prevBottom, hw);
   } else {
     const tx0 = Math.floor((P.x - hw + 0.5) / U), tx1 = Math.floor((P.x + hw - 0.5) / U);
     const newTop = P.y - P.h;
@@ -2272,6 +2333,7 @@ function startSpecial() {
 }
 function hurtPlayer(srcX, dmg) {
   if (P.inv > 0 || P.dead || P.respawning) return false;
+  Hook.cut();
   P.hp = Math.max(0, P.hp - dmg); HUD.dirty = true; HUD.popIdx = P.hp;
   P.inv = TUNE.hurtInv; P.blink = TUNE.hurtInv; P.flash = 0.2; P.combo = 0; P.comboWin = 0;
   Game.hitStop = Math.max(Game.hitStop, 0.06); Cam.shake(7, 0.2);
@@ -2327,6 +2389,7 @@ function playerUpdate(dt) {
   if (p.landT > 0) p.landT -= dt;
   if (p.landLock > 0) p.landLock -= dt;
   if (p.comboWin > 0) p.comboWin -= dt;
+  Hook.tick(dt); if (p.ride) carryRider();
   p.squash *= Math.max(0, 1 - 9 * dt);
 
   const ctl = Input.enabled && !p.respawning && !p.dead;
@@ -2342,6 +2405,7 @@ function playerUpdate(dt) {
     case 'airattack': updAirAttack(dt, ax); break;
     case 'interact': updInteract(dt); break;
     case 'special': updSpecial(dt); break;
+    case 'hook': Hook.update(dt, ax); break;
     default: updFree(dt, ax, ctl);
   }
 
@@ -2448,6 +2512,7 @@ function updFree(dt, ax, ctl) {
 
   /* actions, in priority order */
   if (p.dodgeCd <= 0 && p.onGround && Input.peek('dodge', TUNE.dbuf)) { startDodge(); return; }
+  if (Hook.cd <= 0 && Input.peek('hook', 0.15) && Hook.has()) { if (Hook.start()) return; }
   if (p.onGround && Input.peek('special', 0.2)) {
     if (p.special >= 100) { startSpecial(); return; }
     Input.consume('special'); Snd.play('deny'); UI.denySpecial();
@@ -2576,6 +2641,7 @@ function respawnAtCheckpoint() {
   P.hp = P.hpMax; P.special = 100; HUD.dirty = true; resetEncounters();
   resetPlayer(checkpoint.x, checkpoint.y);
   P.inv = TUNE.hurtInv; P.blink = TUNE.hurtInv;
+  if (Level.S2) Cyc.afterRespawn();
   Cam.update(0.016, true);
 }
 
@@ -2708,8 +2774,10 @@ function resetLevelState() {
   Level.ver++;                                                       // the cached ground blocks (see drawTiles) are rebuilt for the new layout
   Level.grid.fill(0); Level.hid.fill(0);
   Level.ents.length = 0; Level.signs.length = 0; Level.clocks.length = 0; Level.doors.length = 0; Level.deco.length = 0; Level.trig.length = 0; Level.flags = {};
-  Level.dOpen = [false, false, false, false]; Level.doorOpen = false; Level.doorAnim = 0; Level.S1 = null;
-  Level.boss = null; Level.lostN = 0; Level.lostTotal = 0; Level.gateShut = false; Level.gateAnim = 0; Level.bossDown = false; Level.fwalls.length = 0; Level.cine = false;
+  Level.dOpen = [false, false, false, false]; Level.doorOpen = false; Level.doorAnim = 0; Level.S1 = null; Level.S2 = null;
+  if (Level.blades) for (let i = 0; i < Level.blades.length; i++) Level.blades[i].on = false;
+  Hook.reset(); const cy = $('#cyc'); if (cy) { cy.classList.remove('on'); cy.classList.remove('late'); }
+  Level.movers.length = 0; Level.boss = null; Level.lostN = 0; Level.lostTotal = 0; Level.gateShut = false; Level.gateAnim = 0; Level.bossDown = false; Level.fwalls.length = 0; Level.cine = false;
   Level.spawn = { x: 4.5 * U, y: G * U };
   Talk.reset(); Tik.reset(); Cine.reset(); Pow.reset();
 }
@@ -2724,7 +2792,8 @@ function applyTheme(name) {
   if (BG.theme === name) return;
   BG.theme = name; buildAtlas(); buildBackgrounds(); BGS.key = -1; Chunks.map.clear();
 }
-function slotOf(id) { return (STAGES[id] || STAGES.s1).slot === 'lab' ? 'lab' : 'progress'; }
+function slotKey(id) { const s = (STAGES[id] || STAGES.s1).slot; return s === 'lab' ? 'lab' : (s === 'main' ? 'progress' : s); }       // which field of the save holds a stage's slot
+function slotOf(id) { return slotKey(id); }
 
 /* ---------- dialogue box and full-screen story cards ----------
    Nobody has a voice in this game, so every speaker gets a small "speech effect" instead: the text types itself out, each letter group plays a short blip
@@ -3071,13 +3140,14 @@ function spawnKeyGear() {
 }
 
 /* ---------- interaction with the new pieces ---------- */
-const STAGE_INT = { chest: 1, scan: 1, machine: 1, lift: 1 };            // entity types that show the interaction prompt (when stageInteractable says so)
+const STAGE_INT = { chest: 1, scan: 1, machine: 1, lift: 1, satchel: 1 };            // entity types that show the interaction prompt (when stageInteractable says so)
 function stageInteractable(e) {
   switch (e.t) {
     case 'chest': return !e.done;
     case 'scan': return !e.done && Tik.mode !== 'scan';
     case 'machine': return !e.done;
     case 'lift': return Level.bossDown && e.state === 'idle';
+    case 'satchel': return !e.done;
     case 'lever': return e.puz === undefined || (!Level.flags.pzok);
   }
   return false;
@@ -3107,6 +3177,7 @@ function activateStage(e) {
       if (P.gears < 3) { Snd.play('deny'); UI.toast(t('m_lift_need', P.gears)); break; }
       e.state = 'ride'; e.t0 = 0; Level.cine = true; Snd.play('door', 0, e.x); break;
     case 'lever': puzzleLever(e); break;
+    case 'satchel': takeHook(e); break;
   }
 }
 function finishScan(e) {
@@ -3188,6 +3259,7 @@ function stageUpdate(dt) {
     }
   }
   Tik.update(dt);
+  if (Level.S2) s2Update(dt);
   if (Level.bossDown && Level.doors[2] && !Level.dOpen[2]) openDoor(2);
 }
 function endStage1() {
@@ -3214,6 +3286,7 @@ function drawStageEnt(c, e) {
         c.save(); c.translate(e.x, e.y + bob); c.rotate(-0.08); c.fillStyle = '#d9cba6'; c.fillRect(-12, -15, 24, 30); c.strokeStyle = '#2b2433'; c.lineWidth = 2; c.strokeRect(-12, -15, 24, 30);
         c.fillStyle = '#7a1f1a'; c.fillRect(-7, -9, 14, 3); c.fillRect(-7, -3, 10, 2); c.fillRect(-7, 2, 12, 2); c.restore(); }
       break;
+    default: drawS2Ent(c, e); break;
   }
 }
 /* ---------- 13d. time-pieces: temporary powers shaped like things that measure time ----------
@@ -3395,6 +3468,918 @@ function drawPow(c, e) {
   c.restore();
 }
 
+/* ---------- 13e. the grapple hook and the moving platforms ----------
+   The hook is a brass claw on a chain. One press throws it at the best brass ring in front of Nader (within 8.6 units, with a clear line); the chain latches,
+   reels in to a short length and Nader SWINGS on it like a pendulum (gravity + a rope that never stretches; left/right push the swing). Jump lets go with
+   a boost, the hook key (or down) lets go quietly. With no ring in reach the claw flies out and back: whatever it touches on the way is staggered.
+   Things the hook can also take hold of: pull handles (they open something) and the Auctioneer's gavel when he raises it.
+   Moving platforms (balloons, carriages) are simple "movers": a thin one-way surface that carries whoever stands on it. */
+Object.assign(STR.ar, { m_hook_get: 'حصلت على الخطّاف · ارمِه نحو الحلقات النحاسية وتأرجح', sg_hook_try: 'حلقات نحاسية: ارمِ الخطّاف عليها ثم تأرجح واقفز', sg_pull: 'المقبض يُسحب بالخطّاف' });
+Object.assign(STR.en, { m_hook_get: 'You got the hook · throw it at the brass rings and swing', sg_hook_try: 'Brass rings: throw the hook, swing, then jump', sg_pull: 'The handle is pulled with the hook' });
+
+const HK = { range: 8.6 * U, fly: 46 * U, reel: 16 * U, minLen: 2.6 * U, cd: 0.32, swingAcc: 15 * U, maxV: 21 * U, boost: 6.2 * U, grabUp: 0.8 };
+const Hook = {
+  ph: 'none',                         // none | fly | swing | back
+  gx: 0, gy: 0, hx: 0, hy: 0, tx: 0, ty: 0, ax: 0, ay: 0, len: 0, kind: '', tgt: null, t: 0, cd: 0, back: 0, slack: 0, carry: null, hitE: null,
+  has() { return !!(Level.flags.hook || (S.done && S.done.s2)); },
+  reset() { this.ph = 'none'; this.tgt = null; this.carry = null; this.cd = 0; this.kind = ''; },
+  calcGrab() { this.gx = P.x + P.dir * 7; this.gy = P.y - P.h * HK.grabUp; },
+  tick(dt) { if (this.cd > 0) this.cd -= dt; if (this.ph === 'back') this.retract(dt); },
+  pointOf(e) {                         // [x, y, kind] of a thing the hook can hold, or null
+    if (e.t === 'ring') return 1;
+    if (e.t === 'pull') return e.done ? 0 : 1;
+    if (e.t === 'auct') return e.gavelUp ? 1 : 0;
+    return 0;
+  },
+  los(x0, y0, x1, y1) {
+    const dx = x1 - x0, dy = y1 - y0, d = Math.hypot(dx, dy), n = Math.ceil(d / (0.3 * U));
+    for (let i = 2; i < n - 1; i++) { const k = i / n; if (solidT(tileAt(Math.floor((x0 + dx * k) / U), Math.floor((y0 + dy * k) / U)))) return false; }
+    return true;
+  },
+  pick() {
+    this.calcGrab(); this.tgt = null;
+    const gx = this.gx, gy = this.gy, dir = P.dir; let bs = 1e9;
+    for (let i = 0; i < Level.ents.length; i++) {
+      const e = Level.ents[i]; if (!this.pointOf(e)) continue;
+      const ex = e.t === 'auct' ? e.gx : e.x, ey = e.t === 'auct' ? e.gy : e.y;
+      const dx = ex - gx, dy = ey - gy, d = Math.hypot(dx, dy);
+      if (d > HK.range || d < 0.9 * U) continue;
+      if (e.t === 'ring' && dy > 0.5 * U) continue;                      // a ring below the hand is useless
+      let sc = d + (dx * dir < -0.4 * U ? 7 * U : 0) + (e.t === 'ring' && dy > -1.2 * U ? 2 * U : 0);
+      if (e.t === 'auct' || e.t === 'pull') sc -= 3 * U;                  // aim for the gavel / the handle when it is within reach
+      if (sc >= bs || !this.los(gx, gy, ex, ey)) continue;
+      bs = sc; this.tgt = e;
+    }
+    return this.tgt;
+  },
+  start() {
+    if (P.dead || P.respawning) return false;
+    Input.consume('hook');
+    const e = this.pick();
+    this.hx = this.gx; this.hy = this.gy; this.t = 0; this.carry = null; this.hitE = null;
+    if (e) {
+      this.kind = e.t; this.tx = e.t === 'auct' ? e.gx : e.x; this.ty = e.t === 'auct' ? e.gy : e.y;
+      if (this.tx !== this.gx) P.dir = this.tx > this.gx ? 1 : -1;
+    } else { this.kind = ''; this.tx = this.gx + P.dir * 6.2 * U; this.ty = this.gy - 0.9 * U; }
+    this.ph = 'fly'; setState('hook'); Snd.play('hookThrow', 0, P.x);
+    return true;
+  },
+  update(dt, ax) {                      // P.state === 'hook'
+    const p = P; this.t += dt; this.calcGrab();
+    if (this.ph === 'fly') {
+      p.vx = approach(p.vx, 0, TUNE.decA * 0.3 * dt);
+      const dx = this.tx - this.hx, dy = this.ty - this.hy, d = Math.hypot(dx, dy), st = HK.fly * dt;
+      const nx = d <= st ? this.tx : this.hx + dx / d * st, ny = d <= st ? this.ty : this.hy + dy / d * st;
+      if (!this.kind) {                                                  // a free throw: stagger whatever it meets, stop at a wall
+        const hit = (typeof hookSweep === 'function') ? hookSweep(this.hx, this.hy, nx, ny) : null;
+        if (hit) { this.hitE = hit; this.hx = nx; this.hy = ny; this.begin('back'); return; }
+        if (solidT(tileAt(Math.floor(nx / U), Math.floor(ny / U)))) { Snd.play('hookLatch', 0, nx); FX.sparks(nx, ny, 5, 1); this.begin('back'); return; }
+      }
+      this.hx = nx; this.hy = ny;
+      if (d <= st) this.arrive();
+      if (this.t > 0.6) this.begin('back');
+    } else if (this.ph === 'swing') this.swing(dt, ax);
+  },
+  arrive() {
+    const e = this.tgt;
+    if (this.kind === 'ring' && e) {
+      this.ph = 'swing'; this.ax = e.x; this.ay = e.y; this.t = 0; this.slack = 0;
+      this.len = Math.max(HK.minLen, Math.hypot(this.gx - this.ax, this.gy - this.ay));
+      Snd.play('hookLatch', 0, e.x); FX.sparks(e.x, e.y, 6, 4); FX.ring(e.x, e.y, 34, 4, 0.3); e.ping = 1;
+    } else if (e) {
+      Snd.play('hookLatch', 0, this.tx); FX.sparks(this.tx, this.ty, 8, 4);
+      this.carry = e; if (e.onHooked) e.onHooked();
+      this.begin('back');
+    } else this.begin('back');
+  },
+  cut() { if (this.ph === 'swing' || this.ph === 'fly') { this.ph = 'back'; this.t = 0; this.cd = HK.cd; } },          // hurt or killed: the claw just falls back
+  begin(ph) {                           // start retracting the claw; Nader is free again at once
+    this.ph = 'back'; this.t = 0;
+    if (P.state === 'hook') { setState(P.onGround ? 'idle' : 'fall'); if (P.state === 'idle') pickLocomotionState(); }
+    this.cd = HK.cd;
+  },
+  retract(dt) {
+    this.calcGrab();
+    const dx = this.gx - this.hx, dy = this.gy - this.hy, d = Math.hypot(dx, dy), st = 70 * U * dt;
+    if (d <= st) { this.ph = 'none'; this.carry = null; Snd.play('hookBack', 0, P.x); return; }
+    this.hx += dx / d * st; this.hy += dy / d * st;
+  },
+  swing(dt, ax) {
+    const p = P;
+    if (this.len > HK.minLen) this.len = Math.max(HK.minLen, this.len - HK.reel * dt);
+    p.vy += TUNE.grav * 0.82 * dt;
+    p.vx += ax * HK.swingAcc * dt; p.vx *= 1 - 0.16 * dt;
+    const sp = Math.hypot(p.vx, p.vy); if (sp > HK.maxV) { p.vx *= HK.maxV / sp; p.vy *= HK.maxV / sp; }
+    const gx = this.gx, gy = this.gy;
+    let nx = gx + p.vx * dt, ny = gy + p.vy * dt;
+    const dx = nx - this.ax, dy = ny - this.ay, d = Math.hypot(dx, dy);
+    if (d > this.len) {                                                  // the rope never stretches: put the hand back on the circle and keep the speed it gives
+      const k = this.len / d; nx = this.ax + dx * k; ny = this.ay + dy * k;
+      p.vx = (nx - gx) / Math.max(dt, 0.0001); p.vy = (ny - gy) / Math.max(dt, 0.0001);
+    }
+    p.noGrav = true; p.dir = Math.abs(p.vx) > 0.5 * U ? (p.vx > 0 ? 1 : -1) : p.dir;
+    this.hx = this.ax; this.hy = this.ay;
+    if (this.t > 0.15 && Input.peek('jump', 0.15)) { Input.consume('jump'); this.release(true); return; }
+    if (this.t > 0.2 && (Input.peek('hook', 0.15) || Input.down())) { Input.consume('hook'); this.release(false); return; }
+    const dist = Math.hypot(gx - this.ax, gy - this.ay);
+    if (p.onGround && dist < this.len - 0.4 * U && Math.abs(p.vx) < 1.5 * U) { this.slack += dt; if (this.slack > 0.3) this.release(false); } else this.slack = 0;
+    if (this.t > 12) this.release(false);                                // nobody hangs forever
+  },
+  release(boost) {
+    const p = P;
+    if (boost) { p.vy = Math.min(p.vy, 0) - HK.boost; p.vx *= 1.06; Snd.play('jump', 0, p.x); FX.dust(p.x, p.y - 30, 3, -p.dir); }
+    p.jumped = false; p.cutDone = true; p.airUsed = false; p.coyote = 0; p.noGrav = false;
+    this.begin('back'); this.cd = boost ? 0.12 : HK.cd;
+  }
+};
+
+function drawHook(c) {
+  const H = Hook; if (H.ph === 'none') return;
+  let x0 = H.gx, y0 = H.gy, x1 = H.hx, y1 = H.hy;
+  if (H.ph !== 'fly') { H.calcGrab(); x0 = H.gx; y0 = H.gy; }
+  const dx = x1 - x0, dy = y1 - y0, len = Math.hypot(dx, dy); if (len < 6) return;
+  const n = Math.max(2, Math.floor(len / 13)), ang = Math.atan2(dy, dx);
+  c.lineWidth = 3; c.strokeStyle = '#17121c';
+  c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke();
+  c.strokeStyle = '#d6a54a'; c.lineWidth = 1.6;
+  for (let i = 0; i <= n; i++) {                                         // links: little rings, every second one seen edge-on
+    const k = i / n, x = x0 + dx * k, y = y0 + dy * k;
+    c.beginPath(); c.ellipse(x, y, i & 1 ? 4.6 : 2.2, 3, ang, 0, 6.3); c.stroke();
+  }
+  c.save(); c.translate(x1, y1); c.rotate(ang);                          // the claw: a shank and two curved prongs
+  c.lineCap = 'round'; c.strokeStyle = '#17121c'; c.lineWidth = 6;
+  c.beginPath(); c.moveTo(-6, 0); c.lineTo(5, 0); c.moveTo(5, 0); c.quadraticCurveTo(13, -9, 8, -14); c.moveTo(5, 0); c.quadraticCurveTo(13, 9, 8, 14); c.stroke();
+  c.strokeStyle = '#e6c06a'; c.lineWidth = 3;
+  c.beginPath(); c.moveTo(-6, 0); c.lineTo(5, 0); c.moveTo(5, 0); c.quadraticCurveTo(13, -9, 8, -14); c.moveTo(5, 0); c.quadraticCurveTo(13, 9, 8, 14); c.stroke();
+  c.restore();
+}
+
+/* ---------- moving platforms ----------
+   A mover is { on, x0, x1, y, dx, dy, ... }: x0..x1 is the width in pixels, y the top surface. The owner moves it and writes dx / dy (this step's displacement);
+   whoever stands on it is carried at the start of the next player step. They are one-way: they catch a falling body, and a jump goes up through them. */
+function mkMover(x0, x1, y, kind) { const m = { on: false, x0: x0, x1: x1, y: y, dx: 0, dy: 0, kind: kind || 'basket', t: 0 }; Level.movers.push(m); return m; }
+function carryRider() {
+  const p = P, m = p.ride;
+  if (!m) return;
+  if (!m.on || !p.onGround || p.state === 'hook') { p.ride = null; return; }
+  if (m.dy) p.y += m.dy;
+  if (m.dx) moveX(m.dx);
+}
+function landOnMovers(prevBottom, hw) {
+  for (let i = 0; i < Level.movers.length; i++) {
+    const m = Level.movers[i];
+    if (!m.on || P.drop > 0) continue;
+    if (P.x + hw - 0.5 > m.x0 && P.x - hw + 0.5 < m.x1 && prevBottom <= m.y + 1.5 && P.y >= m.y) { P.y = m.y; P.vy = 0; P.onGround = true; P.ride = m; }
+  }
+}
+
+/* ---------- 13f. stage 2: the Moment Market ----------
+   The market repeats the last two minutes before the thirteenth chime. A cycle lasts 120 seconds; every event happens at the same second each time (that is the puzzle):
+      10  the apple cart tips over: a ramp for 6 s            55  the pickpocket automaton runs over the roofs (drops the hall key when hit)
+      30  a balloon comes loose: a rising platform for 12 s   80  the hall door opens for 10 s (only for whoever holds the key)
+      40  a rope is stretched between two roofs for 8 s       100 the collectors appear: slow, they cannot be killed, a touch ends the cycle
+   At 120 s, or when Nader dies, the world flashes back to second 0 (the rewind). What Nader carries (gears, lost minutes, clues, the hall key) stays.
+   Nobody in this market is a person: the sellers, the pickpocket and the collectors are machines, and Mira appears only as her notebook and her satchel. */
+Object.assign(STR.ar, {
+  st_s2: 'المرحلة 2 · سوق اللحظة', stages: 'المراحل', st_new: 'لعبة جديدة', st_cont: 'متابعة', st_s1: 'المرحلة 1 · ورشة نادر', st_open: 'مفتوحة', st_done: 'مكتملة', st_boss_s2: 'المزايد',
+  boss_auct: 'المزايد', sp_auct: 'المزايد',
+  cyc_n: 'الدورة %s', cyc_key: 'معك مفتاح القاعة', cyc_next: '%s بعد %s ث', cyc_hall: 'قاعة المزاد',
+  ev_cart: 'العربة', ev_balloon: 'البالون', ev_rope: 'الحبل', ev_thief: 'خاطف الجيوب', ev_door: 'الباب', ev_coll: 'الجباة',
+  m_rewind: 'ارتدّت الدورة · الدورة %s', m_key_get: 'حصلت على مفتاح القاعة', m_door_need: 'باب القاعة مقفل: يحتاج إلى مفتاح', m_hall: 'دخلتَ قاعة المزاد · لا ارتداد هنا بعد الآن', m_ev_new: 'سجّلتُ هذا الحدث: ستجده على ساعة السوق',
+  m_sold: 'مباع! عادت الساحة إلى ما كانت عليه قبل ثماني ثوانٍ', m_auct_down: 'سقط المزايد · انفتح الباب الشرقي', m_pull: 'انفتح الباب',
+  p_read: 'اقرأ الدفتر', p_take: 'خذ الحقيبة',
+  clue_c_inv: 'فواتير مبيعات مؤرخة قبل أربعين عامًا', clue_c_ledger: 'دفتر المزايد',
+  sg_s2_start: 'ساعة السوق بالأعلى: كل 120 ثانية يعود كل شيء', sg_s2_cart: 'الأحداث تقع في الثواني نفسها كل دورة: راقب ثم خطّط', sg_awning: 'سقف الكشك: لا تقفز إليه من الأرض',
+  sg_roof: 'الأسطح: بين السطحين فجوة أوسع من أي قفزة', sg_thief: 'خاطف الجيوب يمرّ على الأسطح بالمسار نفسه: انتظره واضربه', sg_corr: 'ممر المخازن: حراس السوق ولوحات المزايدة',
+  sg_guard: 'الحارس يتوهج نحاسيًا قبل أن يندفع: راوغه ثم اضربه من الخلف', sg_bidder: 'لوحة المزايدة تتوهج ثم تقذف شفرة: اقفز فوقها أو اضربها', sg_hdoor: 'باب القاعة: مقفل بمفتاح، ويُفتح في وقت محدد، ولا عودة بعد عبوره',
+  sg_arena2: 'قاعة المزاد · المزايد ينتظر · الساعة خلفك تحفظ تقدّمك', sg_pit2: 'فجوة واسعة: الحلقات النحاسية تحملك',
+  open2_1: 'في الدقائق الأخيرة قبل الدقّة الثالثة عشرة…', open2_2: '…يعيد سوق اللحظة نفسه، مرة بعد مرة بعد مرة.', open2_3: 'عربة التفاح تنقلب، وبالون ينفلت من عموده، وخاطف جيوب يعدو على الأسطح، ومنادٍ يبيع «الدقيقة التالية» بالمزاد.', open2_4: 'سوق اللحظة · الدورة ٢١٥',
+  tk2_intro: 'سوق اللحظة. كل 120 ثانية يعود كل شيء إلى حاله، ما عدانا.', tk2_loop: 'المفتاح يعفينا من الارتداد: نحتفظ بما نجمعه، ويعود العالم وحده.', tk2_hint1: 'الأحداث تقع في الثواني نفسها كل مرة. هذا لغز، وليس حظًّا.',
+  tk2_cart: 'العربة انقلبت: منحدر لست ثوانٍ فقط!', tk2_balloon: 'بالون صاعد! أمامنا 12 ثانية.', tk2_rope: 'حبل ممدود بين السطحين… ثماني ثوانٍ فقط.', tk2_thief: 'خاطف جيوب على الأسطح! يمرّ بالمسار نفسه كل دورة.',
+  tk2_door: 'باب القاعة انفتح عشر ثوانٍ، وهو يحتاج المفتاح.', tk2_coll: 'الجباة! لا يموتون. لا تدعهم يلمسونك.', tk2_rewind: 'ارتداد. نحتفظ بما معنا. جرّب توقيتًا آخر.',
+  mira1: 'على لوحة الأكشاك دفتر مفتوح بخط يد صغير ومرتّب. في صفحته الأخيرة:', mira2: '«الدورة ٢١٥. وصل شيء لم يحدث في أي من الدورات الـ٢١٤ السابقة: ساعة جيب تتحرك وحدها، وكرة نحاسية تدور فوقها.»',
+  mira3: '«أنت جديد. أنت أول شيء لم يحدث من قبل. اعتبر هذا تحذيرًا.»', mira4: 'وتحت السطر الأخير رسم لمفتاح يشبه مفتاح نادر، وبجانبه: «لن آخذه، لكنني سأطوّره».',
+  nd2_mira: 'سأعتبره إطراءً.', tk2_mira: 'من الناحية الفنية… لم يكن إطراءً.',
+  sat1: 'عند مدخل القاعة حقيبة جلدية معلّقة بحبل، وعليها ورقة بالخط المرتّب نفسه:', sat2: '«صنعته من حبال السوق. ارمِه على الحلقات النحاسية وتأرجح عليها.»', sat3: '«وحين يرفع المزايد مطرقته بعد «مباع!»، اسحبها من يده.»',
+  sat4: 'يعلّق نادر الخطّاف على ذراعه ويجرّب سحب السلسلة.', tk2_sat: 'الخط نفسه. من الناحية الفنية: حليفتنا، وإن لم نرَها بعد.',
+  tk2_pull: 'مقبض عالٍ على الجدار. اسحبه بالخطّاف.', tk2_pit: 'لا أرضية هنا. الحلقات النحاسية تحمل خطّافك.',
+  ac_1: 'غير مباع… غير مباع… من يشتري الدقيقة التالية؟', tk2_boss: 'عشرة، عشرون، ثلاثون: كل رقم يضيء دائرة ثم تنفجر بالترتيب. احفظ الترتيب.',
+  ac_n10: 'عشرة!', ac_n20: 'عشرون!', ac_n30: 'ثلاثون!', ac_sold: 'مباع!', ac_gone: 'غير مباع!',
+  tk2_gavel: 'رفع المطرقة! اسحبها بالخطّاف الآن!', tk2_stag: 'ترنّح! اضرب بكل ما معك!',
+  end2_1: 'يسقط المزايد، وينشقّ بوقه، ويصرخ مرة أخيرة: «غير مباع!»', end2_2: 'تتحرر الدقائق المحبوسة، وتطير كحبيبات ضوء نحو أصحابها.', end2_3: 'وتنكسر الدورة. تدقّ ساعات السوق من جديد… مرتبكة، لكنها تتحرك.',
+  end2_4: 'في دفتر المزايد مشترٍ وحيد اسمه «الجامع»، ودفعاته كلها مكتوبة بعبارة «دفعة سداد».', tk2_end: 'يسدّد ماذا؟', end2_5: 'تشير البوصلة إلى محطة الثواني، عبر بوابة السوق الشرقية.',
+  end2_6: 'نهاية المرحلة 2 · المرحلة 3 (قطار الثواني) تأتي في الدفعة التالية.'
+});
+Object.assign(STR.en, {
+  st_s2: 'Stage 2 · The Moment Market', stages: 'Stages', st_new: 'New game', st_cont: 'Continue', st_s1: 'Stage 1 · Nader\'s workshop', st_open: 'Open', st_done: 'Completed', st_boss_s2: 'The Auctioneer',
+  boss_auct: 'The Auctioneer', sp_auct: 'The Auctioneer',
+  cyc_n: 'Cycle %s', cyc_key: 'Hall key held', cyc_next: '%s in %s s', cyc_hall: 'The Auction Hall',
+  ev_cart: 'The cart', ev_balloon: 'The balloon', ev_rope: 'The rope', ev_thief: 'The pickpocket', ev_door: 'The door', ev_coll: 'The collectors',
+  m_rewind: 'The cycle rewinds · cycle %s', m_key_get: 'You got the hall key', m_door_need: 'The hall door is locked: it needs a key', m_hall: 'You entered the Auction Hall · no more rewinding in here', m_ev_new: 'Event recorded: it now shows on the market clock',
+  m_sold: 'Sold! The hall is back to how it was eight seconds ago', m_auct_down: 'The Auctioneer is down · the east door opens', m_pull: 'The door opens',
+  p_read: 'Read the notebook', p_take: 'Take the satchel',
+  clue_c_inv: 'Sales invoices dated forty years ago', clue_c_ledger: 'The Auctioneer\'s ledger',
+  sg_s2_start: 'The market clock is above: every 120 s it all starts over', sg_s2_cart: 'Events happen at the same second every cycle: watch, then plan', sg_awning: 'A stall awning: you cannot jump up to it from the ground',
+  sg_roof: 'The roofs: the gap between them is wider than any jump', sg_thief: 'The pickpocket takes the same path over the roofs: wait for it and strike', sg_corr: 'The storehouse corridor: market guards and bid boards',
+  sg_guard: 'The guard glows copper before it charges: dodge, then hit it from behind', sg_bidder: 'A bid board glows, then throws a blade: jump it or hit it', sg_hdoor: 'The hall door: locked with a key, it opens at one moment only, and there is no way back after it',
+  sg_arena2: 'The Auction Hall · the Auctioneer waits · the clock behind you saves your progress', sg_pit2: 'A wide gap: the brass rings will carry you',
+  open2_1: 'In the last minutes before the thirteenth chime…', open2_2: '…the Moment Market repeats itself, again and again and again.', open2_3: 'An apple cart tips over, a balloon slips its post, a pickpocket runs over the roofs, and a caller sells "the next minute" at auction.', open2_4: 'The Moment Market · cycle 215',
+  tk2_intro: 'The Moment Market. Every 120 seconds everything goes back to how it was, except us.', tk2_loop: 'The key spares us the rewind: we keep what we collect, and the world resets by itself.', tk2_hint1: 'Events happen at the same second every time. This is a puzzle, not luck.',
+  tk2_cart: 'The cart tipped: a ramp for six seconds only!', tk2_balloon: 'A rising balloon! We have 12 seconds.', tk2_rope: 'A rope between the two roofs… eight seconds only.', tk2_thief: 'A pickpocket on the roofs! It takes the same path every cycle.',
+  tk2_door: 'The hall door opened for ten seconds, and it needs the key.', tk2_coll: 'The collectors! They cannot be killed. Do not let them touch you.', tk2_rewind: 'Rewind. We keep what we carry. Try another timing.',
+  mira1: 'On the stall board lies an open notebook in small, tidy handwriting. On its last page:', mira2: '"Cycle 215. Something arrived that happened in none of the 214 cycles before: a pocket watch that moves by itself, and a copper ball spinning above it."',
+  mira3: '"You are new. You are the first thing that has not happened before. Take that as a warning."', mira4: 'Under the last line there is a drawing of a key much like Nader\'s, and beside it: "I will not take it, but I will improve it".',
+  nd2_mira: 'I will take it as a compliment.', tk2_mira: 'Technically… it was not a compliment.',
+  sat1: 'At the hall entrance a leather satchel hangs from a rope, with a note in the same tidy hand:', sat2: '"I made it from market rope. Throw it at the brass rings and swing on them."', sat3: '"And when the Auctioneer raises his gavel after \'Sold!\', pull it out of his hand."',
+  sat4: 'Nader hangs the hook on his arm and tests the pull of its chain.', tk2_sat: 'The same handwriting. Technically: an ally, even if we have not seen her yet.',
+  tk2_pull: 'A high handle on the wall. Pull it with the hook.', tk2_pit: 'No floor here. The brass rings hold your hook.',
+  ac_1: 'Unsold… unsold… who will buy the next minute?', tk2_boss: 'Ten, twenty, thirty: each number lights a circle, then they burst in order. Memorize the order.',
+  ac_n10: 'Ten!', ac_n20: 'Twenty!', ac_n30: 'Thirty!', ac_sold: 'Sold!', ac_gone: 'Unsold!',
+  tk2_gavel: 'The gavel is up! Pull it with the hook, now!', tk2_stag: 'He is reeling! Hit him with everything!',
+  end2_1: 'The Auctioneer falls, his horn splits, and he cries out one last time: "Unsold!"', end2_2: 'The imprisoned minutes are freed and fly like grains of light toward their owners.', end2_3: 'And the cycle breaks. The market clocks tick again… confused, but moving.',
+  end2_4: 'In the Auctioneer\'s ledger there is a single buyer called "the Collector", and every payment is marked "settlement payment".', tk2_end: 'Settling what?', end2_5: 'The compass points to the Seconds Station, through the market\'s east gate.',
+  end2_6: 'End of stage 2 · Stage 3 (the Seconds Train) comes in the next batch.'
+});
+SPEAK.auct = { snd: 'blipA', cps: 26, every: 3 };
+
+/* ---------- layout ---------- */
+const S2L = { door: 178, pitA: 197, pitB: 211, pull: 218.5, gate1: 224, clock2: 228, gate: 231, arenaA: 232, arenaB: 260, podA: 243, podB: 247, exitX: 270 };
+const CYC_EV = [
+  { k: 'cart', t: 10, d: 6 }, { k: 'balloon', t: 30, d: 12 }, { k: 'rope', t: 40, d: 8 },
+  { k: 'thief', t: 55, d: 20 }, { k: 'door', t: 80, d: 10 }, { k: 'coll', t: 100, d: 20 }
+];
+STAGES.s2 = { id: 's2', slot: 'sl_s2', theme: 'market', w: 277, h: 26, build: function () { buildS2(); }, restore: function () { restoreS2(); } };
+
+/* ---------- small level helpers ---------- */
+function evTiles(x0, y0, x1, y1, v) {                               // tiles that an event switches on and off: never baked into the ground blocks (hid), drawn by the event itself
+  for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) { Level.grid[y * LW + x] = v; Level.hid[y * LW + x] = 1; }
+}
+function setCells(cells, v) { for (let i = 0; i < cells.length; i++) Level.grid[cells[i][1] * LW + cells[i][0]] = v; }
+function awningTiles(x0, x1, row, c1, c2) {                         // a striped awning that is a one-way platform
+  fill(x0, row, x1, row + 1, 2);
+  for (let x = x0; x < x1; x++) Level.hid[row * LW + x] = 1;
+  addDeco(x0 * U - 8, row * U - 6, x1 * U + 8, row * U + 2.2 * U, function (c) { pAwning(c, x0 * U, row * U, (x1 - x0) * U, c1, c2); });
+}
+function solidDeco(x0, y0, wT, hT, fn) {                            // solid tiles drawn by a picture of their own
+  for (let y = y0; y < y0 + hT; y++) for (let x = x0; x < x0 + wT; x++) { Level.grid[y * LW + x] = 1; Level.hid[y * LW + x] = 1; }
+  addDeco(x0 * U - 6, y0 * U - 40, (x0 + wT) * U + 6, (y0 + hT) * U + 6, function (c) { fn(c, x0 * U, y0 * U, wT * U, hT * U); });
+}
+function mkRing(tx, ty) { return { t: 'ring', x: tx * U, y: ty * U, ping: 0, ph: Math.random() * 6 }; }
+
+/* ---------- the stage ---------- */
+function buildS2() {
+  const Z = Level.S2 = { timed: [], amp: 0, waves: [], collOn: false, cart: null, bal: null, thief: null, hdoor: null, pull: null, satchel: null, note: null, sway: [], ramp: [[24, G - 1], [25, G - 2], [25, G - 1], [26, G - 3], [26, G - 2], [26, G - 1]], rope: [] };
+  const LWc = LW;
+  Level.spawn = { x: 5.5 * U, y: G * U };
+  Tik.on = true; Tik.mode = 'follow'; Tik.x = Level.spawn.x - 40; Tik.y = Level.spawn.y - 90;
+  fill(0, 0, 1, LH, 1); fill(LWc - 1, 0, LWc, LH, 1);
+  /* ===== A. the street of stalls (1..66) and the storehouse corridor (134..177): one ground lane ===== */
+  fill(1, G, S2L.pitA, LH, 1);                                                     // street + corridor + the hall's first room
+  fill(S2L.pitB, G, LWc - 1, LH, 1);                                               // after the pit: handle room, clock, arena, east gate
+  [[7, 2, 1], [52, 3, 1], [57, 2, 2]].forEach(function (q) { toolTiles('crate', q[0], G - q[2], q[1], q[2]); });
+  /* the apple cart: its tilted body is a ramp of three steps while the event lasts */
+  Z.cart = { t: 'cart', x: 22 * U, y: G * U, tilt: 0, apples: [] };
+  Level.ents.push(Z.cart);
+  evTiles(24, G - 3, 27, G, 0);
+  /* the awning of the long stall, 4 units above the street: reachable only from the ramp */
+  awningTiles(27, 41, G - 4, '#c9473b', '#f0d9a8');
+  awningTiles(36, 40, G - 8, '#d98a2b', '#f0d9a8');                                // a little upper awning: the old invoices are on it
+  /* the balloon: appears at the right end of the awning, rises to the roof */
+  Z.bal = mkMover(41 * U, 43.6 * U, (G - 4) * U, 'basket'); Z.bal.y0 = (G - 4) * U; Z.bal.y1 = (G - 9) * U;
+  /* ===== B. the roofs: two decks with a gap of eight, bridged by the rope for eight seconds ===== */
+  fill(44, G - 9, 63, G - 7, 1); fill(71, G - 9, 134, G - 7, 1);
+  for (let y = G - 9; y < G - 7; y++) for (let x = 44; x < 134; x++) if (Level.grid[y * LW + x] === 1) Level.hid[y * LW + x] = 1;
+  roofDeco(44, 63); roofDeco(71, 134);
+  evTiles(63, G - 9, 71, G - 8, 0);
+  Z.rope = { x0: 63 * U, x1: 71 * U, y: (G - 9) * U, a: 0 };
+  Z.thief = { t: 'thief', s2: 1, x: 74.5 * U, y: (G - 9) * U, hw: 0.55 * U, h: 0.95 * U, hp: 1, state: 'wait', x0: 74.5 * U, x1: 130 * U, st: 0, dead: false, flash: 0, shake: 0, lastAtk: 0, vis: false, fall: 0, rot: 0 };
+  Level.ents.push(Z.thief);
+  /* ===== C. the corridor: a ceiling, guards, bid boards, a low bunker with a cracked wall ===== */
+  fill(137, G - 8, 178, G - 6, 1);
+  [140, 152, 166].forEach(function (tx) { addDeco(tx * U, (G - 6) * U, (tx + 2) * U, (G - 3) * U, function (c) { pLamp(c, (tx + 1) * U, (G - 5.4) * U); }); });
+  fill(163, G - 3, 171, G, 1); fill(164, G - 2, 170, G, 0);
+  const w1 = mkWall(163, G - 2, 2, { x0: 164 * U, y0: (G - 2) * U, x1: 170 * U, y1: G * U }); fill(163, G - 2, 164, G, 6); Level.ents.push(w1);
+  toolTiles('crate', 148, G - 1, 2, 1); toolTiles('crate', 156, G - 2, 2, 2);
+  /* the hall door (id 0): shut except at seconds 80..90 for whoever holds the key */
+  addDoor(0, S2L.door, G - 5, 5);
+  Z.hdoor = { t: 'hdoor', x: (S2L.door + 0.5) * U, y: G * U, lamp: 0 }; Level.ents.push(Z.hdoor);
+  /* ===== D. the hall: first room (the satchel), the pit with rings, the handle room, the save clock, the arena ===== */
+  fill(S2L.door + 1, 0, 261, G - 10, 1);
+  [186, 203, 219, 236, 255].forEach(function (tx) { addDeco(tx * U, (G - 10) * U, (tx + 2) * U, (G - 7) * U, function (c) { pLamp(c, (tx + 1) * U, (G - 9.2) * U); }); });
+  Z.satchel = { t: 'satchel', x: 185.5 * U, y: G * U, done: false, ph: 0 }; Level.ents.push(Z.satchel);
+  Level.ents.push(mkRing(200.5, G - 7)); Level.ents.push(mkRing(206.5, G - 7.6));
+  addDoor(1, S2L.gate1, G - 5, 5);
+  Z.pull = { t: 'pull', x: S2L.pull * U, y: (G - 4.2) * U, done: false, anim: 0, timer: 0, onHooked: function () { Z.pull.done = true; Z.pull.timer = 0.5; Level.flags.pull = true; Snd.play('lever', 0, Z.pull.x); } };
+  Level.ents.push(Z.pull);
+  fill(S2L.gate, G - 6, S2L.gate + 1, G, 5); fill(S2L.gate, G - 10, S2L.gate + 1, G - 6, 1);       // the arena gate (shuts when the fight starts)
+  solidDeco(S2L.podA, G - 1, S2L.podB - S2L.podA, 1, function (c, x, y, w, h) { pPodium(c, x, y, w, h); });
+  addDeco(236 * U, (G - 9.5) * U, 256 * U, (G - 3) * U, function (c) { pPriceBoard(c, 236 * U, (G - 9.5) * U, 20 * U, 6 * U); });
+  addDoor(2, S2L.arenaB, G - 6, 6);                                                // the east door: opens when the Auctioneer falls
+  /* the sway platforms of the arena: three rows on each side (they only move in the second phase) */
+  [[233, 238, G - 3, 0], [236, 241, G - 6, 1.7], [233, 238, G - 9, 3.4]].forEach(function (r) {          // [from tile, to tile (excl.), top row, phase]: mirrored round the middle of the hall (column 246)
+    const L = mkMover(r[0] * U, r[1] * U, r[2] * U, 'plank'); L.bx0 = L.x0; L.w = L.x1 - L.x0; L.ph = r[3]; L.on = true; Z.sway.push(L);
+    const m = mkMover((492 - r[1]) * U, (492 - r[0]) * U, r[2] * U, 'plank'); m.bx0 = m.x0; m.w = m.x1 - m.x0; m.ph = r[3] + 3.1; m.on = true; Z.sway.push(m);
+  });
+  Level.ents.push(mkRing(238, G - 9.4)); Level.ents.push(mkRing(252, G - 9.4));
+  addDeco(14 * U, (G - 3) * U, 17 * U, G * U, function (c) { pNotebookBoard(c, 14 * U, G * U); });
+  /* ===== signs ===== */
+  [[5, 'sg_s2_start', 4.3], [17, 'sg_s2_cart', 4.7], [29, 'sg_awning', 5.6], [47, 'sg_roof', 11.0], [84, 'sg_thief', 11.8], [139, 'sg_corr', 5.1], [145, 'sg_guard', 3.5], [152, 'sg_bidder', 4.3],
+   [174.5, 'sg_hdoor', 3.4], [193, 'sg_pit2', 3.6], [215, 'sg_pull', 3.6], [S2L.clock2 - 1.5, 'sg_arena2', 3.7]].forEach(function (s) { Level.signs.push({ x: s[0] * U + U / 2, h: s[2] * U, key: s[1] }); });
+  /* ===== save clocks: the market entrance (outside the cycle) and the one before the arena ===== */
+  [[2, 0], [S2L.clock2, 1]].forEach(function (q) { const c = { t: 'clock', id: q[1], x: q[0] * U + U / 2, y: G * U, wind: 0 }; Level.ents.push(c); Level.clocks.push(c); });
+  /* ===== clues, lost minutes (one of them shows only during seconds 60..76), gears ===== */
+  Level.ents.push(mkClue('c_inv', 38, (G - 8) * U - 0.9 * U, false));
+  Level.ents.push(mkClue('c_ledger', 266, (G - 1.2) * U, true));
+  const lm = [mkLost(33 * U, (G - 4) * U - 0.95 * U, 'far'), mkLost(55 * U, (G - 9) * U - 0.95 * U, 'far'), mkLost(118 * U, (G - 9) * U - 0.95 * U, 'far'), mkLost(167 * U, G * U - 0.9 * U, 'wall'),
+    mkLost(203.5 * U, (G - 8.4) * U, 'far')];
+  lm[2].tw = [60, 76]; lm[2].off = true; Z.timed.push(lm[2]); lm[3].room = w1; lm.forEach(function (m) { Level.ents.push(m); }); Level.lostTotal = lm.length;
+  [[9, 0.6], [12, 0.6], [18, 0.6], [30, 4.6], [33, 4.6], [36, 4.6], [39, 0.6], [46, 9.6], [50, 9.6], [56, 9.6], [60, 9.6], [74, 9.6], [88, 9.6], [100, 9.6], [114, 9.6], [126, 9.6], [66.5, 9.7],
+   [140, 0.6], [143, 0.6], [150, 0.6], [159, 3.6], [162, 0.6], [167, 0.6], [175, 0.6], [188, 0.6], [193, 0.6], [201, 4.0], [207, 4.5], [214, 0.6], [220, 0.6], [236, 0.6], [239.5, 3.6], [241, 3.6], [253, 0.6], [256, 3.6], [263, 0.6]]
+    .forEach(function (g) { Level.ents.push(mkGear(g[0], g[1])); });
+  /* ===== enemies: guards and bid boards in the corridor, two boards in the arena ===== */
+  Level.ents.push(mkGuard(144, 140, 147)); Level.ents.push(mkBidder(151, G)); Level.ents.push(mkGuard(160, 157, 161)); Level.ents.push(mkBidder(173, G));
+  Level.ents.push(mkBidder(234, G)); Level.ents.push(mkBidder(257, G));
+  Level.ents.push(mkColl(0)); Level.ents.push(mkColl(1));
+  /* the Auctioneer, asleep on his podium */
+  AR.gate = S2L.gate; AR.x0 = S2L.arenaA; AR.trig = 236; AR.end = S2L.arenaB;
+  const au = mkAuct(); Level.ents.push(au); Level.boss = au;
+  Level.ents.push(mkPow('blade', 138.5, 0)); Level.ents.push(mkPow('sand', 214, 0)); Level.ents.push(mkPow('bell', 190, 0));
+  Level.signs.push({ x: 190.5 * U, h: 5.2 * U, key: 'sg_pow' });
+  /* ===== scripted beats ===== */
+  const T = function (flag, x0, x1, fn, tik) { Level.trig.push({ flag: flag, x0: x0 * U, x1: x1 * U, fn: fn, tik: !!tik }); };
+  T('opening2', -1, 1e6, function () { Cine.run([['card', [{ k: 'open2_1' }, { k: 'open2_2' }, { k: 'open2_3' }, { k: 'open2_4' }]], ['say', [{ w: 'tik', k: 'tk2_intro' }, { w: 'tik', k: 'tk2_loop' }, { w: 'tik', k: 'tk2_hint1' }]]], null, { bars: false }); });
+  T('mira1', 12, 19, function () {
+    Cine.run([['say', [{ w: 'narr', k: 'mira1' }, { w: 'narr', k: 'mira2' }, { w: 'narr', k: 'mira3' }, { w: 'nader', k: 'nd2_mira' }, { w: 'tik', k: 'tk2_mira' }, { w: 'narr', k: 'mira4' }]]], null, { bars: false });
+  });
+  T('h_pull', 211, 217, function () { Tik.say('tk2_pull'); }, true);
+  T('h_pit', 190, 195, function () { Tik.say('tk2_pit'); }, true);
+  T('hall', S2L.door + 2.2, S2L.door + 4.5, function () { Cyc.enterHall(); });
+  T('h_boss', 229, 231, function () { Tik.say('tk2_boss'); }, true);
+  T('end', S2L.exitX, S2L.exitX + 3, function () {
+    if (!Level.bossDown) return;
+    Cine.run([['card', [{ k: 'end2_1' }, { k: 'end2_2' }, { k: 'end2_3' }, { k: 'end2_4' }]], ['say', [{ w: 'tik', k: 'tk2_end' }]], ['card', [{ k: 'end2_5' }]]], function () { snapshotProgress(); setTimeout(persist, 200); endStage2(); }, { bars: false });
+  });
+  Cyc.init();
+}
+function roofDeco(x0, x1) {                                         // the building front under a deck: windows, shutters, a drainpipe (drawn behind, in the ground blocks)
+  addDeco(x0 * U, (G - 9) * U - 30, x1 * U, G * U, function (c) { pBuildingFront(c, x0 * U, (G - 9) * U, (x1 - x0) * U, 9 * U); });
+}
+function restoreS2() {
+  const f = Level.flags, Z = Level.S2;
+  Cyc.init();
+  if (f.hall) { Cyc.on = false; Level.dOpen[0] = false; }
+  if (f.pull) { Level.dOpen[1] = true; Z.pull.done = true; Z.pull.anim = 1; }
+  if (f.hook) Z.satchel.done = true;
+  Level.doors.forEach(function (d) { d.a = Level.dOpen[d.id] ? 1 : 0; });
+  Level.ents.forEach(function (e) { if (e.t === 'clue' && f[e.key]) e.got = true; });
+  Tik.on = true; Tik.x = P.x - 40; Tik.y = P.y - 90;
+  Cyc.paint(true);
+}
+function endStage2() {
+  Game.fade.a = 1; S.done = S.done || {}; S.done.s2 = true; persist();
+  Cine.run([['card', [{ k: 'end2_6' }]]], function () { toMenu(); }, { bars: false, skip: false });
+}
+
+/* ---------- the cycle ---------- */
+const Cyc = {
+  on: false, soft: false, t: 0, n: 215, busy: false, lastS: -1, sig: '', el: null, arc: null, hand: null, txt: null, nm: null, dots: [], cartA: 0, last: -1, nextToast: 0,
+  init() {
+    this.on = true; this.t = 0; this.n = 215; this.busy = false; this.lastS = -1; this.sig = ''; this.last = -1; this.nextToast = 0;
+    if (!this.el) {
+      this.el = $('#cyc'); this.arc = $('#cyc-arc'); this.hand = $('#cyc-hand'); this.txt = $('#cyc-t'); this.nm = $('#cyc-n');
+      const g = $('#cyc-evs'), NS = 'http://www.w3.org/2000/svg';
+      for (let i = 0; i < CYC_EV.length; i++) {
+        const a = CYC_EV[i].t / 120 * 6.2832 - 1.5708, d = document.createElementNS(NS, 'circle');
+        d.setAttribute('cx', (32 + Math.cos(a) * 28).toFixed(1)); d.setAttribute('cy', (32 + Math.sin(a) * 28).toFixed(1)); d.setAttribute('r', '3'); d.setAttribute('class', 'ev'); d.style.display = 'none';
+        g.appendChild(d); this.dots.push(d);
+      }
+    }
+    this.el.classList.remove('on'); this.el.classList.remove('late');
+  },
+  afterRespawn() { if (this.on) this.restart(); },
+  /* the world state at second t, written idempotently: the same picture whatever happened before, so a rewind is just "t = 0" */
+  apply() {
+    const T = this.t, Z = Level.S2, f = Level.flags;
+    const rampOn = T >= 10 && T < 16;
+    if (rampOn !== Z.rampOn) { Z.rampOn = rampOn; setCells(Z.ramp, rampOn ? 1 : 0); if (rampOn) { Snd.play('cartTip', 0, 24 * U); Cam.shake(3, 0.2); FX.dust(24.5 * U, G * U, 12, 1); this.seen('cart'); } }
+    Z.cart.tilt = approach(Z.cart.tilt, T >= 10 ? 1 : 0, 3 * 0.016);
+    const b = Z.bal, bOn = T >= 30 && T < 42;
+    if (bOn !== b.on) { b.on = bOn; if (bOn) { Snd.play('balloon', 0, 42 * U); this.seen('balloon'); } else { b.dy = 0; b.dx = 0; } }
+    if (bOn) { const k = clamp((T - 31.5) / 7.5, 0, 1), e = k * k * (3 - 2 * k), ny = lerp(b.y0, b.y1, e); b.dy = ny - b.y; b.y = ny; }
+    else if (T < 30 && b.y !== b.y0) { b.y = b.y0; b.dy = 0; }
+    const ropeOn = T >= 40 && T < 48;
+    if (ropeOn !== Z.ropeOn) { Z.ropeOn = ropeOn; for (let x = 63; x < 71; x++) Level.grid[(G - 9) * LW + x] = ropeOn ? 2 : 0; if (ropeOn) { Snd.play('ropeTense', 0, 66 * U); this.seen('rope'); } }
+    Z.rope.a = approach(Z.rope.a, ropeOn ? 1 : 0, 0.016 * 6);
+    const open = T >= 80 && T < 90 && !!f.hallKey;
+    if (open && !Level.dOpen[0]) { openDoor(0); this.seen('door'); }
+    else if (!open && Level.dOpen[0] && Math.abs(P.x - (S2L.door + 0.5) * U) > 1.2 * U && P.x < S2L.door * U) { Level.dOpen[0] = false; Snd.play('door', 0, S2L.door * U); }
+    if (T >= 80 && T < 90 && !f.hallKey && !Level.dOpen[0] && Math.abs(P.x - S2L.door * U) < 4 * U && this.nextToast <= 0) { this.nextToast = 4; UI.toast(t('m_door_need')); Snd.play('deny'); this.seen('door'); }
+    Z.hdoor.lamp = open ? 1 : (f.hallKey ? 0.5 : 0);
+    for (let i = 0; i < Z.timed.length; i++) { const q = Z.timed[i]; q.off = !(T >= q.tw[0] && T < q.tw[1]); }
+    if (T >= 55 && T < 56) this.seen('thief');
+    if (T >= 100 && !Z.collOn) { Z.collOn = true; spawnCollectors(); this.seen('coll'); }
+  },
+  seen(k) {                                                                   // the first time an event is seen it is recorded: it shows on the market clock from then on
+    const f = Level.flags;
+    if (f['ev_' + k]) return;
+    f['ev_' + k] = true; Tik.say('tk2_' + (k === 'coll' ? 'coll' : k), 3.6); this.sig = ''; UI.toast(t('m_ev_new'), 2600);
+  },
+  update(dt) {
+    if (!this.on) return;
+    if (this.nextToast > 0) this.nextToast -= dt;
+    if (!live() || Level.cine || Talk.active || this.busy) { this.paint(); return; }
+    this.t += dt;
+    this.apply();
+    if (this.t >= 120) this.rewind('time');
+    this.paint();
+  },
+  restart() {                                                                 // a new cycle: everything in the market goes back to second zero
+    const Z = Level.S2;
+    this.t = 0; this.n++; this.sig = ''; this.lastS = -1; this.busy = false;
+    Z.rampOn = false; setCells(Z.ramp, 0); Z.cart.tilt = 0; Z.ropeOn = false; for (let x = 63; x < 71; x++) Level.grid[(G - 9) * LW + x] = 0; Z.rope.a = 0;
+    Z.bal.on = false; Z.bal.y = Z.bal.y0; Z.bal.dy = 0; Z.collOn = false;
+    if (!Level.flags.hall) { Level.dOpen[0] = false; }
+    UI.toast(t('m_rewind', this.n), 2600); this.el.classList.remove('flash'); void this.el.offsetWidth; this.el.classList.add('flash');
+    if (Level.flags.ev_cart && this.n === 216 && !Level.flags.rw1) { Level.flags.rw1 = true; Tik.say('tk2_rewind', 3.6); }
+  },
+  rewind(why) {                                                               // the time ran out, or a collector touched Nader
+    if (this.busy || !this.on) return;
+    this.busy = true; P.respawning = true; P.vx = 0; Hook.cut();
+    Snd.play('rewind'); FX.ring(P.x, P.y - 36, 120, 2, 0.5);
+    Game.fadeTo(1, 0.45, function () { Cyc.soft = true; respawnAtCheckpoint(); Cyc.soft = false; Cyc.busy = false; Game.fadeTo(0, 0.5); });
+  },
+  enterHall() {                                                               // through the door: the cycle stops for good
+    if (!this.on) return;
+    this.on = false; Level.flags.hall = true; Level.dOpen[0] = false; s2ResetFoes(false); Level.S2.collOn = false;
+    checkpoint = { x: (S2L.door + 3.5) * U, y: G * U }; this.el.classList.remove('on');
+    Snd.play('door', 0, S2L.door * U); UI.toast(t('m_hall'), 3600); snapshotProgress(); setTimeout(persist, 200);
+  },
+  paint(force) {
+    if (!this.el) return;
+    if (!this.on || Game.state === 'menu') { if (this.el.className.indexOf('on') >= 0) this.el.classList.remove('on'); return; }
+    if (this.el.className.indexOf('on') < 0 && Game.state === 'play') this.el.classList.add('on');
+    const k = Math.floor(this.t * 5), f = Level.flags;
+    let nxt = null;
+    for (let i = 0; i < CYC_EV.length; i++) { const e = CYC_EV[i]; if (f['ev_' + e.k] && e.t > this.t && !nxt) nxt = e; }
+    const sig = (f.hallKey ? 'k' : '') + CYC_EV.map(function (e) { return f['ev_' + e.k] ? 1 : 0; }).join('') + (nxt ? nxt.k : '');
+    if (k === this.last && sig === this.sig && !force) return;
+    this.last = k; this.sig = sig;
+    const T = this.t, a = T / 120 * 6.2832 - 1.5708;
+    this.arc.setAttribute('stroke-dasharray', T.toFixed(1) + ' 120');
+    this.hand.setAttribute('x2', (32 + Math.cos(a) * 22).toFixed(1)); this.hand.setAttribute('y2', (32 + Math.sin(a) * 22).toFixed(1));
+    const s = Math.floor(T); this.txt.textContent = Math.floor(s / 60) + ':' + (s % 60 < 10 ? '0' : '') + (s % 60);
+    this.el.classList.toggle('late', T >= 100);
+    for (let i = 0; i < this.dots.length; i++) { const d = this.dots[i], seen = !!f['ev_' + CYC_EV[i].k]; d.style.display = seen ? '' : 'none'; d.setAttribute('class', 'ev' + (nxt && nxt.k === CYC_EV[i].k ? ' next' : '')); }
+    this.nm.textContent = nxt ? t('cyc_next', t('ev_' + nxt.k), Math.max(0, Math.ceil(nxt.t - T))) : t('cyc_n', this.n) + (f.hallKey ? ' · ' + t('cyc_key') : '');
+  }
+};
+
+/* ---------- interaction with the new pieces ---------- */
+function takeHook(e) {
+  const f = Level.flags; f.hook = true; e.done = true; Snd.play('save', 0, e.x);
+  Cine.run([['cam', e.x, e.y - 1.6 * U], ['wait', 0.4], ['say', [{ w: 'narr', k: 'sat1' }, { w: 'narr', k: 'sat2' }, { w: 'narr', k: 'sat3' }, { w: 'narr', k: 'sat4' }]],
+    ['do', function () { UI.toast(t('m_hook_get'), 4200); FX.ring(P.x, P.y - 40, 90, 4, 0.6); Snd.play('hookLatch'); }], ['say', [{ w: 'tik', k: 'tk2_sat' }]]], function () { snapshotProgress(); setTimeout(persist, 200); });
+}
+function endHallKey() { Level.flags.hallKey = true; Cyc.sig = ''; Snd.play('save'); UI.toast(t('m_key_get'), 3200); }
+
+/* ---------- per-step update of the market (called from stageUpdate) ---------- */
+function s2Update(dt) {
+  const Z = Level.S2; if (!Z) return;
+  Cyc.update(dt);
+  const b = Level.boss, sw = Z.sway;
+  if (sw.length) {                                                          // the six planks of the hall swing sideways in the second phase
+    const want = (b && b.phase === 2 && !b.dead && b.state !== 'sleep') ? 1.9 * U : 0;
+    Z.amp = approach(Z.amp, want, 1.1 * U * dt);
+    const T = b ? b.tt : 0;
+    for (let i = 0; i < sw.length; i++) {
+      const m = sw[i], nx = m.bx0 + Z.amp * Math.sin(T * 0.9 + m.ph), d = nx - m.x0;
+      m.dx = m.snap ? 0 : d; m.snap = false; m.x0 += d; m.x1 = m.x0 + m.w;
+    }
+  }
+  if (Z.pull) {
+    if (Z.pull.timer > 0) { Z.pull.timer -= dt; if (Z.pull.timer <= 0) { openDoor(1); UI.toast(t('m_pull')); } }
+    Z.pull.anim = approach(Z.pull.anim, Z.pull.done ? 1 : 0, dt * 3);
+  }
+  if (Z.satchel) Z.satchel.ph += dt;
+  if (Z.hdoor) Z.hdoor.t = (Z.hdoor.t || 0) + dt;
+  s2Foes(dt);
+}
+
+/* ---------- the machines of the market ----------
+   Nobody here is a person or an animal: the guards are brass door-wardens, the bidders are bid boards on posts, the pickpocket is a rolling satchel with a hook
+   arm, the collectors are floating ledger-lanterns. */
+const CB2 = {
+  guard: { hp: 3, hw: 0.6 * U, h: 1.55 * U, walk: 1.5 * U, charge: 9.5 * U, aggro: 7 * U, warn: 0.6, chargeT: 0.55, recover: 1.1, gears: 2 },
+  bidder: { hp: 2, hw: 0.5 * U, h: 1.7 * U, range: 10 * U, glow: 0.75, cool: 2.4, v: 7.2 * U, gears: 1 },
+  coll: { v: 2.6 * U }, thief: { t0: 55, t1: 75 }
+};
+function mkGuard(tx, a, b) {
+  const x = tx * U + U / 2, y = G * U;
+  return { t: 'guard', s2: 1, x: x, y: y, hw: CB2.guard.hw, h: CB2.guard.h, hp: CB2.guard.hp, dir: -1, state: 'patrol', st: 0, kb: 0, flash: 0, shake: 0, dead: false, lastAtk: 0,
+    homeX: x, homeY: y, pMin: a * U, pMax: (b + 1) * U, ph: Math.random() * 6, cool: 0, crashed: false };
+}
+function mkBidder(tx, ty) {
+  const x = tx * U + U / 2, y = (ty === undefined ? G : ty) * U;
+  return { t: 'bidder', s2: 1, x: x, y: y, hw: CB2.bidder.hw, h: CB2.bidder.h, hp: CB2.bidder.hp, dir: -1, state: 'idle', st: 0, flash: 0, shake: 0, dead: false, lastAtk: 0, homeX: x, homeY: y, ph: Math.random() * 6, cd: 0.8, glow: 0 };
+}
+function s2EntBox(e) {
+  if (e.dead) return null;
+  switch (e.t) {
+    case 'guard': case 'bidder': return [e.x - e.hw, e.y - e.h, e.x + e.hw, e.y];
+    case 'thief': return e.state === 'run' ? [e.x - e.hw, e.y - e.h, e.x + e.hw, e.y] : null;
+    case 'auct': return (e.state === 'sleep' || e.state === 'dead') ? null : [e.x - AU.hw, e.y - AU.h, e.x + AU.hw, e.y];
+  }
+  return null;
+}
+function s2Kill(e) {
+  e.dead = true;
+  Snd.play('enemyDie', 0, e.x); FX.sparks(e.x, e.y - e.h * 0.5, 12, 4); FX.chips(e.x, e.y - 8, 8, 3); FX.dust(e.x, e.y, 6, 0);
+  const n = e.t === 'guard' ? CB2.guard.gears : CB2.bidder.gears;
+  for (let i = 0; i < n; i++) spawnDrop(e.x, e.y - 20);
+}
+function s2Damage(e, dmg, dir, heavy, atkId) {
+  if (e.dead || e.lastAtk === atkId) return false;
+  switch (e.t) {
+    case 'guard':
+      e.lastAtk = atkId;
+      if (e.state !== 'recover' && e.state !== 'stagger' && dir === -e.dir && !(heavy && dmg >= 3)) {            // the shield faces forward: strike from behind, or in the gap after a charge
+        Snd.play('toolLand', 0, e.x); FX.sparks(e.x + e.dir * e.hw, e.y - e.h * 0.55, 6, 1); e.shake = 0.15; return false;
+      }
+      e.shake = heavy ? 0.35 : 0.22; e.flash = 0.1; e.hp -= dmg; e.kb = dir * (heavy ? 7 : 4) * U;
+      popup(e.x, e.y - e.h - 14, '-' + dmg, heavy ? '#ffb347' : '#ffffff'); FX.sparks(e.x - dir * 10, e.y - e.h * 0.5, heavy ? 9 : 5, 1);
+      if (e.hp <= 0) s2Kill(e); else setE(e, 'stagger');
+      return true;
+    case 'bidder':
+      e.lastAtk = atkId; e.shake = 0.22; e.flash = 0.1; e.hp -= dmg;
+      popup(e.x, e.y - e.h - 14, '-' + dmg, heavy ? '#ffb347' : '#ffffff'); FX.sparks(e.x - dir * 10, e.y - e.h * 0.5, 5, 1);
+      if (e.hp <= 0) s2Kill(e); else setE(e, 'stagger');
+      return true;
+    case 'thief':
+      if (e.state !== 'run') return false;
+      e.lastAtk = atkId; e.dead = true; e.state = 'dead';
+      Snd.play('enemyDie', 0, e.x); FX.sparks(e.x, e.y - 30, 14, 4); FX.chips(e.x, e.y - 10, 10, 3); popup(e.x, e.y - e.h - 14, '-' + dmg, '#ffb347');
+      if (!Level.flags.hallKey) { FX.ring(e.x, e.y - 40, 90, 4, 0.5); endHallKey(); } else for (let i = 0; i < 3; i++) spawnDrop(e.x, e.y - 30);
+      return true;
+    case 'auct': return auctDamage(e, dmg, dir, heavy, atkId);
+    case 'coll':
+      e.lastAtk = atkId; FX.sparks(e.x, e.y, 4, 4); return false;
+  }
+  return false;
+}
+function hookSweep(x0, y0, x1, y1) {                                        // the free-flying claw: whatever it meets is staggered (blades and paddles are knocked out of the air)
+  const pad = 10;
+  for (let i = 0; i < Level.blades.length; i++) {
+    const s = Level.blades[i]; if (!s.on) continue;
+    if (Math.hypot(s.x - x1, s.y - y1) < s.r + pad) { popBlade(s); return s; }
+  }
+  for (let i = 0; i < Level.ents.length; i++) {
+    const e = Level.ents[i]; if (!e.s2 || e.dead) continue;
+    if (e.t !== 'guard' && e.t !== 'bidder') continue;
+    const b = s2EntBox(e); if (!b) continue;
+    if (x1 > b[0] - pad && x1 < b[2] + pad && y1 > b[1] - pad && y1 < b[3] + pad) {
+      Snd.play('hookLatch', 0, x1); FX.sparks(x1, y1, 8, 4); e.flash = 0.12; e.shake = 0.2;
+      if (e.t === 'guard') { e.kb = 0; setE(e, 'stagger'); e.st = -0.3; } else { setE(e, 'stagger'); e.glow = 0; }
+      popup(e.x, e.y - e.h - 14, '!', '#7ff3e6');
+      return e;
+    }
+  }
+  return null;
+}
+
+/* ---- projectiles: bid-board blades and the Auctioneer's paddles (one small pool; the player's swing breaks them) ---- */
+Level.blades = []; for (let i = 0; i < 12; i++) Level.blades.push({ on: false, x: 0, y: 0, vx: 0, vy: 0, life: 0, r: 0, kind: 'blade', rot: 0 });
+function fireBlade(x, y, vx, vy, kind) {
+  const L = Level.blades;
+  for (let i = 0; i < L.length; i++) {
+    const s = L[i]; if (s.on) continue;
+    s.on = true; s.x = x; s.y = y; s.vx = vx; s.vy = vy; s.kind = kind; s.life = kind === 'paddle' ? 2.8 : 2.4; s.r = (kind === 'paddle' ? 0.42 : 0.3) * U; s.rot = 0;
+    Snd.play('bladeThrow', 0, x); FX.glow(x, y, 30, 4, 0.2); return s;
+  }
+  return null;
+}
+function popBlade(s) { s.on = false; Snd.play('bubblePop', 0, s.x); FX.sparks(s.x, s.y, 6, 4); }
+function popBlades(box, cx, cy, r) {                                         // called with the rest of the player's strikes from popBubbles
+  const L = Level.blades; if (!L) return;
+  for (let i = 0; i < L.length; i++) {
+    const s = L[i]; if (!s.on) continue;
+    if (box) { if (rectsOverlap(box[0], box[1], box[2], box[3], s.x - s.r, s.y - s.r, s.x + s.r, s.y + s.r)) popBlade(s); }
+    else if (Math.hypot(s.x - cx, s.y - cy) <= r + s.r) popBlade(s);
+  }
+}
+function updBlades(dt) {
+  const L = Level.blades, lv = live();
+  for (let i = 0; i < L.length; i++) {
+    const s = L[i]; if (!s.on) continue;
+    s.life -= dt; s.x += s.vx * dt; s.y += s.vy * dt; s.rot += dt * (s.kind === 'paddle' ? 11 : 17);
+    if (s.life <= 0 || solidT(tileAt(Math.floor(s.x / U), Math.floor(s.y / U)))) { popBlade(s); continue; }
+    if (lv && circleHitsP(s.x, s.y, s.r) && hurtPlayer(s.x - sgn(s.vx || 1) * 10, 1)) popBlade(s);
+  }
+}
+
+/* ---- guard: patrols → glows copper → charges → a gap to strike in ---- */
+function updGuard(e, dt) {
+  if (e.dead) return;
+  const C = CB2.guard, p = P; e.st += dt; e.ph += dt;
+  if (e.flash > 0) e.flash -= dt; if (e.shake > 0) e.shake -= dt; if (e.cool > 0) e.cool -= dt;
+  const lv = live(), adx = Math.abs(p.x - e.x), ady = Math.abs((p.y - 20) - (e.y - 10));
+  if (e.kb) { eStep(e, e.kb * dt); e.kb = approach(e.kb, 0, 40 * U * dt); }
+  switch (e.state) {
+    case 'patrol':
+      if (e.x <= e.pMin) e.dir = 1; else if (e.x >= e.pMax) e.dir = -1;
+      if (eStep(e, e.dir * C.walk * dt)) e.dir = -e.dir;
+      if (lv && e.cool <= 0 && adx < C.aggro && ady < 2.6 * U) { faceP(e); setE(e, 'warn'); Snd.play('guardCharge', 0, e.x); }
+      break;
+    case 'warn': if (e.st >= C.warn) { setE(e, 'charge'); e.crashed = false; } break;
+    case 'charge': {
+      const k = Math.min(1, e.st / 0.08);
+      if (eStep(e, e.dir * C.charge * k * dt)) { e.crashed = true; setE(e, 'recover'); Snd.play('wallCrack', 0, e.x); Cam.shake(2, 0.08); FX.dust(e.x + e.dir * e.hw, e.y, 4, e.dir); }
+      else if (e.st >= C.chargeT) setE(e, 'recover');
+      if (((e.st * 60) | 0) % 3 === 0) FX.dust(e.x - e.dir * e.hw, e.y, 1, -e.dir);
+      break;
+    }
+    case 'recover': if (e.st >= (e.crashed ? C.recover + 0.6 : C.recover)) { e.cool = 0.8; e.crashed = false; setE(e, 'patrol'); } break;
+    case 'stagger': if (e.st >= 0.35) { e.cool = 0.6; setE(e, 'recover'); } break;
+  }
+  if (lv && (e.state === 'patrol' || e.state === 'warn' || e.state === 'charge')) hitP(e.x - e.hw, e.y - e.h, e.x + e.hw, e.y, e.x, 1);
+}
+/* ---- bid board: still on its post → its face glows → throws a low blade; keeps its distance in time (never moves) ---- */
+function updBidder(e, dt) {
+  if (e.dead) return;
+  const C = CB2.bidder; e.st += dt; e.ph += dt;
+  if (e.flash > 0) e.flash -= dt; if (e.shake > 0) e.shake -= dt; if (e.cd > 0) e.cd -= dt;
+  const lv = live(), dx = P.x - e.x, adx = Math.abs(dx), ady = Math.abs(P.y - e.y);
+  switch (e.state) {
+    case 'idle':
+      e.glow = approach(e.glow, 0, dt * 4);
+      if (lv && adx < C.range && ady < 4 * U && e.cd <= 0) { e.dir = dx >= 0 ? 1 : -1; setE(e, 'glow'); Snd.play('bidderGlow', 0, e.x); }
+      break;
+    case 'glow':
+      e.glow = Math.min(1, e.st / C.glow);
+      if (e.st < C.glow - 0.2) e.dir = dx >= 0 ? 1 : -1;
+      if (e.st >= C.glow) { fireBlade(e.x + e.dir * 0.6 * U, e.y - 0.8 * U, e.dir * C.v, 0, 'blade'); setE(e, 'fire'); }
+      break;
+    case 'fire': e.glow = approach(e.glow, 0, dt * 6); if (e.st >= 0.25) { e.cd = C.cool; setE(e, 'idle'); } break;
+    case 'stagger': e.glow = approach(e.glow, 0, dt * 6); if (e.st >= 0.45) { e.cd = Math.max(e.cd, 1.0); setE(e, 'idle'); } break;
+  }
+  if (lv && e.state !== 'stagger') hitP(e.x - e.hw * 0.8, e.y - e.h, e.x + e.hw * 0.8, e.y, e.x, 1);
+}
+/* ---- the pickpocket: a rolling satchel that runs over the second roof at the same seconds every cycle (its position is a function of the cycle clock) ---- */
+function updThief(e, dt) {
+  if (e.dead) return;
+  const T = Cyc.t, C = CB2.thief, run = Cyc.on && T >= C.t0 && T < C.t1;
+  if (run) {
+    const k = (T - C.t0) / (C.t1 - C.t0);
+    e.x = lerp(e.x1, e.x0, k); e.y = (G - 9) * U; e.vis = true; e.state = 'run'; e.dir = -1; e.ph = (e.ph || 0) + dt * 9;
+    if (e.flash > 0) e.flash -= dt;
+  } else { e.vis = false; if (e.state === 'run') e.state = 'wait'; }
+}
+function mkColl(i) { return { t: 'coll', s2: 1, on: false, x: 0, y: 0, ph: i * 2, vis: 0, i: i, hum: 0, dead: false, lastAtk: 0 }; }
+function spawnCollectors() {
+  for (let i = 0; i < Level.ents.length; i++) {
+    const e = Level.ents[i]; if (e.t !== 'coll') continue;
+    e.on = true; e.vis = 0; e.hum = 0.3; e.x = clamp(P.x + (e.i ? 1 : -1) * 15 * U, 2 * U, (S2L.door - 2) * U); e.y = P.y - 1.4 * U;
+  }
+}
+function updColl(e, dt) {
+  if (!e.on) return;
+  e.ph += dt; e.vis = Math.min(1, e.vis + dt * 1.2);
+  const tx = P.x, ty = P.y - 0.9 * U, d = Math.hypot(tx - e.x, ty - e.y);
+  if (d > 1) { const st = Math.min(CB2.coll.v * dt, d); e.x += (tx - e.x) / d * st; e.y += (ty - e.y) / d * st; }
+  e.hum -= dt; if (e.hum <= 0 && d < 16 * U) { e.hum = 1.5; Snd.play('collectorHum', 0, e.x); }
+  if (live() && !Cyc.busy && !Level.cine && e.vis > 0.6 && d < 0.95 * U) Cyc.rewind('collector');
+}
+function s2Foes(dt) {
+  if (Game.state !== 'play') return;
+  const edt = dt * Pow.eSlow(), ents = Level.ents;
+  for (let i = 0; i < ents.length; i++) {
+    const e = ents[i];
+    switch (e.t) {
+      case 'guard': updGuard(e, edt); break;
+      case 'bidder': updBidder(e, edt); break;
+      case 'thief': updThief(e, dt); break;
+      case 'coll': updColl(e, edt); break;
+      case 'auct': updAuct(e, edt); break;
+      case 'ring': if (e.ping > 0) e.ping = Math.max(0, e.ping - dt * 3); break;
+    }
+  }
+  updBlades(edt); updWaves(edt);
+  const b = Level.boss;
+  if (b && b.t === 'auct' && !Level.bossDown && b.state === 'sleep' && P.x > AR.trig * U && live()) startAuctFight(b);
+}
+function s2ResetFoes(full) {                                                 // after a death (full) or a rewind (soft: the ones already broken stay broken)
+  const Z = Level.S2; if (!Z) return;
+  for (let i = 0; i < Level.ents.length; i++) {
+    const e = Level.ents[i];
+    if (e.t === 'thief') { e.dead = false; e.state = 'wait'; e.vis = false; }
+    else if (e.t === 'coll') { e.on = false; e.vis = 0; }
+    else if (e.t === 'guard' || e.t === 'bidder') {
+      if (e.dead && !full) continue;
+      e.dead = false; e.hp = e.t === 'guard' ? CB2.guard.hp : CB2.bidder.hp; e.x = e.homeX; e.y = e.homeY; e.state = e.t === 'guard' ? 'patrol' : 'idle'; e.st = 0; e.kb = 0; e.flash = 0; e.cool = 0; e.cd = 0.8; e.glow = 0; e.lastAtk = 0;
+    } else if (e.t === 'auct' && !Level.bossDown) auctReset(e);
+  }
+  for (let i = 0; i < Level.blades.length; i++) Level.blades[i].on = false;
+  Z.waves.length = 0; Z.amp = 0;
+}
+
+/* ---------- the boss: the Auctioneer ----------
+   A brass bell-horn on a podium, with a gavel arm. He sells "the next minute". Attacks:
+     «عشرة، عشرون، ثلاثون» (bid) - numbered circles light up one by one and then burst in number order as full-height columns;
+     the gavel - a shock front runs out along the hall: whoever is standing on something when it reaches them is hurt, so jump it;
+     paddles - aimed bid paddles in a fan (can be broken);
+     «مباع!» (second phase) - the gavel goes up: pull it out of his hand with the hook and he reels for four seconds (double damage); if you cannot,
+        the gavel falls with a big front, the bid boards come back and the hall "rewinds".
+   Nothing in the hall is a safe place: columns reach the ceiling, paddles are aimed, the gavel front finds everyone who is standing. */
+const AU = { hp: 32, hw: 1.25 * U, h: 3.3 * U, wake: 2.0, idleMin: 0.9, idleMax: 1.5, xMin: 233.6 * U, xMax: 258.4 * U, litGap: 0.55, burstGap: 0.42, colHalf: 0.85 * U, colT: 0.42,
+  gWarn: 0.9, frontV: 12 * U, frontHalf: 0.8 * U, padGap: 0.36, padV: 8.6 * U, soldWarn: 0.9, hold: 3.4, stagT: 4.0, breakT: 1.5, dieT: 2.8, rec: 0.7 };
+function mkAuct() {
+  return { t: 'auct', s2: 1, nameKey: 'boss_auct', x: 245 * U, y: (G - 1) * U, hp: AU.hp, hpMax: AU.hp, phase: 1, state: 'sleep', st: 0, tt: 0, dir: -1, glow: 0, flash: 0, shake: 0, lastAtk: 0, dead: false,
+    gavelUp: false, gx: 0, gy: 0, last: '', idleT: 1, bids: [], stag: 0, sinceSold: 0, arm: 0, dieFx: 0, padN: 0, padFired: 0, soldHit: false, gavelHeld: 0, onHooked: function () { auctHooked(this); } };
+}
+function auctReset(b) {
+  b.dead = false; b.hp = b.hpMax; b.phase = 1; b.state = 'sleep'; b.st = 0; b.tt = 0; b.glow = 0; b.flash = 0; b.gavelUp = false; b.bids.length = 0; b.stag = 0; b.sinceSold = 0; b.arm = 0; b.last = ''; b.lastAtk = 0; b.idleT = 1;
+}
+function startAuctFight(b) {
+  Level.gateShut = true; Snd.play('door', 0, AR.gate * U + U / 2);
+  b.state = 'wake'; b.st = 0; b.tt = 0; Snd.play('auctWake', 0, b.x); Cam.shake(4, 0.6);
+  Cam.lock = { x0: AR.x0 * U, x1: AR.end * U }; HUD.bossDirty = true;
+  Cine.run([['cam', b.x, b.y - 3 * U], ['wait', 1.6], ['say', [{ w: 'auct', k: 'ac_1' }]], ['say', [{ w: 'tik', k: 'tk2_boss' }]], ['uncam']], null, { skip: false });
+}
+function auctDamage(b, dmg, dir, heavy, atkId) {
+  if (b.dead || b.lastAtk === atkId) return false;
+  const s = b.state;
+  if (s === 'sleep' || s === 'wake' || s === 'break' || s === 'dying' || s === 'dead') return false;
+  b.lastAtk = atkId;
+  const reel = b.stag > 0, d = reel ? dmg * 2 : dmg;
+  b.hp = Math.max(0, b.hp - d); b.flash = 0.12; b.shake = heavy ? 0.3 : 0.2; HUD.bossDirty = true;
+  popup(b.x, b.y - AU.h - 14, '-' + d + (reel ? '!' : ''), reel ? '#ffb347' : '#ffffff');
+  FX.sparks(b.x - dir * 30, b.y - 1.8 * U, reel ? 14 : 7, reel ? 4 : 1); Snd.play('bossHurt', 0, b.x);
+  if (reel) { Snd.play('pickup'); FX.ring(b.x, b.y - 2.4 * U, 60, 4, 0.35); }
+  if (b.hp <= 0) { auctDying(b); return true; }
+  if (b.phase === 1 && b.hp <= b.hpMax / 2) auctBreak(b);
+  return true;
+}
+function auctBreak(b) {
+  b.phase = 2; b.state = 'break'; b.st = 0; b.stag = 0; b.gavelUp = false; b.bids.length = 0; b.glow = 0;
+  Snd.play('bossBreak', 0, b.x); Cam.shake(9, 0.5); Game.hitStop = Math.max(Game.hitStop, 0.12);
+  FX.chips(b.x, b.y - AU.h * 0.8, 16, 6); FX.sparks(b.x, b.y - AU.h * 0.8, 14, 4); FX.dust(b.x, b.y, 10, 0);
+  Pow.drop('bell', 245 * U, (G - 3.2) * U);                                // the cracked horn shakes a time-piece loose
+  HUD.bossDirty = true;
+}
+function auctDying(b) {
+  b.state = 'dying'; b.st = 0; b.bids.length = 0; b.gavelUp = false; b.stag = 0; Level.S2.waves.length = 0;
+  for (let i = 0; i < Level.blades.length; i++) Level.blades[i].on = false;
+  Snd.play('bossDie', 0, b.x); Cam.shake(8, 0.6); HUD.bossDirty = true;
+}
+function finishAuct(b) {
+  b.dead = true; b.state = 'dead'; Level.bossDown = true; Level.gateShut = false; Cam.lock = null;
+  Snd.play('door', 0, AR.gate * U); Cam.shake(10, 0.5);
+  FX.ring(b.x, b.y - 100, 150, 4, 0.8); FX.glow(b.x, b.y - 100, 160, 1, 0.9); FX.sparks(b.x, b.y - 100, 18, 4); FX.dust(b.x, b.y, 14, 0);
+  for (let i = 0; i < 14; i++) spawnDrop(b.x + rnd(-70, 70), b.y - 140);
+  UI.toast(t('m_auct_down'), 5000); HUD.bossDirty = true;
+  snapshotProgress(); persist();
+}
+function auctHooked(b) {                                                     // the hook closed on the raised gavel
+  if (b.state !== 'hold') return;
+  b.gavelUp = false; b.state = 'stag'; b.st = 0; b.stag = AU.stagT; b.soldHit = true;
+  Snd.play('bossHurt', 0, b.x); Snd.play('pickup'); Cam.shake(6, 0.3); Game.hitStop = Math.max(Game.hitStop, 0.1);
+  FX.ring(b.gx, b.gy, 80, 4, 0.5); FX.sparks(b.gx, b.gy, 12, 4); popup(b.x, b.y - AU.h - 30, '!', '#7ff3e6'); Tik.say('tk2_stag', 3);
+}
+function auctNext(b) {
+  const list = b.phase === 2 ? ['bid', 'gavel', 'paddle', 'sold'] : ['bid', 'gavel', 'paddle'];
+  let k = list[(Math.random() * list.length) | 0];
+  if (k === b.last) k = list[(list.indexOf(k) + 1) % list.length];
+  if (b.phase === 2) { if (b.sinceSold >= 3) k = 'sold'; if (k === 'sold') b.sinceSold = 0; else b.sinceSold++; }
+  b.last = k; b.dir = P.x >= b.x ? 1 : -1;
+  switch (k) {
+    case 'bid': startBids(b); break;
+    case 'gavel': b.state = 'gavelT'; b.st = 0; Snd.play('gavelUp', 0, b.x); break;
+    case 'paddle': b.state = 'padT'; b.st = 0; b.padFired = 0; b.padN = b.phase === 2 ? 4 : 3; Snd.play('bossWarn', 0, b.x); break;
+    case 'sold': b.state = 'soldT'; b.st = 0; b.soldHit = false; Snd.play('soldCry', 0, b.x); FX.ring(b.x, b.y - 2.6 * U, 120, 4, 0.6); popup(b.x, b.y - AU.h - 30, t('ac_sold'), '#ffb347'); break;
+  }
+}
+function startBids(b) {
+  const n = b.phase === 2 ? 4 : 3, xs = [];
+  b.state = 'bidT'; b.st = 0; b.bids.length = 0;
+  for (let i = 0; i < n; i++) {                                              // one on Nader, the rest spread round him (never closer than 2.6 units to each other)
+    let x = i === 0 ? P.x : P.x + (Math.random() < 0.5 ? -1 : 1) * rnd(2.6, 8) * U;
+    for (let tries = 0; tries < 8; tries++) {
+      x = clamp(x, AU.xMin, AU.xMax);
+      let ok = true; for (let j = 0; j < xs.length; j++) if (Math.abs(xs[j] - x) < 2.6 * U) ok = false;
+      if (ok) break;
+      x = P.x + (Math.random() < 0.5 ? -1 : 1) * rnd(2.6, 9) * U;
+    }
+    xs.push(clamp(x, AU.xMin, AU.xMax));
+  }
+  const order = [];                                                          // the numbers 10, 20, 30 (40) are lit in a random order of positions, and burst in number order
+  for (let i = 0; i < n; i++) order.push(i);
+  for (let i = n - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0, q = order[i]; order[i] = order[j]; order[j] = q; }
+  for (let i = 0; i < n; i++) b.bids.push({ x: xs[order[i]], n: (i + 1) * 10, lit: AU.litGap * i + 0.25, burst: AU.litGap * n + 0.55 + AU.burstGap * i, state: 0, tone: false });
+}
+function updWaves(dt) {
+  const Z = Level.S2; if (!Z) return;
+  for (let i = Z.waves.length - 1; i >= 0; i--) {
+    const w = Z.waves[i];
+    w.x += w.dir * w.v * dt;
+    if (w.x < AU.xMin - 2 * U || w.x > AU.xMax + 2 * U) { Z.waves.splice(i, 1); continue; }
+    if (!w.hit && live() && P.onGround && Math.abs(P.x - w.x) < w.half + P.w / 2 && hurtPlayer(w.x - w.dir * 10, 1)) w.hit = true;
+  }
+}
+function spawnFront(b, v, half) {
+  const Z = Level.S2;
+  Z.waves.push({ x: b.x - 0.6 * U, dir: -1, v: v, half: half, hit: false, born: 0 });
+  Z.waves.push({ x: b.x + 0.6 * U, dir: 1, v: v, half: half, hit: false, born: 0 });
+  Snd.play('gavelSlam', 0, b.x); Cam.shake(7, 0.3); FX.dust(b.x - 1.2 * U, G * U, 8, -1); FX.dust(b.x + 1.2 * U, G * U, 8, 1);
+}
+function auctToIdle(b, t0) { b.state = 'idle'; b.st = 0; b.idleT = (t0 === undefined ? rnd(AU.idleMin, AU.idleMax) : t0) * (b.phase === 2 ? 0.8 : 1); b.arm = 0; }
+function updAuct(b, dt) {
+  if (b.dead) return;
+  if (b.flash > 0) b.flash -= dt; if (b.shake > 0) b.shake -= dt;
+  if (b.state === 'sleep') return;
+  const lv = live();
+  if (Level.cine && b.state !== 'wake') return;
+  b.st += dt; b.tt += dt;
+  if (b.state !== 'dying') b.glow = approach(b.glow, (b.state === 'gavelT' || b.state === 'soldT' || b.state === 'hold') ? 1 : 0, dt * 4);
+  if (b.stag > 0) b.stag -= dt;
+  switch (b.state) {
+    case 'wake': b.arm = Math.min(1, b.st / AU.wake); if (b.st >= AU.wake && !Level.cine) auctToIdle(b, 0.8); break;
+    case 'idle':
+      b.dir = P.x >= b.x ? 1 : -1; b.arm = approach(b.arm, 0, dt * 3);
+      b.idleT -= dt; if (b.idleT <= 0) auctNext(b);
+      break;
+    case 'bidT': {
+      let done = true;
+      for (let i = 0; i < b.bids.length; i++) {
+        const c = b.bids[i];
+        if (c.state === 0 && b.st >= c.lit) { c.state = 1; Snd.play('bidTone', 0, c.x); }
+        if (c.state === 1 && b.st >= c.burst) { c.state = 2; c.t = 0; Snd.play('bidBurst', 0, c.x); Cam.shake(3, 0.12); FX.dust(c.x, G * U, 8, 0); FX.sparks(c.x, G * U - 20, 8, 4); }
+        if (c.state === 2) {
+          c.t += dt;
+          if (lv) hitP(c.x - AU.colHalf, 0, c.x + AU.colHalf, G * U, c.x, 1);
+          if (c.t >= AU.colT) c.state = 3;
+        }
+        if (c.state < 3) done = false;
+      }
+      if (done) { b.bids.length = 0; auctToIdle(b); }
+      break;
+    }
+    case 'gavelT':
+      b.arm = Math.min(1, b.st / AU.gWarn);
+      if (b.st >= AU.gWarn) { spawnFront(b, AU.frontV, AU.frontHalf); b.state = 'gavelR'; b.st = 0; b.arm = 0; }
+      break;
+    case 'gavelR': if (b.st >= AU.rec) auctToIdle(b); break;
+    case 'padT': {
+      b.dir = P.x >= b.x ? 1 : -1;
+      const due = 0.5 + b.padFired * AU.padGap;
+      if (b.padFired < b.padN && b.st >= due) {
+        b.padFired++;
+        const sx = b.x + b.dir * 0.9 * U, sy = b.y - 2.5 * U, dx = P.x - sx, dy = (P.y - 0.9 * U) - sy, spread = (b.padFired - (b.padN + 1) / 2) * 0.12;
+        const a = Math.atan2(dy, dx) + spread;
+        fireBlade(sx, sy, Math.cos(a) * AU.padV, Math.sin(a) * AU.padV, 'paddle');
+      }
+      if (b.padFired >= b.padN && b.st >= due + 0.5) auctToIdle(b);
+      break;
+    }
+    case 'soldT':
+      b.arm = Math.min(1, b.st / AU.soldWarn);
+      if (b.st >= AU.soldWarn) { b.state = 'hold'; b.st = 0; b.gavelUp = true; Snd.play('gavelUp', 0, b.x); Tik.say('tk2_gavel', 3); }
+      break;
+    case 'hold': {
+      b.arm = 1; b.gx = b.x + (b.dir || 1) * 1.5 * U; b.gy = b.y - AU.h - 0.9 * U;
+      if (b.st >= AU.hold) {                                                  // too late: the gavel falls, the hall rewinds
+        b.gavelUp = false; spawnFront(b, AU.frontV * 1.15, AU.frontHalf * 1.3);
+        auctRewind(b); b.state = 'gavelR'; b.st = -0.4; b.arm = 0;
+      }
+      break;
+    }
+    case 'stag': if (b.stag <= 0 || b.st >= AU.stagT) { auctToIdle(b, 1.0); b.stag = 0; } break;
+    case 'break': if (b.st >= AU.breakT) auctToIdle(b, 0.6); break;
+    case 'dying': {
+      b.dieFx -= dt;
+      if (b.dieFx <= 0) {
+        b.dieFx = 0.16;
+        const x = b.x + rnd(-1.2, 1.2) * U, y = b.y - rnd(0.4, 3.2) * U;
+        FX.sparks(x, y, 7, 4); FX.chips(x, y + 20, 3, 6); emit(PT.SQ, x, y, rnd(-30, 30), -rnd(40, 120), 0.7, rnd(8, 16), 5, 0);
+        if (Math.random() < 0.4) Snd.play('toolLand', 0, b.x);
+      }
+      Cam.shake(3, 0.1);
+      if (b.st >= AU.dieT) finishAuct(b);
+      break;
+    }
+  }
+  b.gavelUp = b.state === 'hold';
+}
+function auctRewind(b) {                                                     // "Sold!": the hall is back to how it was eight seconds ago
+  const Z = Level.S2;
+  Snd.play('rewind'); UI.toast(t('m_sold'), 3400); FX.ring(P.x, P.y - 36, 120, 2, 0.5);
+  for (let i = 0; i < Level.ents.length; i++) {
+    const e = Level.ents[i];
+    if (e.t === 'bidder' && e.x > AR.x0 * U) { e.dead = false; e.hp = CB2.bidder.hp; e.state = 'idle'; e.st = 0; e.cd = 1.2; e.glow = 0; e.lastAtk = 0; FX.ring(e.x, e.y - 40, 60, 4, 0.5); FX.sparks(e.x, e.y - 50, 8, 4); }
+  }
+  for (let i = 0; i < Level.blades.length; i++) Level.blades[i].on = false;
+  b.bids.length = 0; b.tt = 0;
+  for (let i = 0; i < Z.sway.length; i++) Z.sway[i].snap = true;
+}
+
 /* ---------- 15. art registry (sprite sheets plug in here; placeholders are used otherwise) ---------- */
 const FONT = '"Noto Sans Arabic","Noto Kufi Arabic","Noto Naskh Arabic","Segoe UI",Tahoma,"DejaVu Sans",system-ui,sans-serif';
 const NADER_DISPLAY = 112, NADER_FOOT_PAD = 6;   // displayed cell size (px) and transparent padding under the feet; Nader's hitbox is 34×70 (1.5 units tall)
@@ -3445,6 +4430,7 @@ function gearPath(c, cx, cy, r, teeth, depth) {
 }
 function buildAtlas() {
   if (BG.theme === 'workshop') { buildAtlasWorkshop(); return; }
+  if (BG.theme === 'market') { buildAtlasMarket(); return; }
   const cv = mk(TS * Atlas.n, TS), c = cv.getContext('2d');
   const r = rng32(11);
   function brick(ox, variant) {
@@ -3541,9 +4527,9 @@ function buildBackgrounds() {
     const hz = c.createLinearGradient(0, 480, 0, H); hz.addColorStop(0, 'rgba(120,150,150,0)'); hz.addColorStop(1, 'rgba(120,150,140,0.28)');
     c.fillStyle = hz; c.fillRect(0, 480, W, H - 480);
   };
-  const ws = BG.theme === 'workshop';
-  BG.sky = mk(W, H); if (ws) paintWorkshopFar(BG.sky.getContext('2d'), W, H); else farDraw(BG.sky.getContext('2d'));
-  BG.mid = ws ? layer(function (c) { paintWorkshopMid(c, W, H); }) : layer(function (c) {
+  const mt = BG.theme === 'market', ws = BG.theme === 'workshop' || mt;
+  BG.sky = mk(W, H); if (mt) paintMarketFar(BG.sky.getContext('2d'), W, H); else if (ws) paintWorkshopFar(BG.sky.getContext('2d'), W, H); else farDraw(BG.sky.getContext('2d'));
+  BG.mid = ws ? layer(function (c) { if (mt) paintMarketMid(c, W, H); else paintWorkshopMid(c, W, H); }) : layer(function (c) {
     for (let i = 0; i < 6; i++) {          // arched aqueduct
       const x = i * 280 - 40; c.fillStyle = 'rgba(14,22,40,0.94)';
       wrapDraw(W, x, 280, function (xx) { c.fillRect(xx, 560, 280, 260); c.globalCompositeOperation = 'destination-out'; c.beginPath(); c.arc(xx + 140, 690, 80, Math.PI, 0); c.lineTo(xx + 220, 820); c.lineTo(xx + 60, 820); c.fill(); c.globalCompositeOperation = 'source-over'; });
@@ -3551,7 +4537,7 @@ function buildBackgrounds() {
     c.strokeStyle = 'rgba(214,165,74,0.18)'; c.lineWidth = 3;
     for (let i = 0; i < 8; i++) { const x = r() * W; c.beginPath(); c.moveTo(x, 0); c.lineTo(x, 120 + r() * 200); c.stroke(); }
   });
-  BG.near = ws ? layer(function (c) { paintWorkshopNear(c, W, H); }) : layer(function (c) {
+  BG.near = ws ? layer(function (c) { if (mt) paintMarketNear(c, W, H); else paintWorkshopNear(c, W, H); }) : layer(function (c) {
     for (let i = 0; i < 5; i++) {
       const x = i * (W / 5) + r() * 60, w = 62 + r() * 30;
       wrapDraw(W, x, w, function (xx) {
@@ -3905,6 +4891,7 @@ function drawNaderPlaceholder(c) {
   else if (s === 'attack' || s === 'airattack') { lean += p.phase === 'wind' ? -0.12 : 0.18; legF = p.onGround ? 0.45 : 0.3; legB = -0.35; hH = -28 * D; mH = 28 * D; }
   else if (s === 'special') { legF = 0.5; legB = -0.5; lean = 0; sx *= Math.cos(p.st * 32) * 0.35 + 0.65; spin = true; }
   else if (s === 'interact') { lean = 0.08; hH = 70 * D; mH = 98 * D; }
+  else if (s === 'hook') { armF = 2.75; armB = -2.1; legF = 0.3; legB = -0.2; lean += clamp(p.vx / TUNE.run, -1, 1) * p.dir * 0.12; hH = -35 * D; mH = 35 * D; }
   if (s === 'death') {
     const k = Math.min(1, p.st / TUNE.deathT);
     sy *= k < 0.4 ? 1 - k * 0.6 : 0.78; rot = p.dir * 1.45 * Math.max(0, (k - 0.4) / 0.6); legF = 0.9; legB = -0.9; armF = 0.6; armB = -0.5;
@@ -4061,8 +5048,8 @@ function drawPopups(c) {
   }
   c.globalAlpha = 1;
 }
-const PROMPT_KEY = { clock: 'p_wind', lever: 'p_lever', chest: 'p_open', scan: 'p_scan', machine: 'p_insert', lift: 'p_lift' };
-const PROMPT_UP = { clock: 158, lever: 96, chest: 78, scan: 80, machine: 150, lift: 150 };
+const PROMPT_KEY = { clock: 'p_wind', lever: 'p_lever', chest: 'p_open', scan: 'p_scan', machine: 'p_insert', lift: 'p_lift', satchel: 'p_take' };
+const PROMPT_UP = { clock: 158, lever: 96, chest: 78, scan: 80, machine: 150, lift: 150, satchel: 100 };
 function drawPrompt(c) {
   const tg = P.target;
   if (!tg || Game.state !== 'play') return;
@@ -4120,8 +5107,8 @@ function render() {
     drawTiles(c, cx, cy); Hitch.mark('tl');
     if (sgOn && sgAbove) drawSigns(c, cx);
     drawEntities(c, cx);
-    drawCombat(c, cx); Hitch.mark('en');
-    drawNader(c); if (Tik.on) drawTik(c); Pow.draw(c); drawTalkFx(c); Hitch.mark('nd');
+    drawCombat(c, cx); if (Level.S2) drawS2Fx(c, cx); Hitch.mark('en');
+    drawNader(c); drawHook(c); if (Tik.on) drawTik(c); Pow.draw(c); drawTalkFx(c); Hitch.mark('nd');
     drawParticles(c);
     drawPopups(c);
     drawPrompt(c); if (Tik.bub) drawTikBubble(c); Hitch.mark('pt');
@@ -4170,7 +5157,7 @@ const HUD = {
     if (this.bossDirty || bsig !== this.bossSig) {
       this.bossDirty = false; this.bossSig = bsig;
       const el = $('#boss'); el.classList.toggle('on', showB);
-      if (showB) { $('#boss-fill').style.width = Math.max(0, bs.hp / bs.hpMax * 100) + '%'; $('#boss-name').textContent = t('boss_name'); el.classList.toggle('p2', bs.phase === 2); }
+      if (showB) { $('#boss-fill').style.width = Math.max(0, bs.hp / bs.hpMax * 100) + '%'; $('#boss-name').textContent = t(bs.nameKey || 'boss_name'); el.classList.toggle('p2', bs.phase === 2); }
     }
     const idle = (now - this.changedAt > 3500) && P.hp > 2 && P.special < 100 && !showB;
     if (idle !== this.idle) { this.idle = idle; $('#hud').classList.toggle('idle', idle); }
@@ -4186,7 +5173,7 @@ function drawCombat(c, cx) {
     const e = Level.ents[i];
     switch (e.t) {
       case 'fwall': if (e.room.x1 > cx - 60 && e.room.x0 < cx + vw + 60) drawFwall(c, e); break;
-      case 'lost': if (!e.got && e.x > cx - 100 && e.x < cx + vw + 100) drawLost(c, e); break;
+      case 'lost': if (!e.got && !e.off && e.x > cx - 100 && e.x < cx + vw + 100) drawLost(c, e); break;
       case 'roach': if (!e.dead && e.x > cx - 120 && e.x < cx + vw + 120) drawRoach(c, e); break;
       case 'ratoil': if (!e.dead && e.x > cx - 120 && e.x < cx + vw + 120) drawRat(c, e); break;
       case 'boss': if (!e.dead && e.x > cx - 400 && e.x < cx + vw + 400) drawBoss(c, e); break;
@@ -4300,6 +5287,7 @@ function drawBubble(c, s) {
 
 /* ---- arena furniture: table legs, shelf brackets, tool racks, the gate ---- */
 function drawArenaDeco(c, cx) {
+  if (Level.stage === 's2') return;
   const vw = Game.viewW, x0 = AR.x0 * U;
   if (cx + vw < x0 - 100) return;
   const ty = (G - 2) * U;
@@ -4926,6 +5914,493 @@ function drawLift(c, e) {
   c.restore();
 }
 
+/* ---------- 17c. stage 2 art (all drawn in code): the market's tile atlas and three backdrops, the baked props (awnings, roofs, podium, price board), and the animated pieces
+   (rings, handle, satchel, cart steps, balloon, planks, rope, guard, bid board, pickpocket, collectors, the Auctioneer, blades, bid circles, shock fronts).
+   Nothing here is a person or an animal: the sellers and the guards are brass machines, and the only trace of Mira is her notebook. ---------- */
+const MK = { cloth1: '#c9473b', cloth2: '#f0d9a8', cloth3: '#d98a2b', cloth4: '#3f8f86', plum: '#2a1a2f', copper: '#c9923f', copperD: '#8f5d26', leather: '#8a5a33', leatherD: '#4f301b' };
+
+/* ---- tile atlas of the market: plum-grey stone, cobbled street, planks, iron-barred doors ---- */
+function buildAtlasMarket() {
+  const cv = mk(TS * Atlas.n, TS), c = cv.getContext('2d'), r = rng32(53);
+  function stone(ox, v) {
+    c.fillStyle = v === 3 ? '#2f3346' : '#43373b'; c.fillRect(ox, 0, TS, TS);
+    if (v === 3) {
+      c.fillStyle = '#3a4058'; c.fillRect(ox + 4, 4, TS - 8, TS - 8);
+      c.fillStyle = '#242838'; c.fillRect(ox, 0, TS, 3); c.fillRect(ox, TS - 3, TS, 3); c.fillRect(ox, 0, 3, TS); c.fillRect(ox + TS - 3, 0, 3, TS);
+      c.fillStyle = '#c9923f'; for (const q of [[12, 12], [TS - 12, 12], [12, TS - 12], [TS - 12, TS - 12]]) { c.beginPath(); c.arc(ox + q[0], q[1], 3.2, 0, 6.3); c.fill(); }
+      c.fillStyle = 'rgba(255,255,255,.05)'; c.fillRect(ox + 4, 4, TS - 8, 6);
+      return;
+    }
+    c.fillStyle = '#2b2025';
+    for (let row = 0; row < 3; row++) {
+      const y = row * 32; c.fillRect(ox, y + 30, TS, 2);
+      const off = (row + v) % 2 ? 0 : 24;
+      for (let x = off; x < TS + 48; x += 48) c.fillRect(ox + x, y, 2, 30);
+    }
+    c.fillStyle = '#54454a'; for (let row = 0; row < 3; row++) c.fillRect(ox, row * 32, TS, 2);
+    c.fillStyle = 'rgba(0,0,0,.16)'; for (let i = 0; i < 12; i++) c.fillRect(ox + r() * TS, r() * TS, 2 + r() * 6, 2);
+    c.fillStyle = 'rgba(217,138,43,.06)'; for (let i = 0; i < 5; i++) c.fillRect(ox + r() * TS, r() * TS, 6 + r() * 8, 2);
+  }
+  for (let v = 0; v < 4; v++) stone(v * TS, v);
+  for (let v = 0; v < 2; v++) {                                  // the street: cobbles over a stone course
+    const ox = (4 + v) * TS; stone(ox, v);
+    c.fillStyle = '#4a3a2c'; c.fillRect(ox, 0, TS, 26);
+    c.fillStyle = '#9a7d5a'; c.fillRect(ox, 0, TS, 20);
+    c.fillStyle = '#c9a878'; c.fillRect(ox, 0, TS, 4);
+    c.fillStyle = '#6d5740'; c.fillRect(ox, 20, TS, 3);
+    const xs = v ? [0, 22, 47, 70] : [10, 34, 58, 82];
+    c.fillStyle = '#6d5740'; for (const sx of xs) c.fillRect(ox + sx, 4, 2, 16);
+    c.fillStyle = 'rgba(0,0,0,.12)'; for (let i = 0; i < 6; i++) c.fillRect(ox + 4 + r() * (TS - 14), 6 + r() * 10, 5 + r() * 9, 2);
+  }
+  { // one-way: a lashed plank
+    const ox = 6 * TS;
+    c.fillStyle = '#4f361f'; c.fillRect(ox, 8, TS, 18);
+    c.fillStyle = '#a9774a'; c.fillRect(ox, 0, TS, 17);
+    c.fillStyle = '#d29a63'; c.fillRect(ox, 0, TS, 4);
+    c.fillStyle = '#5a3c20'; c.fillRect(ox, 17, TS, 3);
+    c.fillStyle = '#d9c9a0'; c.fillRect(ox + 24, 0, 8, 22); c.fillRect(ox + 64, 0, 8, 22);
+  }
+  { // spikes
+    const ox = 7 * TS;
+    c.fillStyle = '#2f3346'; c.fillRect(ox, TS - 16, TS, 16);
+    for (let i = 0; i < 3; i++) {
+      const x0 = ox + 4 + i * 30, g = c.createLinearGradient(x0, 0, x0 + 26, 0);
+      g.addColorStop(0, '#e9dccb'); g.addColorStop(0.5, '#a7977f'); g.addColorStop(1, '#645a4b');
+      c.fillStyle = g; c.beginPath(); c.moveTo(x0, TS - 14); c.lineTo(x0 + 13, 20); c.lineTo(x0 + 26, TS - 14); c.closePath(); c.fill();
+    }
+  }
+  { // door segment
+    const ox = 8 * TS;
+    c.fillStyle = '#1b1624'; c.fillRect(ox, 0, TS, TS);
+    c.fillStyle = '#3c3350'; for (let i = 0; i < 4; i++) c.fillRect(ox + 10 + i * 22, 0, 9, TS);
+    c.fillStyle = '#c9923f'; c.fillRect(ox, 0, 8, TS); c.fillRect(ox + TS - 8, 0, 8, TS);
+    c.fillStyle = '#8f5d26'; c.fillRect(ox, 44, TS, 8); c.fillStyle = '#e6c06a'; c.fillRect(ox, 44, TS, 2);
+  }
+  Atlas.cv = cv;
+}
+
+/* ---- backdrops: far = dusk sky with the thirteen-mark clock and the skyline, mid = stalls and lanterns, near = poles and banners ---- */
+function paintMarketFar(c, W, H) {
+  const r = rng32(61);
+  const g = c.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#0b0a1f'); g.addColorStop(0.34, '#271640'); g.addColorStop(0.62, '#693050'); g.addColorStop(0.84, '#b4643f'); g.addColorStop(1, '#d6934d');
+  c.fillStyle = g; c.fillRect(0, 0, W, H);
+  c.fillStyle = '#fff'; for (let i = 0; i < 90; i++) { c.globalAlpha = 0.12 + r() * 0.4; const s = r() < 0.2 ? 2 : 1; c.fillRect(r() * W, r() * H * 0.42, s, s); }
+  c.globalAlpha = 1;
+  const cx = 1180, cy = 230, R = 160;                            // the great dial with thirteen marks: its single hand points at the one that does not exist
+  c.fillStyle = 'rgba(240,222,190,0.1)'; c.beginPath(); c.arc(cx, cy, R + 20, 0, 6.3); c.fill();
+  c.strokeStyle = 'rgba(224,170,92,0.34)'; c.lineWidth = 10; c.beginPath(); c.arc(cx, cy, R, 0, 6.3); c.stroke();
+  c.lineWidth = 3; c.strokeStyle = 'rgba(224,170,92,0.3)';
+  for (let i = 0; i < 13; i++) { const a = i / 13 * 6.2832; c.beginPath(); c.moveTo(cx + Math.sin(a) * (R - 12), cy - Math.cos(a) * (R - 12)); c.lineTo(cx + Math.sin(a) * (R - 36), cy - Math.cos(a) * (R - 36)); c.stroke(); }
+  c.lineWidth = 7; c.lineCap = 'round'; const ah = 12 / 13 * 6.2832;
+  c.beginPath(); c.moveTo(cx, cy); c.lineTo(cx + Math.sin(ah) * R * 0.7, cy - Math.cos(ah) * R * 0.7); c.stroke();
+  c.lineWidth = 5; c.beginPath(); c.moveTo(cx, cy); c.lineTo(cx + Math.sin(ah + 0.5) * R * 0.45, cy - Math.cos(ah + 0.5) * R * 0.45); c.stroke();
+  for (let i = 0; i < 18; i++) {                                // the skyline: towers, domes and a few lit windows
+    const x = i * (W / 18) + r() * 30 - 15, w = 54 + r() * 70, h = 120 + r() * 220, top = 600 - h * 0.6;
+    wrapDraw(W, x, w, function (xx) {
+      c.fillStyle = 'rgba(22,12,32,0.94)'; c.fillRect(xx, top, w, H - top);
+      if (i % 3 === 0) { c.beginPath(); c.arc(xx + w / 2, top, w * 0.42, Math.PI, 0); c.fill(); c.fillRect(xx + w / 2 - 2, top - w * 0.42 - 22, 4, 22); }
+      else { c.beginPath(); c.moveTo(xx - 5, top); c.lineTo(xx + w / 2, top - 40 - r() * 50); c.lineTo(xx + w + 5, top); c.fill(); }
+      c.fillStyle = 'rgba(255,200,120,0.55)'; for (let k = 0; k < 6; k++) if (r() < 0.55) c.fillRect(xx + 8 + r() * (w - 20), top + 18 + k * 34, 5, 9);
+    });
+  }
+  c.strokeStyle = 'rgba(30,18,36,0.7)'; c.lineWidth = 2;        // strings of bunting, frozen mid-sway
+  for (let s = 0; s < 4; s++) {
+    const y0 = 90 + s * 70, x0 = -40 + s * 90, x1 = x0 + 700 + s * 120;
+    c.beginPath(); c.moveTo(x0, y0); c.quadraticCurveTo((x0 + x1) / 2, y0 + 80, x1, y0 + 10); c.stroke();
+    for (let k = 1; k < 14; k++) {
+      const q = k / 14, bx = (1 - q) * (1 - q) * x0 + 2 * q * (1 - q) * ((x0 + x1) / 2) + q * q * x1, by = (1 - q) * (1 - q) * y0 + 2 * q * (1 - q) * (y0 + 80) + q * q * (y0 + 10);
+      c.fillStyle = ['rgba(201,71,59,0.55)', 'rgba(240,217,168,0.5)', 'rgba(217,138,43,0.55)', 'rgba(63,143,134,0.5)'][k & 3];
+      c.beginPath(); c.moveTo(bx - 8, by); c.lineTo(bx + 8, by); c.lineTo(bx, by + 18); c.closePath(); c.fill();
+    }
+  }
+  const hz = c.createLinearGradient(0, H - 280, 0, H); hz.addColorStop(0, 'rgba(60,30,40,0)'); hz.addColorStop(1, 'rgba(60,30,40,0.4)'); c.fillStyle = hz; c.fillRect(0, H - 280, W, 280);
+}
+function paintMarketMid(c, W, H) {
+  const r = rng32(67);
+  const cols = ['rgba(120,36,40,0.9)', 'rgba(150,110,60,0.88)', 'rgba(36,86,84,0.9)', 'rgba(130,70,30,0.9)'];
+  for (let x = -20, i = 0; x < W; x += 210 + r() * 40, i++) {   // a row of stall tents with striped fronts
+    const w = 170 + r() * 50, y = 520 + r() * 20;
+    wrapDraw(W, x, w, function (xx) {
+      c.fillStyle = 'rgba(26,16,28,0.95)'; c.fillRect(xx + 8, y, 7, H - y); c.fillRect(xx + w - 15, y, 7, H - y);
+      c.fillStyle = cols[i & 3]; c.beginPath(); c.moveTo(xx - 6, y + 40); c.lineTo(xx + w / 2, y - 36); c.lineTo(xx + w + 6, y + 40); c.closePath(); c.fill();
+      c.fillStyle = 'rgba(240,217,168,0.18)'; for (let k = 0; k < 6; k++) { c.beginPath(); c.moveTo(xx + w / 2, y - 36); c.lineTo(xx + k * (w / 5) - 6 + 12 * (k / 5), y + 40); c.lineTo(xx + (k + 0.5) * (w / 5), y + 40); c.closePath(); c.fill(); }
+      c.fillStyle = 'rgba(14,8,18,0.96)'; c.fillRect(xx + 14, y + 40, w - 28, H - y);
+      c.fillStyle = 'rgba(255,200,120,0.5)'; c.beginPath(); c.arc(xx + w / 2, y + 62, 6, 0, 6.3); c.fill();     // a lantern inside
+      c.fillStyle = 'rgba(80,50,36,0.95)'; c.fillRect(xx + 20, y + 100, w - 40, 10);                         // counter
+      for (let k = 0; k < 4; k++) { c.fillStyle = ['rgba(184,138,59,0.7)', 'rgba(150,40,40,0.7)', 'rgba(210,190,140,0.7)'][k % 3]; c.beginPath(); c.arc(xx + 36 + k * 30, y + 96, 8, 0, 6.3); c.fill(); }
+    });
+  }
+  c.strokeStyle = 'rgba(18,10,22,0.8)'; c.lineWidth = 3;        // hanging lantern lines
+  for (let i = 0; i < 7; i++) {
+    const x = 60 + i * 240 + r() * 80, len = 110 + r() * 130;
+    c.beginPath(); c.moveTo(x, 0); c.lineTo(x, len); c.stroke();
+    c.fillStyle = 'rgba(255,196,110,0.22)'; c.beginPath(); c.arc(x, len + 14, 34, 0, 6.3); c.fill();
+    c.fillStyle = 'rgba(255,214,150,0.85)'; c.beginPath(); c.ellipse(x, len + 14, 9, 14, 0, 0, 6.3); c.fill();
+  }
+}
+function paintMarketNear(c, W, H) {
+  const r = rng32(71);
+  for (let i = 0; i < 5; i++) {
+    const x = i * (W / 5) + r() * 60, w = 40 + r() * 16;
+    c.fillStyle = 'rgba(16,9,18,0.97)'; c.fillRect(x, 0, w, H);
+    c.fillStyle = 'rgba(80,46,40,0.55)'; c.fillRect(x + 5, 0, 4, H);
+    c.fillStyle = 'rgba(201,146,63,0.45)'; for (let y = 150; y < H; y += 220) c.fillRect(x - 5, y, w + 10, 9);
+    const by = 80 + r() * 90;                                     // a banner hanging from the pole
+    c.fillStyle = ['rgba(120,34,40,0.8)', 'rgba(36,86,84,0.8)', 'rgba(130,86,30,0.8)'][i % 3];
+    c.beginPath(); c.moveTo(x + w, by); c.lineTo(x + w + 80, by); c.lineTo(x + w + 80, by + 120); c.lineTo(x + w + 40, by + 96); c.lineTo(x + w, by + 120); c.closePath(); c.fill();
+    c.fillStyle = 'rgba(240,217,168,0.4)'; c.beginPath(); c.arc(x + w + 40, by + 44, 14, 0, 6.3); c.fill();
+  }
+  c.fillStyle = 'rgba(255,214,150,0.45)'; for (let i = 0; i < 60; i++) c.fillRect(r() * W, 60 + r() * (H - 280), 2, 2);
+  const fg = c.createLinearGradient(0, H - 260, 0, H); fg.addColorStop(0, 'rgba(90,50,44,0)'); fg.addColorStop(1, 'rgba(90,50,44,0.4)'); c.fillStyle = fg; c.fillRect(0, H - 260, W, 260);
+}
+
+/* ---- baked props ---- */
+function pAwning(c, x, y, w, c1, c2) {                            // a striped canopy: y = its top surface (a one-way platform), poles to the ground are not drawn (it hangs from the stall)
+  c.save();
+  c.fillStyle = '#3a2418'; c.fillRect(x - 2, y + 2, 5, 2.6 * U); c.fillRect(x + w - 3, y + 2, 5, 2.6 * U);
+  const n = Math.max(2, Math.round(w / 24));
+  for (let i = 0; i < n; i++) { c.fillStyle = i & 1 ? c2 : c1; c.fillRect(x + i * (w / n), y, w / n + 0.6, 14); }
+  c.fillStyle = 'rgba(0,0,0,0.22)'; c.fillRect(x, y + 11, w, 3);
+  for (let i = 0; i < n; i++) { c.fillStyle = i & 1 ? c2 : c1; const sx = x + i * (w / n), sw = w / n; c.beginPath(); c.moveTo(sx, y + 14); c.lineTo(sx + sw, y + 14); c.lineTo(sx + sw / 2, y + 28); c.closePath(); c.fill(); }
+  c.fillStyle = 'rgba(255,255,255,0.28)'; c.fillRect(x, y, w, 2.5);
+  c.strokeStyle = '#2b1810'; c.lineWidth = 2; c.strokeRect(x + 1, y + 1, w - 2, 13);
+  c.restore();
+}
+function pBuildingFront(c, x, y, w, h) {                          // a deck two tiles thick at y, the building front below it down to the floor line y + h
+  c.save();
+  const dh = 2 * U;
+  c.fillStyle = '#3c2e34'; c.fillRect(x, y, w, dh);               // roofing slab
+  c.fillStyle = '#5a444a'; for (let k = 0; k < w / 40; k++) c.fillRect(x + k * 40 + (k & 1 ? 20 : 0), y + 6, 36, 12);
+  c.fillStyle = '#c9923f'; c.fillRect(x, y, w, 7); c.fillStyle = '#e6c06a'; c.fillRect(x, y, w, 2.5); c.fillStyle = '#6d4a1c'; c.fillRect(x, y + 7, w, 3);
+  c.fillStyle = '#2b2025'; c.fillRect(x, y + dh - 10, w, 10);
+  c.fillStyle = '#2a1e26'; c.fillRect(x, y + dh, w, h - dh);      // the wall
+  for (let bx = x + 20; bx < x + w - 70; bx += 150) {             // windows with shutters
+    const wy = y + dh + 34;
+    c.fillStyle = '#16101c'; c.fillRect(bx, wy, 54, 80);
+    c.fillStyle = 'rgba(255,196,110,0.16)'; c.fillRect(bx + 4, wy + 4, 46, 72);
+    c.fillStyle = '#4f301b'; c.fillRect(bx - 14, wy - 4, 14, 88); c.fillRect(bx + 54, wy - 4, 14, 88);
+    c.fillStyle = '#6a4326'; for (let q = 0; q < 6; q++) { c.fillRect(bx - 12, wy + 2 + q * 14, 10, 3); c.fillRect(bx + 56, wy + 2 + q * 14, 10, 3); }
+    c.strokeStyle = '#c9923f'; c.lineWidth = 3; c.strokeRect(bx, wy, 54, 80); c.beginPath(); c.moveTo(bx + 27, wy); c.lineTo(bx + 27, wy + 80); c.moveTo(bx, wy + 40); c.lineTo(bx + 54, wy + 40); c.stroke();
+    c.fillStyle = '#7a5530'; c.fillRect(bx - 6, wy + 84, 66, 8);
+    c.fillStyle = '#c9473b'; c.beginPath(); c.arc(bx + 10, wy + 82, 6, 0, 6.3); c.fill(); c.fillStyle = '#3f8f86'; c.beginPath(); c.arc(bx + 44, wy + 82, 6, 0, 6.3); c.fill();   // flower pots
+  }
+  c.fillStyle = '#4a4f5a'; c.fillRect(x + w - 22, y + dh, 10, h - dh);        // a drain pipe
+  c.fillStyle = '#6b7080'; c.fillRect(x + w - 22, y + dh, 3, h - dh);
+  c.fillStyle = 'rgba(0,0,0,0.25)'; c.fillRect(x, y + dh, w, 14);
+  c.restore();
+}
+function pPodium(c, x, y, w, h) {                                 // the Auctioneer's podium: a brass-banded wooden block
+  c.save();
+  c.fillStyle = '#5a3c20'; c.fillRect(x, y, w, h); c.strokeStyle = '#1c130b'; c.lineWidth = 3; c.strokeRect(x + 1.5, y + 1.5, w - 3, h - 3);
+  c.fillStyle = '#c9923f'; c.fillRect(x, y, w, 7); c.fillStyle = '#e6c06a'; c.fillRect(x, y, w, 2.5); c.fillRect(x, y + h - 8, w, 6);
+  c.fillStyle = '#3c2814'; for (let i = 1; i < 4; i++) c.fillRect(x + i * (w / 4) - 1, y + 9, 2, h - 18);
+  c.restore();
+}
+function pPriceBoard(c, x, y, w, h) {                             // the big board behind the podium: lots and prices that never change
+  c.save();
+  c.fillStyle = '#17101c'; c.fillRect(x, y, w, h); c.strokeStyle = '#c9923f'; c.lineWidth = 6; c.strokeRect(x + 3, y + 3, w - 6, h - 6);
+  c.strokeStyle = 'rgba(201,146,63,0.35)'; c.lineWidth = 2; c.strokeRect(x + 14, y + 14, w - 28, h - 28);
+  c.font = '700 34px ' + FONT; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = 'rgba(240,217,168,0.42)';
+  const rows = ['10', '20', '30', '40'];
+  for (let i = 0; i < 4; i++) {
+    const yy = y + 40 + i * (h - 80) / 3;
+    c.fillText(rows[i], x + w * 0.28, yy); c.fillRect(x + w * 0.4, yy + 2, w * 0.38, 3);
+  }
+  c.restore();
+}
+function pNotebookBoard(c, x, y) {                                // a stall notice board with an open notebook, a pencil and a lamp: Mira's
+  c.save();
+  c.fillStyle = '#3a2418'; c.fillRect(x + 8, y - 2.4 * U, 6, 2.4 * U); c.fillRect(x + 2.6 * U, y - 2.4 * U, 6, 2.4 * U);
+  c.fillStyle = '#6a4326'; c.fillRect(x, y - 2.6 * U, 3 * U, 1.1 * U); c.strokeStyle = '#2b1810'; c.lineWidth = 3; c.strokeRect(x + 1.5, y - 2.6 * U + 1.5, 3 * U - 3, 1.1 * U - 3);
+  c.fillStyle = '#c9923f'; c.fillRect(x, y - 2.6 * U, 3 * U, 5);
+  const nx = x + 0.45 * U, ny = y - 2.6 * U - 4;
+  c.fillStyle = '#e9dfc4'; c.beginPath(); c.moveTo(nx, ny); c.lineTo(nx + 0.9 * U, ny - 6); c.lineTo(nx + 1.8 * U, ny); c.lineTo(nx + 1.8 * U, ny - 0.1 * U - 24); c.lineTo(nx + 0.9 * U, ny - 30); c.lineTo(nx, ny - 0.1 * U - 24); c.closePath(); c.fill();
+  c.strokeStyle = '#2b2433'; c.lineWidth = 2; c.stroke();
+  c.strokeStyle = 'rgba(43,36,51,0.7)'; c.lineWidth = 1.6; for (let i = 0; i < 4; i++) { c.beginPath(); c.moveTo(nx + 8, ny - 24 + i * 5); c.lineTo(nx + 0.9 * U - 6, ny - 26 + i * 5); c.moveTo(nx + 0.9 * U + 6, ny - 26 + i * 5); c.lineTo(nx + 1.8 * U - 8, ny - 24 + i * 5); c.stroke(); }
+  c.strokeStyle = '#d98a2b'; c.lineWidth = 4; c.lineCap = 'round'; c.beginPath(); c.moveTo(nx + 1.9 * U, ny - 4); c.lineTo(nx + 2.3 * U, ny - 14); c.stroke();
+  c.fillStyle = '#2fd6c4'; c.beginPath(); c.arc(nx + 0.9 * U, ny - 36, 3, 0, 6.3); c.fill();
+  c.restore();
+}
+
+/* ---- animated pieces ---- */
+function drawS2Ent(c, e) {
+  switch (e.t) {
+    case 'ring': drawRing(c, e); break;
+    case 'pull': drawPull(c, e); break;
+    case 'satchel': drawSatchel(c, e); break;
+    case 'cart': drawCart(c, e); break;
+    case 'hdoor': drawHDoor(c, e); break;
+    case 'guard': if (!e.dead) drawGuard(c, e); break;
+    case 'bidder': if (!e.dead) drawBidder(c, e); break;
+    case 'thief': if (e.vis && !e.dead) drawThief(c, e); break;
+    case 'coll': if (e.on) drawColl(c, e); break;
+    case 'auct': if (!e.dead || e.state === 'dying') drawAuct(c, e); break;
+  }
+}
+function drawRing(c, e) {                                         // a brass ring on a short chain from a bracket: the hook's anchor
+  const p = e.ping || 0, s = 1 + p * 0.25;
+  c.save(); c.translate(e.x, e.y);
+  c.strokeStyle = INK; c.lineWidth = 6; c.beginPath(); c.moveTo(0, -10); c.lineTo(0, -46); c.stroke();
+  c.strokeStyle = '#7a5518'; c.lineWidth = 3; c.stroke();
+  c.fillStyle = INK; c.fillRect(-14, -52, 28, 8); c.fillStyle = BRASS; c.fillRect(-12, -51, 24, 5);
+  c.fillStyle = 'rgba(230,192,106,' + (0.14 + 0.1 * Math.sin(Game.time * 3 + e.ph) + p * 0.3) + ')'; c.beginPath(); c.arc(0, 0, 30 * s, 0, 6.3); c.fill();
+  c.scale(s, s);
+  c.strokeStyle = INK; c.lineWidth = 9; c.beginPath(); c.arc(0, 0, 14, 0, 6.3); c.stroke();
+  c.strokeStyle = BRASS_L; c.lineWidth = 5; c.beginPath(); c.arc(0, 0, 14, 0, 6.3); c.stroke();
+  c.strokeStyle = 'rgba(255,255,255,0.6)'; c.lineWidth = 2; c.beginPath(); c.arc(0, 0, 14, 3.6, 4.5); c.stroke();
+  c.restore();
+}
+function drawPull(c, e) {                                         // a high handle on a wall plate
+  const k = e.anim || 0, dy = k * 18;
+  c.save(); c.translate(e.x, e.y);
+  c.fillStyle = INK; c.fillRect(-16, -44, 32, 22); c.fillStyle = BRASS; c.fillRect(-14, -42, 28, 18);
+  c.fillStyle = INK; c.fillRect(-4, -26, 8, 36 + dy); c.fillStyle = '#7a5518'; c.fillRect(-2, -26, 4, 36 + dy);
+  c.strokeStyle = INK; c.lineWidth = 8; c.beginPath(); c.arc(0, 18 + dy, 11, 0, 6.3); c.stroke();
+  c.strokeStyle = e.done ? '#2fd6c4' : BRASS_L; c.lineWidth = 4; c.beginPath(); c.arc(0, 18 + dy, 11, 0, 6.3); c.stroke();
+  if (!e.done) { c.fillStyle = 'rgba(230,192,106,' + (0.14 + 0.1 * Math.sin(Game.time * 3)) + ')'; c.beginPath(); c.arc(0, 18, 30, 0, 6.3); c.fill(); }
+  c.restore();
+}
+function drawSatchel(c, e) {                                      // a leather satchel hanging by a rope, with a note under its flap
+  const sw = Math.sin(e.ph * 1.6) * 0.05;
+  c.save(); c.translate(e.x, e.y - 3.8 * U);
+  c.strokeStyle = INK; c.lineWidth = 6; c.beginPath(); c.moveTo(0, -3 * U); c.lineTo(0, 0); c.stroke(); c.strokeStyle = '#d9c9a0'; c.lineWidth = 3; c.stroke();
+  c.rotate(sw);
+  if (!e.done) {
+    c.fillStyle = 'rgba(47,214,196,' + (0.16 + 0.08 * Math.sin(Game.time * 3)) + ')'; c.beginPath(); c.arc(0, 1.4 * U, 54, 0, 6.3); c.fill();
+    c.fillStyle = INK; rrect(c, -30, 12, 60, 54, 8); c.fill(); c.fillStyle = MK.leather; rrect(c, -27, 15, 54, 48, 6); c.fill();
+    c.fillStyle = MK.leatherD; c.beginPath(); c.moveTo(-27, 15); c.lineTo(27, 15); c.lineTo(27, 34); c.lineTo(0, 44); c.lineTo(-27, 34); c.closePath(); c.fill();
+    c.fillStyle = BRASS_L; c.beginPath(); c.arc(0, 40, 4, 0, 6.3); c.fill();
+    c.fillStyle = '#e9dfc4'; c.save(); c.translate(18, 30); c.rotate(0.3); c.fillRect(-2, -2, 11, 14); c.restore();
+  } else { c.fillStyle = INK; c.fillRect(-4, -4, 8, 8); }
+  c.restore();
+}
+function drawCart(c, e) {                                         // the apple cart: stands at rest, then it tips and its crates form three steps
+  const k = e.tilt || 0;
+  if (k < 0.98) {
+    c.save(); c.globalAlpha = 1 - k; c.translate(e.x, e.y);
+    c.fillStyle = 'rgba(0,0,0,0.3)'; c.beginPath(); c.ellipse(0, 0, 70, 6, 0, 0, 6.3); c.fill();
+    c.fillStyle = INK; rrect(c, -62, -52, 124, 34, 5); c.fill(); c.fillStyle = '#7a5530'; rrect(c, -59, -49, 118, 28, 4); c.fill();
+    c.fillStyle = '#4a321c'; for (let i = 0; i < 4; i++) c.fillRect(-52 + i * 30, -49, 3, 28);
+    c.fillStyle = '#c9473b'; for (let i = 0; i < 9; i++) { c.beginPath(); c.arc(-48 + i * 12, -54 - (i & 1) * 4, 8, 0, 6.3); c.fill(); }
+    c.fillStyle = INK; c.beginPath(); c.arc(-30, -14, 17, 0, 6.3); c.arc(30, -14, 17, 0, 6.3); c.fill();
+    c.fillStyle = '#6a4326'; c.beginPath(); c.arc(-30, -14, 13, 0, 6.3); c.arc(30, -14, 13, 0, 6.3); c.fill();
+    c.strokeStyle = INK; c.lineWidth = 6; c.beginPath(); c.moveTo(-62, -40); c.lineTo(-112, -62); c.stroke();
+    c.restore();
+  }
+  if (k > 0.02) {                                                 // the three crate steps (they match the solid steps exactly)
+    const x0 = 24 * U, g = G * U;
+    c.save(); c.globalAlpha = Math.min(1, k * 1.4);
+    for (let i = 0; i < 3; i++) pCrateApples(c, x0 + i * U, g - (i + 1) * U, U, (i + 1) * U);
+    c.restore();
+    c.fillStyle = '#c9473b'; for (let i = 0; i < 7; i++) { c.beginPath(); c.arc(x0 - 14 - i * 19 - (i & 1) * 6, g - 7 - (i % 3) * 3, 8, 0, 6.3); c.fill(); }      // apples that rolled away
+    c.fillStyle = INK; c.beginPath(); c.arc(x0 - 120, g - 17, 17, 0, 6.3); c.fill(); c.fillStyle = '#6a4326'; c.beginPath(); c.arc(x0 - 120, g - 17, 13, 0, 6.3); c.fill();   // the wheel that came off
+  }
+}
+function pCrateApples(c, x, y, w, h) {
+  c.fillStyle = '#7a5530'; c.fillRect(x, y, w, h); c.strokeStyle = '#2b1c0e'; c.lineWidth = 3; c.strokeRect(x + 1.5, y + 1.5, w - 3, h - 3);
+  c.fillStyle = '#4a321c'; for (let yy = y + 10; yy < y + h - 6; yy += 16) c.fillRect(x + 4, yy, w - 8, 5);
+  c.fillStyle = '#c9473b'; c.beginPath(); c.arc(x + 12, y + 5, 7, 0, 6.3); c.arc(x + 26, y + 3, 7, 0, 6.3); c.arc(x + 38, y + 6, 7, 0, 6.3); c.fill();
+}
+function drawHDoor(c, e) {                                        // the lamp over the hall door: red = locked, amber = you hold the key, green = open
+  const L = e.lamp || 0, col = L >= 1 ? '47,214,196' : (L > 0 ? '255,196,110' : '224,86,74');
+  c.save(); c.translate(e.x, e.y - 5.9 * U);
+  c.fillStyle = 'rgba(' + col + ',' + (0.2 + 0.1 * Math.sin(Game.time * 5)) + ')'; c.beginPath(); c.arc(0, 0, 40, 0, 6.3); c.fill();
+  c.fillStyle = INK; c.beginPath(); c.arc(0, 0, 13, 0, 6.3); c.fill(); c.fillStyle = 'rgb(' + col + ')'; c.beginPath(); c.arc(0, 0, 9, 0, 6.3); c.fill();
+  c.restore();
+  c.save(); c.translate(e.x - 36, e.y - 2.4 * U);                 // a keyhole plate on the left of the door
+  c.fillStyle = INK; c.fillRect(-14, -18, 28, 36); c.fillStyle = BRASS; c.fillRect(-11, -15, 22, 30);
+  c.fillStyle = INK; c.beginPath(); c.arc(0, -4, 5, 0, 6.3); c.fill(); c.fillRect(-2, -4, 4, 14);
+  c.restore();
+}
+function drawGuard(c, e) {                                        // a brass warden: lantern head, shield plate on the front, two small wheels
+  const f = e.dir, st = e.state, warn = st === 'warn', ch = st === 'charge', rec = st === 'recover' || st === 'stagger';
+  const hop = st === 'patrol' ? Math.abs(Math.sin(e.ph * 5)) * 2 : 0;
+  c.save(); c.translate(e.x + (e.shake > 0 ? Math.sin(Game.time * 90) * 3 : 0), e.y - hop); c.scale(f, 1); c.lineJoin = 'round';
+  c.fillStyle = 'rgba(0,0,0,0.3)'; c.beginPath(); c.ellipse(0, hop, 36, 6, 0, 0, 6.3); c.fill();
+  if (ch) { c.fillStyle = 'rgba(255,190,110,0.25)'; for (let i = 1; i < 4; i++) c.fillRect(-26 - i * 18, -50 + i * 6, 30, 5); }
+  c.fillStyle = INK; c.beginPath(); c.arc(-14, -12, 14, 0, 6.3); c.arc(16, -12, 14, 0, 6.3); c.fill();           // wheels
+  c.fillStyle = '#4b4f5c'; c.beginPath(); c.arc(-14, -12, 10, 0, 6.3); c.arc(16, -12, 10, 0, 6.3); c.fill();
+  c.fillStyle = BRASS_L; c.beginPath(); c.arc(-14, -12, 3, 0, 6.3); c.arc(16, -12, 3, 0, 6.3); c.fill();
+  c.fillStyle = INK; rrect(c, -24, -66, 52, 50, 8); c.fill();                                                    // body
+  c.fillStyle = e.flash > 0 ? '#ffffff' : (warn ? '#e0862f' : MK.copper); rrect(c, -21, -63, 46, 44, 6); c.fill();
+  c.fillStyle = MK.copperD; c.fillRect(-21, -34, 46, 6);
+  c.fillStyle = INK; rrect(c, 10, -74, 22, 62, 6); c.fill();                                                     // the front shield (down in the gap after a charge)
+  c.fillStyle = rec ? '#6b5330' : '#9aa5b8'; rrect(c, 13, -71, 16, 56, 4); c.fill();
+  c.fillStyle = rec ? 'rgba(0,0,0,0.25)' : 'rgba(255,255,255,0.35)'; c.fillRect(15, -69, 4, 50);
+  c.fillStyle = INK; c.fillRect(-9, -76, 14, 10); c.fillStyle = '#8a6a2c'; c.fillRect(-7, -75, 10, 8);                                       // the neck pipe
+  const gl = warn ? 1 : (ch ? 0.9 : (rec ? 0.15 : 0.45 + 0.1 * Math.sin(e.ph * 3)));
+  if (warn || ch) { c.fillStyle = 'rgba(255,170,90,0.28)'; c.beginPath(); c.arc(-2, -92, 42, 0, 6.3); c.fill(); }
+  c.fillStyle = INK; rrect(c, -19, -108, 34, 34, 5); c.fill();                                                                               // a square lantern: glass, brass bars, a pointed cap and a ring
+  c.fillStyle = 'rgba(255,214,150,' + (0.4 + gl * 0.6) + ')'; rrect(c, -16, -105, 28, 28, 3); c.fill();
+  c.strokeStyle = '#8a6a2c'; c.lineWidth = 3; c.beginPath(); c.moveTo(-7, -105); c.lineTo(-7, -77); c.moveTo(3, -105); c.lineTo(3, -77); c.stroke();
+  c.fillStyle = INK; c.beginPath(); c.moveTo(-23, -106); c.lineTo(19, -106); c.lineTo(9, -118); c.lineTo(-13, -118); c.closePath(); c.fill();
+  c.fillStyle = '#b8903f'; c.beginPath(); c.moveTo(-19, -108); c.lineTo(15, -108); c.lineTo(7, -116); c.lineTo(-11, -116); c.closePath(); c.fill();
+  c.strokeStyle = INK; c.lineWidth = 3; c.beginPath(); c.arc(-2, -123, 5, 0, 6.3); c.stroke();
+  c.restore();
+}
+function drawBidder(c, e) {                                       // a bid board: round paddle face on a post, a blade tucked in its rim
+  const f = e.dir, gl = e.glow || 0;
+  c.save(); c.translate(e.x + (e.shake > 0 ? Math.sin(Game.time * 90) * 3 : 0), e.y); c.lineJoin = 'round';
+  c.fillStyle = 'rgba(0,0,0,0.3)'; c.beginPath(); c.ellipse(0, 0, 30, 5, 0, 0, 6.3); c.fill();
+  c.fillStyle = INK; c.fillRect(-16, -10, 32, 10); c.fillStyle = '#5a3c20'; c.fillRect(-14, -9, 28, 7);
+  c.fillStyle = INK; c.fillRect(-5, -78, 10, 70); c.fillStyle = '#7a5530'; c.fillRect(-3, -78, 6, 70);
+  c.translate(0, -92); c.scale(f, 1);
+  if (gl > 0) { c.fillStyle = 'rgba(255,170,90,' + (0.2 * gl) + ')'; c.beginPath(); c.arc(0, 0, 54, 0, 6.3); c.fill(); }
+  c.fillStyle = INK; c.beginPath(); c.arc(0, 0, 32, 0, 6.3); c.fill();
+  c.fillStyle = e.flash > 0 ? '#ffffff' : (gl > 0.2 ? '#e0862f' : '#d9c9a0'); c.beginPath(); c.arc(0, 0, 28, 0, 6.3); c.fill();
+  c.strokeStyle = MK.cloth1; c.lineWidth = 4; c.beginPath(); c.arc(0, 0, 21, 0, 6.3); c.stroke();
+  c.fillStyle = '#2b2433'; c.font = '700 22px ' + FONT; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(String(10 * (1 + (((e.homeX / U) | 0) % 5))), 0, 2);
+  c.fillStyle = INK; c.beginPath(); c.moveTo(24, -6); c.lineTo(46 + gl * 12, 0); c.lineTo(24, 6); c.closePath(); c.fill();                       // the blade in the rim, slides out while it glows
+  c.fillStyle = '#d6dbe6'; c.beginPath(); c.moveTo(25, -3.4); c.lineTo(42 + gl * 12, 0); c.lineTo(25, 3.4); c.closePath(); c.fill();
+  c.restore();
+}
+function drawThief(c, e) {                                        // a rolling satchel on one wheel, with a hook arm and a flapping clasp
+  const bob = Math.abs(Math.sin(e.ph)) * 5;
+  c.save(); c.translate(e.x, e.y - bob); c.scale(-1, 1); c.lineJoin = 'round';
+  c.fillStyle = 'rgba(0,0,0,0.3)'; c.beginPath(); c.ellipse(0, bob, 28, 5, 0, 0, 6.3); c.fill();
+  c.fillStyle = 'rgba(255,196,110,0.2)'; for (let i = 1; i < 4; i++) c.fillRect(-34 - i * 16, -34 - i * 4, 22, 4);
+  c.fillStyle = INK; c.beginPath(); c.arc(0, -20, 20, 0, 6.3); c.fill(); c.fillStyle = '#4b4f5c'; c.beginPath(); c.arc(0, -20, 15, 0, 6.3); c.fill();
+  c.strokeStyle = '#9aa5b8'; c.lineWidth = 3; for (let i = 0; i < 4; i++) { const a = e.ph * 1.2 + i * 1.5708; c.beginPath(); c.moveTo(0, -20); c.lineTo(Math.cos(a) * 13, -20 + Math.sin(a) * 13); c.stroke(); }
+  c.fillStyle = INK; rrect(c, -22, -68, 44, 40, 8); c.fill(); c.fillStyle = e.flash > 0 ? '#fff' : MK.leather; rrect(c, -19, -65, 38, 34, 6); c.fill();
+  c.fillStyle = MK.leatherD; c.beginPath(); c.moveTo(-19, -65); c.lineTo(19, -65); c.lineTo(19, -52); c.lineTo(0, -44); c.lineTo(-19, -52); c.closePath(); c.fill();
+  c.fillStyle = BRASS_L; c.beginPath(); c.arc(0, -46, 4, 0, 6.3); c.fill();
+  c.strokeStyle = INK; c.lineWidth = 6; c.beginPath(); c.moveTo(18, -48); c.lineTo(36, -56); c.quadraticCurveTo(46, -62, 40, -72); c.stroke();           // the hook arm
+  c.strokeStyle = '#d6dbe6'; c.lineWidth = 3; c.stroke();
+  c.fillStyle = '#e0564a'; c.beginPath(); c.arc(-6, -58, 3.4, 0, 6.3); c.fill();
+  c.restore();
+}
+function drawColl(c, e) {                                         // a floating ledger-lantern: violet glass, a slow pendulum, a ledger circling it
+  const a = e.vis, bob = Math.sin(e.ph * 2) * 6;
+  c.save(); c.translate(e.x, e.y + bob); c.globalAlpha = a * 0.92;
+  const g = c.createRadialGradient(0, 0, 8, 0, 0, 90); g.addColorStop(0, 'rgba(160,110,255,0.35)'); g.addColorStop(1, 'rgba(160,110,255,0)'); c.fillStyle = g; c.beginPath(); c.arc(0, 0, 90, 0, 6.3); c.fill();
+  c.fillStyle = INK; c.beginPath(); c.moveTo(-16, -40); c.lineTo(16, -40); c.lineTo(26, -6); c.lineTo(16, 34); c.lineTo(-16, 34); c.lineTo(-26, -6); c.closePath(); c.fill();
+  c.fillStyle = 'rgba(120,80,210,0.85)'; c.beginPath(); c.moveTo(-13, -37); c.lineTo(13, -37); c.lineTo(22, -6); c.lineTo(13, 31); c.lineTo(-13, 31); c.lineTo(-22, -6); c.closePath(); c.fill();
+  c.fillStyle = 'rgba(255,255,255,0.18)'; c.fillRect(-9, -33, 5, 60);
+  c.save(); c.translate(0, -30); c.rotate(Math.sin(e.ph * 2.4) * 0.5); c.strokeStyle = '#e6c06a'; c.lineWidth = 2.4; c.beginPath(); c.moveTo(0, 0); c.lineTo(0, 44); c.stroke(); c.fillStyle = '#e6c06a'; c.beginPath(); c.arc(0, 46, 6, 0, 6.3); c.fill(); c.restore();
+  c.fillStyle = INK; c.fillRect(-8, -52, 16, 12); c.fillRect(-3, -62, 6, 10);
+  const q = e.ph * 1.4, lx = Math.cos(q) * 54, ly = Math.sin(q) * 18 - 4;                       // the ledger
+  c.fillStyle = INK; c.fillRect(lx - 14, ly - 11, 28, 22); c.fillStyle = '#7a1f1a'; c.fillRect(lx - 12, ly - 9, 24, 18); c.fillStyle = '#d9cba6'; c.fillRect(lx - 9, ly - 6, 18, 3); c.fillRect(lx - 9, ly, 14, 2);
+  c.restore();
+}
+
+/* ---- the Auctioneer ---- */
+function drawAuct(c, e) {
+  const st = e.state, f = e.dir || -1, awake = st !== 'sleep', dying = st === 'dying';
+  const up = st === 'sleep' ? 0 : (st === 'wake' ? e.arm : 1), sh = e.shake > 0 ? Math.sin(Game.time * 80) * 4 : 0;
+  c.save(); c.translate(e.x + sh, e.y); c.lineJoin = 'round'; c.lineCap = 'round';
+  if (dying) { c.globalAlpha = 0.65 + 0.35 * Math.sin(Game.time * 40); c.rotate(Math.sin(Game.time * 9) * 0.03 * (e.st || 0)); }
+  const bodyY = -26 - (1 - up) * 20;
+  const glow = e.glow || 0;
+  if (glow > 0.05) { c.fillStyle = 'rgba(255,170,90,' + (0.2 * glow) + ')'; c.beginPath(); c.arc(0, -2.4 * U, 3.2 * U, 0, 6.3); c.fill(); }
+  c.fillStyle = INK; c.fillRect(-60, bodyY - 12, 120, 28); c.fillStyle = e.flash > 0 ? '#ffffff' : MK.copperD; c.fillRect(-57, bodyY - 9, 114, 22);
+  c.fillStyle = BRASS_L; c.fillRect(-57, bodyY - 9, 114, 4);
+  c.fillStyle = INK; c.beginPath(); c.moveTo(-42, bodyY - 12); c.lineTo(42, bodyY - 12); c.lineTo(26, bodyY - 120 * up); c.lineTo(-26, bodyY - 120 * up); c.closePath(); c.fill();       // the tall tapered body
+  c.fillStyle = e.flash > 0 ? '#ffffff' : MK.copper; c.beginPath(); c.moveTo(-38, bodyY - 14); c.lineTo(38, bodyY - 14); c.lineTo(23, bodyY - 120 * up + 3); c.lineTo(-23, bodyY - 120 * up + 3); c.closePath(); c.fill();
+  c.strokeStyle = MK.copperD; c.lineWidth = 3; for (let i = 1; i < 4; i++) { const yy = bodyY - 14 - i * 26 * up; c.beginPath(); c.moveTo(-34 + i * 3, yy); c.lineTo(34 - i * 3, yy); c.stroke(); }
+  const fy = bodyY - 62 * up;                                                                   // clock face on the chest: its hand turns with the cycle number
+  c.fillStyle = INK; c.beginPath(); c.arc(0, fy, 21, 0, 6.3); c.fill(); c.fillStyle = '#e9dfc4'; c.beginPath(); c.arc(0, fy, 17, 0, 6.3); c.fill();
+  c.strokeStyle = '#2b2433'; c.lineWidth = 2.4; const ha = Game.time * (awake ? 1.6 : 0.2);
+  c.beginPath(); c.moveTo(0, fy); c.lineTo(Math.sin(ha) * 13, fy - Math.cos(ha) * 13); c.moveTo(0, fy); c.lineTo(Math.sin(ha * 12) * 8, fy - Math.cos(ha * 12) * 8); c.stroke();
+  /* the horn: a big brass cone, its mouth towards Nader; it pulses while speaking and is cracked in the second phase */
+  const hx = f * 6, hy = bodyY - 124 * up, spk = Talk.talking('auct') ? 1 : 0;
+  c.save(); c.translate(hx, hy); c.scale(f, 1);
+  c.fillStyle = INK; c.beginPath(); c.moveTo(-18, 14); c.lineTo(-18, -14); c.lineTo(58 + spk * 5, -52); c.lineTo(58 + spk * 5, 52); c.closePath(); c.fill();
+  c.fillStyle = e.flash > 0 ? '#ffffff' : '#e6c06a'; c.beginPath(); c.moveTo(-15, 11); c.lineTo(-15, -11); c.lineTo(54 + spk * 5, -47); c.lineTo(54 + spk * 5, 47); c.closePath(); c.fill();
+  c.fillStyle = '#7a5518'; c.beginPath(); c.ellipse(54 + spk * 5, 0, 12, 47, 0, 0, 6.3); c.fill(); c.strokeStyle = INK; c.lineWidth = 3; c.stroke();
+  c.fillStyle = glow > 0.3 ? '#ffedc0' : '#3a2410'; c.beginPath(); c.ellipse(54 + spk * 5, 0, 8, 40, 0, 0, 6.3); c.fill();
+  if (e.phase === 2) { c.strokeStyle = INK; c.lineWidth = 3; c.beginPath(); c.moveTo(20, -30); c.lineTo(32, -8); c.lineTo(24, 4); c.lineTo(40, 28); c.stroke(); }
+  c.restore();
+  /* the gavel arm: from the left shoulder; raised (a glowing target for the hook) in the "Sold!" attack */
+  const ang = (e.state === 'hold' || e.state === 'soldT') ? -2.0 : (e.state === 'gavelT' ? -2.0 * e.arm : (e.state === 'gavelR' ? 0.3 : 0.2));
+  c.save(); c.translate(-f * 26, bodyY - 70 * up); c.scale(f, 1); c.rotate(ang);
+  c.strokeStyle = INK; c.lineWidth = 12; c.beginPath(); c.moveTo(0, 0); c.lineTo(-10, 54); c.stroke(); c.strokeStyle = MK.copper; c.lineWidth = 7; c.stroke();
+  c.save(); c.translate(-10, 54); c.rotate(-0.1); c.fillStyle = INK; rrect(c, -26, -16, 52, 34, 6); c.fill(); c.fillStyle = '#7a5530'; rrect(c, -23, -13, 46, 28, 4); c.fill(); c.fillStyle = BRASS_L; c.fillRect(-23, -13, 8, 28); c.fillRect(15, -13, 8, 28); c.restore();
+  c.restore();
+  if (e.gavelUp) {                                                                              // the hook target: a pulsing teal ring round the raised gavel
+    const k = 0.5 + 0.5 * Math.sin(Game.time * 9);
+    c.restore(); c.save();
+    c.strokeStyle = 'rgba(47,214,196,' + (0.5 + 0.4 * k) + ')'; c.lineWidth = 4; c.beginPath(); c.arc(e.gx, e.gy, 40 + k * 8, 0, 6.3); c.stroke();
+    c.fillStyle = 'rgba(47,214,196,0.18)'; c.beginPath(); c.arc(e.gx, e.gy, 34, 0, 6.3); c.fill();
+    c.fillStyle = INK; rrect(c, e.gx - 24, e.gy - 15, 48, 30, 6); c.fill(); c.fillStyle = '#7a5530'; rrect(c, e.gx - 21, e.gy - 12, 42, 24, 4); c.fill(); c.fillStyle = BRASS_L; c.fillRect(e.gx - 21, e.gy - 12, 7, 24); c.fillRect(e.gx + 14, e.gy - 12, 7, 24);
+    c.restore(); return;
+  }
+  if (e.stag > 0) {                                                                             // reeling: little stars circle the horn
+    c.fillStyle = '#ffd36b'; for (let i = 0; i < 4; i++) { const a = Game.time * 6 + i * 1.5708; c.beginPath(); c.arc(Math.cos(a) * 52, hy - 70 + Math.sin(a) * 14, 5, 0, 6.3); c.fill(); }
+  }
+  c.restore();
+}
+
+/* ---- effects drawn over the world: movers, the rope, blades and paddles, bid circles and columns, shock fronts ---- */
+function drawS2Fx(c, cx) {
+  const Z = Level.S2, vw = Game.viewW; if (!Z) return;
+  for (let i = 0; i < Level.movers.length; i++) {
+    const m = Level.movers[i]; if (!m.on || m.x1 < cx - 200 || m.x0 > cx + vw + 200) continue;
+    if (m.kind === 'plank') {
+      c.fillStyle = INK; c.fillRect(m.x0 - 3, m.y - 2, m.x1 - m.x0 + 6, 22); c.fillStyle = '#8a5f35'; c.fillRect(m.x0, m.y, m.x1 - m.x0, 16); c.fillStyle = '#d29a63'; c.fillRect(m.x0, m.y, m.x1 - m.x0, 4);
+      c.fillStyle = BRASS; c.fillRect(m.x0, m.y, 7, 16); c.fillRect(m.x1 - 7, m.y, 7, 16);
+      c.strokeStyle = 'rgba(214,201,160,0.7)'; c.lineWidth = 3; c.beginPath(); c.moveTo(m.x0 + 10, m.y); c.lineTo(m.x0 + 10, m.y - 60); c.moveTo(m.x1 - 10, m.y); c.lineTo(m.x1 - 10, m.y - 60); c.stroke();
+    } else {
+      const w = m.x1 - m.x0, mx = (m.x0 + m.x1) / 2, ey = m.y - 4.6 * U;
+      c.strokeStyle = INK; c.lineWidth = 3; c.beginPath(); c.moveTo(m.x0 + 8, m.y); c.lineTo(mx - 30, ey + 1.3 * U); c.moveTo(m.x1 - 8, m.y); c.lineTo(mx + 30, ey + 1.3 * U); c.stroke();
+      c.fillStyle = INK; c.beginPath(); c.ellipse(mx, ey, 1.55 * U, 1.85 * U, 0, 0, 6.3); c.fill();
+      for (let k = 0; k < 5; k++) { c.fillStyle = k & 1 ? MK.cloth2 : MK.cloth1; c.beginPath(); c.ellipse(mx, ey, 1.4 * U * (1 - Math.abs(k - 2) * 0.28) + 0.01, 1.72 * U, 0, 0, 6.3); c.save(); c.clip(); c.fillRect(mx - 1.5 * U + k * 0.6 * U, ey - 2 * U, 0.62 * U, 4 * U); c.restore(); }
+      c.strokeStyle = INK; c.lineWidth = 3; c.beginPath(); c.ellipse(mx, ey, 1.4 * U, 1.72 * U, 0, 0, 6.3); c.stroke();
+      c.fillStyle = INK; c.fillRect(m.x0 - 3, m.y - 2, w + 6, 26); c.fillStyle = '#8a5f35'; c.fillRect(m.x0, m.y, w, 20); c.fillStyle = '#d29a63'; c.fillRect(m.x0, m.y, w, 4);
+      c.strokeStyle = '#4f301b'; c.lineWidth = 2; for (let x = m.x0 + 14; x < m.x1; x += 18) { c.beginPath(); c.moveTo(x, m.y + 4); c.lineTo(x, m.y + 20); c.stroke(); }
+    }
+  }
+  const R = Z.rope;                                                                              // the rope between the roofs: taut and slightly sagging in the middle
+  if (R && R.a > 0.02) {
+    const a = R.a, sag = 10 * (1 - a * 0.7), y = R.y + 4;
+    c.save(); c.globalAlpha = a;
+    c.strokeStyle = INK; c.lineWidth = 7; c.beginPath(); c.moveTo(R.x0, y); c.quadraticCurveTo((R.x0 + R.x1) / 2, y + sag * 2, R.x1, y); c.stroke();
+    c.strokeStyle = '#d9c9a0'; c.lineWidth = 4; c.stroke();
+    c.strokeStyle = 'rgba(122,85,48,0.8)'; c.lineWidth = 4; c.setLineDash([3, 9]); c.stroke(); c.setLineDash([]);
+    c.fillStyle = INK; c.fillRect(R.x0 - 6, y - 14, 10, 24); c.fillRect(R.x1 - 4, y - 14, 10, 24);
+    c.restore();
+  }
+  const L = Level.blades;
+  for (let i = 0; i < L.length; i++) {
+    const s = L[i]; if (!s.on) continue;
+    c.save(); c.translate(s.x, s.y); c.rotate(s.rot);
+    if (s.kind === 'paddle') {
+      c.fillStyle = INK; c.beginPath(); c.arc(0, 0, s.r + 4, 0, 6.3); c.fill(); c.fillStyle = '#e0862f'; c.beginPath(); c.arc(0, 0, s.r, 0, 6.3); c.fill();
+      c.fillStyle = '#ffedc0'; c.beginPath(); c.arc(0, 0, s.r * 0.55, 0, 6.3); c.fill(); c.fillStyle = INK; c.fillRect(-3, s.r - 2, 6, 14);
+    } else {
+      c.fillStyle = INK; c.beginPath(); c.moveTo(-s.r - 4, 0); c.lineTo(0, -s.r - 4); c.lineTo(s.r + 4, 0); c.lineTo(0, s.r + 4); c.closePath(); c.fill();
+      c.fillStyle = '#d6dbe6'; c.beginPath(); c.moveTo(-s.r, 0); c.lineTo(0, -s.r); c.lineTo(s.r, 0); c.lineTo(0, s.r); c.closePath(); c.fill();
+      c.fillStyle = '#e0562a'; c.beginPath(); c.arc(0, 0, 4, 0, 6.3); c.fill();
+    }
+    c.restore();
+  }
+  const b = Level.boss;
+  if (b && b.t === 'auct') {
+    const fl = G * U;
+    for (let i = 0; i < b.bids.length; i++) {
+      const q = b.bids[i];
+      if (q.state === 1) {                                                                      // lit: a circle on the floor, its number above it, a faint beam to the ceiling
+        const pulse = 0.5 + 0.5 * Math.sin(Game.time * 14);
+        c.fillStyle = 'rgba(255,170,90,' + (0.1 + 0.08 * pulse) + ')'; c.fillRect(q.x - AU.colHalf, 0, AU.colHalf * 2, fl);
+        c.strokeStyle = 'rgba(255,196,110,' + (0.6 + 0.3 * pulse) + ')'; c.lineWidth = 3; c.beginPath(); c.ellipse(q.x, fl - 4, AU.colHalf, 11, 0, 0, 6.3); c.stroke();
+        c.fillStyle = 'rgba(255,170,90,0.25)'; c.beginPath(); c.ellipse(q.x, fl - 4, AU.colHalf, 11, 0, 0, 6.3); c.fill();
+        c.font = '700 34px ' + FONT; c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineWidth = 5; c.strokeStyle = 'rgba(0,0,0,0.8)'; c.strokeText(String(q.n), q.x, fl - 64); c.fillStyle = '#ffd36b'; c.fillText(String(q.n), q.x, fl - 64);
+      } else if (q.state === 2) {                                                               // bursting: a full-height column of light
+        const k = 1 - q.t / AU.colT;
+        const g = c.createLinearGradient(q.x - AU.colHalf, 0, q.x + AU.colHalf, 0); g.addColorStop(0, 'rgba(255,170,90,0)'); g.addColorStop(0.5, 'rgba(255,240,200,' + (0.9 * k) + ')'); g.addColorStop(1, 'rgba(255,170,90,0)');
+        c.fillStyle = g; c.fillRect(q.x - AU.colHalf, 0, AU.colHalf * 2, fl);
+        c.fillStyle = 'rgba(255,255,255,' + (0.8 * k) + ')'; c.fillRect(q.x - 8, 0, 16, fl);
+      }
+    }
+    for (let i = 0; i < Z.waves.length; i++) {                                                  // the gavel's shock front: a band through the whole hall with a bright foot
+      const w = Z.waves[i];
+      const g = c.createLinearGradient(w.x - w.half, 0, w.x + w.half, 0); g.addColorStop(0, 'rgba(255,196,110,0)'); g.addColorStop(0.5, 'rgba(255,196,110,0.3)'); g.addColorStop(1, 'rgba(255,196,110,0)');
+      c.fillStyle = g; c.fillRect(w.x - w.half, (G - 14) * U, w.half * 2, 14 * U);
+      c.fillStyle = 'rgba(255,240,200,0.85)'; c.beginPath(); c.ellipse(w.x, G * U - 6, w.half, 10, 0, 0, 6.3); c.fill();
+    }
+  }
+}
+
 /* ---------- 19. canvas sizing, quality, language ---------- */
 const canvas = $('#game');
 function applyQuality() {
@@ -4958,7 +6433,7 @@ function applyLangDOM() {
   const rtl = LANG === 'ar';
   document.documentElement.lang = LANG; document.documentElement.dir = rtl ? 'rtl' : 'ltr';
   $('#screens').style.direction = rtl ? 'rtl' : 'ltr'; $('#toast').style.direction = rtl ? 'rtl' : 'ltr'; $('#stress-live').style.direction = rtl ? 'rtl' : 'ltr';
-  document.title = rtl ? 'مملكة الدقائق المسروقة — المرحلة 7 · بناء المراحل' : 'The Kingdom of Stolen Minutes — Phase 7 · stage building';
+  document.title = rtl ? 'مملكة الدقائق المسروقة — المرحلة 7 · الدفعة ب' : 'The Kingdom of Stolen Minutes — Phase 7 · batch B';
   $('#talk').style.direction = rtl ? 'rtl' : 'ltr';
   document.querySelectorAll('[data-i18n]').forEach(function (el) { el.textContent = t(el.getAttribute('data-i18n')); });
   $('#b-continue').style.display = S.progress ? '' : 'none';
@@ -5107,7 +6582,7 @@ const UI = {
     if (b && !('ontouchstart' in window)) { try { b.focus({ preventScroll: true }); } catch (e) { /* ignore */ } }
     Touch.refresh();
   },
-  nav(id) { if (this.cur) this.stack.push(this.cur); if (id === 'scr-settings') this.renderSettings(); if (id === 'scr-controls') this.renderControls(); if (id === 'scr-perf') this.renderPerf(); this.showRaw(id); Snd.play('ui'); },
+  nav(id) { if (this.cur) this.stack.push(this.cur); if (id === 'scr-stages') this.renderStages(); if (id === 'scr-settings') this.renderSettings(); if (id === 'scr-controls') this.renderControls(); if (id === 'scr-perf') this.renderPerf(); this.showRaw(id); Snd.play('ui'); },
   back() {
     if (Remap.listening) { Remap.cancel(); return; }
     const id = this.stack.pop(); if (id) this.showRaw(id); else this.showRaw(Game.state === 'pause' ? 'scr-pause' : 'scr-start');
@@ -5207,7 +6682,7 @@ const UI = {
     const rs = document.createElement('button'); rs.type = 'button'; rs.className = 'lnk danger'; rs.textContent = t('s_reset'); let armed = 0;
     rs.addEventListener('click', function () {
       if (!armed) { armed = 1; rs.textContent = t('s_reset_confirm'); setTimeout(function () { armed = 0; rs.textContent = t('s_reset'); }, 3500); return; }
-      S.progress = null; S.lab = null; S.done = {}; checkpoint = { x: Level.spawn.x, y: Level.spawn.y }; persist(); armed = 0; rs.textContent = t('s_reset'); ui.toast(t('s_reset_done')); $('#b-continue').style.display = 'none';
+      S.progress = null; S.lab = null; S.sl_s2 = null; S.done = {}; checkpoint = { x: Level.spawn.x, y: Level.spawn.y }; persist(); armed = 0; rs.textContent = t('s_reset'); ui.toast(t('s_reset_done')); $('#b-continue').style.display = 'none';
     });
     const w = document.createElement('div'); w.style.padding = '10px 0 6px'; w.appendChild(rs); body.appendChild(w);
     if (!Store.ok) { const n = document.createElement('p'); n.className = 'note'; n.textContent = t('s_storage'); body.appendChild(n); }
@@ -5224,6 +6699,18 @@ const UI = {
         keys.appendChild(b);
       }
       body.appendChild(UI.row(t('al_' + a), keys));
+    });
+  },
+  renderStages() {                                                           // one row per stage: continue (when a save exists) and new game
+    const body = $('#stages-body'); body.innerHTML = '';
+    [['s1', 'st_s1', 'progress'], ['s2', 'st_s2', 'sl_s2']].forEach(function (q) {
+      const id = q[0], sv = S[q[2]], row = document.createElement('div'); row.className = 'strow';
+      const nm = document.createElement('div'); nm.className = 'nm'; nm.textContent = t(q[1]);
+      const sm = document.createElement('small'); sm.textContent = (S.done && S.done[id]) ? t('st_done') : t('st_open'); nm.appendChild(sm); row.appendChild(nm);
+      const bt = document.createElement('div'); bt.className = 'bt';
+      if (sv) { const c = document.createElement('button'); c.className = 'lnk main'; c.type = 'button'; c.textContent = t('st_cont'); c.addEventListener('click', function () { startGame(true, id); }); bt.appendChild(c); }
+      const n = document.createElement('button'); n.className = 'lnk'; n.type = 'button'; n.textContent = t('st_new'); n.addEventListener('click', function () { startGame(false, id); }); bt.appendChild(n);
+      row.appendChild(bt); body.appendChild(row);
     });
   },
   renderPerf() {
@@ -5250,7 +6737,7 @@ function fadeStep(dt) {
   if (f.a !== f.target) f.a = approach(f.a, f.target, f.speed * dt);
   if (f.a === f.target && f.cb) { const cb = f.cb; f.cb = null; cb(); }
 }
-function slotData(id) { return slotOf(id) === 'lab' ? S.lab : S.progress; }
+function slotData(id) { return S[slotKey(id)]; }
 function newWorld(fromSave, id) {
   buildLevel(id || Level.stage);
   const sv = fromSave ? slotData(Level.stage) : null;
@@ -5353,6 +6840,7 @@ function update(dt) {
   Cam.update(dt, false);
   HUD.update();
   spawnMotes(dt);
+  Touch.setHook(Hook.has());
   Touch.setReady('interact', !!P.target && Game.state === 'play');
   Touch.setReady('special', P.special >= 100);
   Touch.setCharge('special', P.special / 100);
@@ -5390,6 +6878,8 @@ function frame(ts) {
 $('#b-continue').addEventListener('click', function () { startGame(true, 's1'); });
 $('#b-new').addEventListener('click', function () { startGame(false, 's1'); });
 $('#b-lab').addEventListener('click', function () { startGame(!!S.lab, 'lab'); });
+$('#b-stages').addEventListener('click', function () { UI.nav('scr-stages'); });
+$('#st-back').addEventListener('click', function () { UI.back(); });
 $('#b-controls').addEventListener('click', function () { UI.nav('scr-controls'); });
 $('#b-settings').addEventListener('click', function () { UI.nav('scr-settings'); });
 $('#b-perf').addEventListener('click', function () { UI.nav('scr-perf'); });
@@ -5458,7 +6948,7 @@ requestAnimationFrame(frame);
 window.__KSM = {
   DX: DX, shed: shedLoad, unshed: unshedLoad, applyQuality: function () { applyQuality(); resize(); }, RES: RES,
   U: U, TUNE: TUNE, P: P, Game: Game, Level: Level, Input: Input, Art: Art, Snd: Snd, Amb: Amb, Cam: Cam, Perf: Perf, Stress: Stress, UI: UI, S: function () { return S; },
-  start: function (cont, id) { return startGame(cont, id || 'lab'); }, startStage: startGame, Hitch: Hitch, Talk: Talk, Tik: Tik, Cine: Cine, Pow: Pow, STAGES: STAGES, STR: STR,
+  start: function (cont, id) { return startGame(cont, id || 'lab'); }, startStage: startGame, Hitch: Hitch, Talk: Talk, Tik: Tik, Cine: Cine, Pow: Pow, STAGES: STAGES, STR: STR, Hook: Hook, Cyc: Cyc, S2: { L: S2L, AU: AU, CB2: CB2, EV: CYC_EV, startAuctFight: startAuctFight, auctNext: auctNext, fireBlade: fireBlade, spawnCollectors: spawnCollectors, s2Damage: s2Damage, takeHook: takeHook },
   W: { damageEnt: damageEnt, hurtPlayer: hurtPlayer, resetEncounters: resetEncounters, respawn: respawnAtCheckpoint, newWorld: function (f, id) { return newWorld(f, id || 'lab'); }, CB: CB, BOSS: BOSS, AR: AR, Hit: Hit, HUD: HUD, startBossFight: startBossFight, spawnTool: spawnTool, bossQuake: bossQuake, collectLost: collectLost, snapshot: snapshotProgress, persist: persist, pulsesFor: pulsesFor, nextAttack: nextAttack, bossStartAttack: bossStartAttack },
   dbg: function () { return { ctx: ctx, BG: BG, drawBackdrop: drawBackdrop, drawTiles: drawTiles, drawEntities: drawEntities, drawNader: drawNader, drawSigns: drawSigns, drawParticles: drawParticles, drawPrompt: drawPrompt, overlayFor: overlayFor, render: render, VIEW_H: VIEW_H }; },
   hold: function (v) { Game.testHold = !!v; },
