@@ -80,6 +80,36 @@ html.noanim *{animation:none!important;transition:none!important}
   background:rgba(5,8,14,.82);border-top:1px solid rgba(47,214,196,.6);border-bottom:1px solid var(--line);padding:9px 24px;font-size:16px;font-weight:300;
   letter-spacing:.02em;transition:opacity .3s,transform .3s;max-width:90%;text-align:center}
 #toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+/* dialogue box (bottom) and story cards (full screen, black) */
+#talk{position:absolute;left:50%;bottom:7%;transform:translateX(-50%) translateY(8px);width:min(760px,88%);opacity:0;z-index:15;pointer-events:none;
+  background:rgba(5,8,14,.9);border:1px solid var(--line);border-top:1px solid rgba(47,214,196,.55);padding:12px 22px 14px;text-align:center;transition:opacity .25s,transform .25s;cursor:pointer}
+#talk.on{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+#talk-who{font-size:13px;letter-spacing:.06em;color:var(--teal);min-height:1em;margin-bottom:4px}
+#talk-who.w-tik{color:#6fe0ff}#talk-who.w-nader{color:var(--brass)}#talk-who.w-master{color:var(--danger)}
+#talk-text{font-size:19px;line-height:1.7;font-weight:300}
+#talk.card{left:0;top:0;right:0;bottom:0;width:auto;transform:none;border:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6%;transition:opacity .6s}
+#talk.card.on{transform:none;transition:opacity .12s}
+#talk.card #talk-text{font-size:24px;max-width:760px;line-height:1.9}
+#talk.card #talk-who{display:none}
+#talk-text::after{content:"";display:inline-block;width:.45em;height:.45em;margin:0 .35em;border-radius:50%;background:var(--teal);opacity:0;vertical-align:middle}
+#talk.on #talk-text::after{animation:tk-dot 1s infinite}
+@keyframes tk-dot{0%,49%{opacity:.9}50%,100%{opacity:.15}}
+
+/* ---------- cutscenes: black bars, a skip button; time-pieces: their icons and the hourglass tint ---------- */
+#cine-t,#cine-b{position:absolute;left:0;right:0;height:11%;background:#000;z-index:12;pointer-events:none;transition:transform .6s}
+#cine-t{top:0;transform:translateY(-101%)}#cine-b{bottom:0;transform:translateY(101%)}
+#cine-t.on,#cine-b.on{transform:none}
+#cine-skip{position:absolute;left:calc(env(safe-area-inset-left,0px) + 16px);top:calc(env(safe-area-inset-top,0px) + 12px);z-index:16;display:none;padding:7px 16px;background:rgba(5,8,14,.72);border:1px solid var(--line);color:var(--dim);font-size:14px;letter-spacing:.04em;cursor:pointer}
+#cine-skip.on{display:block}
+#cine-skip:active{border-color:var(--teal);color:var(--ink)}
+#pows{display:flex;gap:9px;margin-top:3px}
+.pw{position:relative;width:34px;height:34px;display:none}
+.pw.on{display:block}
+.pw canvas{width:34px;height:34px;display:block}
+.pw i{position:absolute;left:2px;right:2px;bottom:-5px;height:3px;background:var(--brass);transform-origin:0 50%;transform:scaleX(1)}
+.pw.low{animation:glow .35s infinite alternate}
+#powtint{position:absolute;left:0;top:0;right:0;bottom:0;pointer-events:none;z-index:4;opacity:0;transition:opacity .6s;box-shadow:inset 0 0 150px 24px rgba(127,216,255,.3)}
+#powtint.on{opacity:1}
 
 /* ---------- touch controls: brass watch dials ---------- */
 #touch{position:absolute;left:env(safe-area-inset-left,0px);top:0;right:env(safe-area-inset-right,0px);bottom:0;z-index:8;display:none;pointer-events:none;--k:5px;--ta:.75}
@@ -263,6 +293,9 @@ table.res th{color:var(--dim);font-weight:400;font-size:12px}
   <pre id="perf"></pre>
   <div id="dx"></div>
   <div id="toast"></div>
+  <div id="powtint"></div>
+  <div id="cine-t"></div><div id="cine-b"></div><button id="cine-skip" type="button" data-i18n="cine_skip"></button>
+  <div id="talk"><div id="talk-who"></div><div id="talk-text"></div></div>
   <div id="stress-live"></div>
 
   <div id="touch">
@@ -289,6 +322,7 @@ table.res th{color:var(--dim);font-weight:400;font-size:12px}
         <nav class="menu">
           <button class="mi main" id="b-continue" type="button"><i></i><span data-i18n="continue"></span></button>
           <button class="mi main" id="b-new" type="button"><i></i><span data-i18n="newgame"></span></button>
+          <button class="mi" id="b-lab" type="button"><i></i><span data-i18n="lab"></span></button>
           <button class="mi" id="b-controls" type="button"><i></i><span data-i18n="controls"></span></button>
           <button class="mi" id="b-settings" type="button"><i></i><span data-i18n="settings"></span></button>
           <button class="mi" id="b-perf" type="button"><i></i><span data-i18n="perftest"></span></button>
@@ -425,7 +459,7 @@ function defaults() {
   return {
     v: 1, lang: 'auto', sfxVol: 0.7, ambVol: 0.6, mute: false, touch: 'auto', touchScale: 1, touchAlpha: 0.75, touchLabels: true,
     quality: 'auto', perfHud: false, shake: true,
-    keys: JSON.parse(JSON.stringify(DEFAULT_KEYS)), progress: null, stress: null
+    keys: JSON.parse(JSON.stringify(DEFAULT_KEYS)), progress: null, lab: null, done: {}, stress: null
   };
 }
 function loadSettings() {
@@ -447,12 +481,28 @@ function loadSettings() {
   if (o.keys && typeof o.keys === 'object') {
     ACTIONS.forEach(a => { if (Array.isArray(o.keys[a])) d.keys[a] = o.keys[a].filter(x => typeof x === 'string').slice(0, 3); });
   }
-  const p = o.progress;
-  if (p && typeof p === 'object' && p.cp && isNum(p.cp.x) && isNum(p.cp.y)) {
-    const ints = a => Array.isArray(a) ? a.filter(Number.isInteger).slice(0, 500) : [];
-    d.progress = { cp: { x: p.cp.x, y: p.cp.y }, hp: clamp(isNum(p.hp) ? p.hp | 0 : 5, 1, 9), gears: isNum(p.gears) ? Math.max(0, p.gears | 0) : 0, savedAt: isNum(p.savedAt) ? p.savedAt : 0,
-      got: ints(p.got), brk: ints(p.brk), door: p.door === true, lost: ints(p.lost), fw: ints(p.fw), boss: p.boss === true };
-  }
+  /* two save slots: "progress" (the real stage being played) and "lab" (the old movement-test level). A save from before the stages existed has no "stage" field and belongs to the lab. */
+  const ints = a => Array.isArray(a) ? a.filter(Number.isInteger).slice(0, 500) : [];
+  const cleanSlot = p => {
+    if (!p || typeof p !== 'object' || !p.cp || !isNum(p.cp.x) || !isNum(p.cp.y)) return null;
+    const r = { cp: { x: p.cp.x, y: p.cp.y }, hp: clamp(isNum(p.hp) ? p.hp | 0 : 5, 1, 9), gears: isNum(p.gears) ? Math.max(0, p.gears | 0) : 0, savedAt: isNum(p.savedAt) ? p.savedAt : 0,
+      got: ints(p.got), brk: ints(p.brk), door: p.door === true, lost: ints(p.lost), fw: ints(p.fw), boss: p.boss === true, flags: {}, d: [false, false, false, false] };
+    if (p.flags && typeof p.flags === 'object') {
+      let n = 0;
+      for (const k in p.flags) {
+        if (n >= 60 || !/^[A-Za-z0-9_]{1,24}$/.test(k)) continue;
+        const v = p.flags[k];
+        if (typeof v === 'boolean' || isNum(v) || (typeof v === 'string' && v.length <= 8 && /^[0-9]*$/.test(v))) { r.flags[k] = v; n++; }
+      }
+    }
+    if (Array.isArray(p.d)) for (let i = 0; i < 4; i++) r.d[i] = p.d[i] === true;
+    r.stage = typeof p.stage === 'string' && /^[a-z0-9]{1,8}$/.test(p.stage) ? p.stage : 'lab';
+    return r;
+  };
+  const pm = cleanSlot(o.progress), lb = cleanSlot(o.lab);
+  d.lab = lb; d.progress = null;
+  if (pm) { if (pm.stage === 'lab') { if (!d.lab) d.lab = pm; } else d.progress = pm; }
+  if (o.done && typeof o.done === 'object') for (const k in o.done) if (/^s[0-9]$/.test(k) && o.done[k] === true) d.done[k] = true;
   if (o.stress && typeof o.stress === 'object') d.stress = o.stress;
   return d;
 }
@@ -489,7 +539,7 @@ function persist() { if (Hitch.on) Hitch.note('save'); Store.set(SAVE_KEY, S); }
 /* ---------- 4. language ---------- */
 const STR = {
   ar: {
-    title: 'مملكة الدقائق المسروقة', subtitle: 'نموذج اللعب الأساسي · المرحلة 6 · القتال',
+    title: 'مملكة الدقائق المسروقة', subtitle: 'نموذج اللعب · المرحلة 7 · بناء المراحل (الدفعة أ-٢: ورشة نادر)',
     continue: 'متابعة من آخر ساعة حفظ', newgame: 'لعبة جديدة', controls: 'التحكم', settings: 'الإعدادات', perftest: 'اختبار الأداء',
     startnote: 'نموذج تجريبي: الأشكال مؤقتة مرسومة بالكود، وكل الأصوات مولّدة بالكود، ولا توجد موسيقى.',
     paused: 'إيقاف مؤقت', resume: 'استئناف', restart: 'العودة إلى آخر ساعة حفظ', tomenu: 'القائمة الرئيسية', back: 'رجوع',
@@ -519,10 +569,10 @@ const STR = {
     sg_gaps: 'فجوات 3 و4 و5 وحدات: اركض ثم اقفز', sg_oneway: 'منصات تُعبر من الأسفل · أسفل + قفز للنزول', sg_low: 'سقف منخفض: انتبه لرأسك',
     sg_arena: 'ساحة التدريب: اضرب · راوغ · الهجوم الخاص', sg_lever: 'الذراع يفتح الباب', sg_spikes: 'أشواك: تكلّف نبضة',
     sg_pits: 'الهاوية تكلّف نبضة وتعيدك إلى آخر منصة آمنة', sg_end: 'نهاية المستوى الأول من النموذج التجريبي',
-    sg_roach: 'صرصور التروس: يتوقف ويهتز ثم ينقضّ · راوغ ثم اضرب مرتين', sg_wall: 'جدار متصدّع: اضربه بالمطرقة عدة مرات',
-    sg_rat: 'فأر الزيت: ينتفخ ويتوهج ثم يطلق فقاعة بطيئة · اقفز فوقها ثم اقترب', sg_boss: 'ورشة المنظِّف-٧: الساعة خلفك تحفظ تقدمك',
+    sg_roach: 'مدحرج التروس: يتوقف ويهتز ثم ينقضّ · راوغ ثم اضرب مرتين', sg_wall: 'جدار متصدّع: اضربه بالمطرقة عدة مرات',
+    sg_rat: 'مضخّة الزيت: تنتفخ وتتوهج ثم تطلق فقاعة بطيئة · اقفز فوقها ثم اقترب', sg_boss: 'ورشة المنظِّف-٧: الساعة خلفك تحفظ تقدمك',
     boss_name: 'المنظِّف-٧', m_lost: 'دقيقة ضائعة %s', m_pulse: 'اكتملت خمس دقائق: نبضة صحة جديدة!', m_wall: 'تحطّم الجدار', m_boss_down: 'سقط المنظِّف-٧ وعاد الباب ينفتح',
-    snd_roach: 'اهتزاز الصرصور', snd_rdash: 'اندفاع', snd_ratin: 'فأر ينتفخ', snd_spit: 'فقاعة', snd_pop: 'انفجار فقاعة', snd_edie: 'سقوط عدو',
+    snd_roach: 'اهتزاز المدحرج', snd_rdash: 'اندفاع', snd_ratin: 'مضخّة تنتفخ', snd_spit: 'فقاعة', snd_pop: 'انفجار فقاعة', snd_edie: 'سقوط عدو',
     snd_bwake: 'استيقاظ الزعيم', snd_bland: 'هبوط الزعيم', snd_suck: 'شفط', snd_puff: 'نفخة غبار', snd_tank: 'خزان الغبار', snd_steamw: 'تحذير البخار', snd_steamb: 'عمود بخار',
     snd_spinw: 'تحذير الدوران', snd_bhurt: 'إصابة الزعيم', snd_bbreak: 'انكسار الذراع', snd_bdie: 'سقوط الزعيم', snd_tool: 'أداة تسقط', snd_lost: 'دقيقة ضائعة', snd_pulse: 'نبضة جديدة', snd_wall: 'جدار متصدّع',
     pf_stage: 'المرحلة', pf_base: 'أساسي', pf_mid: 'متوسط', pf_heavy: 'ثقيل', pf_fps: 'إطارات/ث', pf_p95: 'أبطأ 5% (ms)', pf_min: 'أدنى إطارات/ث',
@@ -531,7 +581,7 @@ const STR = {
     pf_none: 'لم يُجرَ اختبار بعد. اضغط «تشغيل الاختبار».', pf_device: 'الجهاز', pf_last: 'آخر نتيجة محفوظة'
   },
   en: {
-    title: 'The Kingdom of Stolen Minutes', subtitle: 'Core gameplay prototype · Phase 6 · Combat',
+    title: 'The Kingdom of Stolen Minutes', subtitle: 'Gameplay prototype · Phase 7 · Building the stages (batch A-2: Nader\'s workshop)',
     continue: 'Continue from last save clock', newgame: 'New game', controls: 'Controls', settings: 'Settings', perftest: 'Performance test',
     startnote: 'A test build: shapes are temporary code-drawn placeholders, all sound is synthesized in code, and there is no music.',
     paused: 'Paused', resume: 'Resume', restart: 'Return to last save clock', tomenu: 'Main menu', back: 'Back',
@@ -561,10 +611,10 @@ const STR = {
     sg_gaps: 'Gaps of 3, 4 and 5 units: run, then jump', sg_oneway: 'Pass-through platforms · Down + Jump to drop', sg_low: 'Low ceiling: mind your head',
     sg_arena: 'Training yard: hit · dodge · special', sg_lever: 'The lever opens the door', sg_spikes: 'Spikes cost one pip',
     sg_pits: 'Pits cost a pip and return you to the last safe platform', sg_end: 'End of Level 1 of the test build',
-    sg_roach: 'Cog cockroach: it stops, shakes, then lunges · dodge, then hit twice', sg_wall: 'Cracked wall: break it with the hammer, a few hits',
-    sg_rat: 'Oil rat: swells and glows, then fires a slow bubble · jump it, then close in', sg_boss: 'Cleaner-7 workshop: the clock behind you saves your progress',
+    sg_roach: 'Cog roller: it stops, shakes, then lunges · dodge, then hit twice', sg_wall: 'Cracked wall: break it with the hammer, a few hits',
+    sg_rat: 'Oil pump: swells and glows, then fires a slow bubble · jump it, then close in', sg_boss: 'Cleaner-7 workshop: the clock behind you saves your progress',
     boss_name: 'Cleaner-7', m_lost: 'Lost minute %s', m_pulse: 'Five minutes found: a new health pulse!', m_wall: 'The wall shatters', m_boss_down: 'Cleaner-7 is down · the gate opens',
-    snd_roach: 'Roach rattle', snd_rdash: 'Lunge', snd_ratin: 'Rat swelling', snd_spit: 'Bubble', snd_pop: 'Bubble pop', snd_edie: 'Enemy down',
+    snd_roach: 'Roller rattle', snd_rdash: 'Lunge', snd_ratin: 'Pump swelling', snd_spit: 'Bubble', snd_pop: 'Bubble pop', snd_edie: 'Enemy down',
     snd_bwake: 'Boss wakes', snd_bland: 'Boss lands', snd_suck: 'Suction', snd_puff: 'Dust puff', snd_tank: 'Dust tank', snd_steamw: 'Steam warning', snd_steamb: 'Steam column',
     snd_spinw: 'Spin warning', snd_bhurt: 'Boss hit', snd_bbreak: 'Arm breaks', snd_bdie: 'Boss falls', snd_tool: 'Tool falls', snd_lost: 'Lost minute', snd_pulse: 'New pulse', snd_wall: 'Cracked wall',
     pf_stage: 'Stage', pf_base: 'Base', pf_mid: 'Medium', pf_heavy: 'Heavy', pf_fps: 'FPS', pf_p95: 'Slowest 5% (ms)', pf_min: 'Min FPS',
@@ -851,10 +901,22 @@ const Snd = (function () {
     spinLoop() { wobble(noiseBuf, 1.5, 0.4, 500, 1200, 2, 22, 0.6, 0.15); tone('sawtooth', 110, 150, 1.4, 0.1, 0, 0.2); },
     bossHurt() { metal(rnd(300, 360), 0.2, 0.5); noise(0.1, 0.3, 'highpass', 1800, 900, 0.8); tone('sine', 90, 50, 0.2, 0.3); },
     bossBreak() { noise(0.25, 0.6, 'highpass', 1200, 500, 0.8, 0, 0.002); metal(260, 0.25, 0.9); tone('sawtooth', 220, 50, 0.9, 0.2); noise(0.7, 0.3, 'bandpass', 700, 250, 1, 0.1); for (let i = 0; i < 6; i++) click(0.2 + i * 0.08, 0.6, 1800 - i * 100); },
-    bossDie() { tone('sawtooth', 200, 28, 2.0, 0.28); noise(1.6, 0.4, 'lowpass', 1500, 100, 0.8, 0.05); metal(120, 0.2, 1.8, 0.1); for (let i = 0; i < 14; i++) click(0.1 + i * 0.1, 1 - i * 0.05, 2000 - i * 80); tone('sine', 55, 30, 1.2, 0.5, 1.3); }
+    bossDie() { tone('sawtooth', 200, 28, 2.0, 0.28); noise(1.6, 0.4, 'lowpass', 1500, 100, 0.8, 0.05); metal(120, 0.2, 1.8, 0.1); for (let i = 0; i < 14; i++) click(0.1 + i * 0.1, 1 - i * 0.05, 2000 - i * 80); tone('sine', 55, 30, 1.2, 0.5, 1.3); },
+    /* ---- Phase 7a-2: speech blips (no voices: every speaker has a small timbre of its own), the drone's rotor and the time-shaped power-ups ---- */
+    blipN() { const f = rnd(560, 760); tone('triangle', f, f * 1.08, 0.055, 0.12, 0, 0.003); tone('sine', f * 2, f * 2, 0.03, 0.035, 0, 0.002); },            // Nader: a soft watch tone
+    blipT() { const f = rnd(1050, 1500); tone('square', f, f * 1.25, 0.04, 0.05, 0, 0.002); tone('sine', f * 1.5, f * 1.5, 0.03, 0.04, 0.012, 0.002); },       // Tik: a quick chirp-whirr
+    blipM() { const f = rnd(150, 200); tone('sine', f, f * 0.93, 0.11, 0.2, 0, 0.004); metal(f * 3.1, 0.05, 0.08); },                                           // the master clock: a low wooden gong tap
+    blipS() { click(0, 0.5, rnd(1500, 1900)); },                                                                                                                // narration: a typewriter tick
+    rotor() { noise(0.5, 0.16, 'bandpass', 700, 1500, 1.2, 0, 0.15); wobble(noiseBuf, 0.5, 0.12, 900, 1300, 2, 30, 0.6, 0.08); tone('triangle', 160, 340, 0.5, 0.06, 0, 0.12); },
+    powGet() { bell(784, 0.14, 0.7); bell(1175, 0.1, 0.8, 0.07); ratchet(4, 0.045, 1, 0.7, 1800, 80); tone('sine', 300, 600, 0.2, 0.1, 0, 0.05); },
+    powEnd() { ratchet(5, 0.06, 1.1, 0.6, 1600, -80); tone('sine', 520, 220, 0.3, 0.1); },
+    ringShot() { bell(1318, 0.12, 0.45); tone('sine', 1800, 900, 0.25, 0.08); noise(0.1, 0.12, 'highpass', 3500, 2000, 0.8); },
+    sandSlow() { noise(0.7, 0.2, 'lowpass', 3000, 400, 0.8, 0, 0.1); tone('sine', 520, 130, 0.7, 0.14); ratchet(4, 0.1, 1.25, 0.5, 1400, -60); },
+    bladeOn() { metal(rnd(880, 940), 0.12, 0.5); noise(0.18, 0.16, 'highpass', 3000, 6000, 0.8, 0, 0.02); },
+    jolt() { tone('sine', 85, 38, 0.4, 0.45); noise(0.3, 0.4, 'lowpass', 1200, 150, 0.8); metal(rnd(200, 260), 0.1, 0.5); }
   };
   const WET = { land: 0.06, hit: 0.2, hurt: 0.1, death: 0.35, interact: 0.08, save: 0.35, lever: 0.12, door: 0.3, pickup: 0.15, barrel: 0.15, special: 0.4, pit: 0.3,
-    lost: 0.3, pulse: 0.4, wallBreak: 0.2, tankGlow: 0.35, bossLand: 0.2, bossBreak: 0.25, bossDie: 0.4, bossWake: 0.25, steamBlast: 0.15, puff: 0.15, toolLand: 0.15 };
+    lost: 0.3, powGet: 0.25, jolt: 0.2, pulse: 0.4, wallBreak: 0.2, tankGlow: 0.35, bossLand: 0.2, bossBreak: 0.25, bossDie: 0.4, bossWake: 0.25, steamBlast: 0.15, puff: 0.15, toolLand: 0.15 };
 
   function play(name, a, wx) {                               // wx (optional): world x of the source → stereo pan + distance volume
     if (S.mute || S.sfxVol <= 0 || !ctx || ctx.state !== 'running' || active > 40) return;
@@ -984,6 +1046,9 @@ const Snd = (function () {
     ['suction', fx.suction, undefined, 1, 2.25], ['puff', fx.puff, undefined, 1, 0.5], ['tankGlow', fx.tankGlow, undefined, 1, 1.45], ['steamWarn', fx.steamWarn, undefined, 1, 1.0],
     ['steamBlast', fx.steamBlast, undefined, 1, 0.9], ['spinWarn', fx.spinWarn, undefined, 1, 0.95], ['spinLoop', fx.spinLoop, undefined, 1, 1.65], ['bossHurt', fx.bossHurt, undefined, 2, 0.6],
     ['bossBreak', fx.bossBreak, undefined, 1, 1.3], ['bossDie', fx.bossDie, undefined, 1, 2.8],
+    ['blipN', fx.blipN, undefined, 4, 0.1], ['blipT', fx.blipT, undefined, 4, 0.1], ['blipM', fx.blipM, undefined, 4, 0.2], ['blipS', fx.blipS, undefined, 3, 0.06],
+    ['rotor', fx.rotor, undefined, 1, 0.65], ['powGet', fx.powGet, undefined, 1, 1.3], ['powEnd', fx.powEnd, undefined, 1, 0.55], ['ringShot', fx.ringShot, undefined, 2, 0.6],
+    ['sandSlow', fx.sandSlow, undefined, 1, 0.9], ['bladeOn', fx.bladeOn, undefined, 1, 0.7], ['jolt', fx.jolt, undefined, 2, 0.55],
     ['tick:0', ambFx.tick, false, 2, 0.12], ['tick:1', ambFx.tick, true, 2, 0.12], ['tickBig:0', ambFx.tickBig, false, 2, 0.35], ['tickBig:1', ambFx.tickBig, true, 2, 0.35],
     ['beat:0', ambFx.beat, false, 2, 0.1], ['beat:1', ambFx.beat, true, 2, 0.1], ['stutter', ambFx.stutter, undefined, 1, 0.3],
     ['ratchet', ambFx.ratchet, undefined, 4, 1.5], ['grind', ambFx.grind, undefined, 3, 2.5], ['groan', ambFx.groan, undefined, 3, 2.9],
@@ -1275,9 +1340,11 @@ const Remap = {
 };
 
 /* ---------- 10. test level: "movement lab" ---------- */
-const LW = 280, LH = 26, G = 18;          // columns, rows, ground-surface row (the lab ends at column ~173, then the combat gallery and the boss arena)
+let LW = 280, LH = 26;                    // columns and rows of the CURRENT stage (setStageSize changes them)
+const G = 18;                             // ground-surface row (every horizontal stage keeps it; the lab ends at column ~173, then the combat gallery and the boss arena)
 const Level = {
-  w: LW, h: LH, grid: new Uint8Array(LW * LH), ents: [], drops: [], signs: [], clocks: [],
+  w: LW, h: LH, grid: new Uint8Array(LW * LH), hid: new Uint8Array(LW * LH), ents: [], drops: [], signs: [], clocks: [],
+  stage: 'lab', doors: [], dOpen: [false, false, false, false], deco: [], trig: [], flags: {}, spawn0: null,
   doorOpen: false, doorAnim: 0, doorTx: 125, spawn: { x: 4.5 * U, y: G * U }, ver: 0,
   shots: [], tools: [], boss: null, lostN: 0, lostTotal: 0, gateShut: false, gateAnim: 0, bossDown: false, fwalls: []
 };
@@ -1287,15 +1354,11 @@ function tileAt(tx, ty) {
   if (ty >= LH) return 0;
   return Level.grid[ty * LW + tx];
 }
-function solidT(v) { return v === 1 || (v === 4 && !Level.doorOpen) || v === 6 || (v === 5 && Level.gateShut); }   // 0 air, 1 solid, 2 one-way, 3 spike, 4 door, 5 arena gate, 6 cracked wall
+function solidT(v) { return v === 1 || (v === 4 && !Level.doorOpen) || v === 6 || (v === 5 && Level.gateShut) || (v >= 9 && v <= 12 && !Level.dOpen[v - 9]); }   // 0 air, 1 solid, 2 one-way, 3 spike, 4 door (lab), 5 arena gate, 6 cracked wall, 9..12 stage doors
 function fill(x0, y0, x1, y1, v) {
   for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) if (x >= 0 && x < LW && y >= 0 && y < LH) Level.grid[y * LW + x] = v;
 }
-function buildLevel() {
-  Level.ver++;                                                       // the cached ground blocks (see drawTiles) are rebuilt for the new layout
-  Level.grid.fill(0); Level.ents.length = 0; Level.signs.length = 0; Level.clocks.length = 0;
-  Level.doorOpen = false; Level.doorAnim = 0;
-  Level.boss = null; Level.lostN = 0; Level.lostTotal = 0; Level.gateShut = false; Level.gateAnim = 0; Level.bossDown = false; Level.fwalls.length = 0;
+function buildLab() {                                              // the movement lab: the original test level (kept as its own stage)
   fill(0, 0, 1, LH, 1); fill(LW - 1, 0, LW, LH, 1);                    // outer walls
   // zone 0: start + steps
   fill(1, G, 28, LH, 1);
@@ -1385,7 +1448,7 @@ function updatePopups(dt) {
 
 /* ---------- 12. camera ---------- */
 const Cam = {
-  x: 0, y: 0, lookX: 0, refY: 0, lock: null, shakeT: 0, shakeDur: 0.01, shakeMag: 0, ox: 0, oy: 0,
+  x: 0, y: 0, lookX: 0, refY: 0, lock: null, focus: null, shakeT: 0, shakeDur: 0.01, shakeMag: 0, ox: 0, oy: 0,
   shake(mag, dur) {
     if (!S.shake) return;
     if (Hitch.on) Hitch.note('shake');
@@ -1400,14 +1463,15 @@ const Cam = {
     ty = clamp(ty, p.y - VIEW_H * 0.82, p.y - VIEW_H * 0.18);
     if (p.vy > 11 * U) ty += Math.min(2.5 * U, (p.vy - 11 * U) * 0.2);
     let tx = p.x + this.lookX - vw / 2;
+    if (this.focus) { tx = this.focus.x - vw / 2; ty = this.focus.y - VIEW_H * 0.58; }                         // a cutscene looks at something else
     const lw = Level.w * U, lh = Level.h * U;
     let lo = 0, hi = Math.max(0, lw - vw);
     if (this.lock) { lo = this.lock.x0; hi = this.lock.x1 - vw; if (hi < lo) lo = hi = (this.lock.x0 + this.lock.x1 - vw) / 2; }   // boss arena: the camera stays inside the hall
     tx = clamp(tx, lo, hi); ty = clamp(ty, 0, Math.max(0, lh - VIEW_H));
     if (snap) { this.x = tx; this.y = ty; this.lookX = lead; }
     else {
-      this.x += (tx - this.x) * (1 - Math.exp(-7 * dt));
-      this.y += (ty - this.y) * (1 - Math.exp(-(p.onGround ? 4.5 : 7) * dt));
+      this.x += (tx - this.x) * (1 - Math.exp(-(this.focus ? 2.6 : 7) * dt));
+      this.y += (ty - this.y) * (1 - Math.exp(-(this.focus ? 2.6 : (p.onGround ? 4.5 : 7)) * dt));
     }
     if (this.shakeT > 0) {
       this.shakeT -= dt; const m = this.shakeMag * Math.max(0, this.shakeT / this.shakeDur);
@@ -1457,7 +1521,8 @@ function nearInteract() {
   let best = null, bd = 1e9;
   for (let i = 0; i < Level.ents.length; i++) {
     const e = Level.ents[i];
-    if (e.t !== 'clock' && e.t !== 'lever') continue;
+    if (e.t !== 'clock' && e.t !== 'lever' && !(STAGE_INT[e.t] && stageInteractable(e))) continue;
+    if (e.t === 'lever' && e.puz !== undefined && !stageInteractable(e)) continue;
     const dx = Math.abs(e.x - p.x), dy = Math.abs(e.y - p.y);
     if (dx < 1.25 * U && dy < 1.3 * U && dx < bd) { bd = dx; best = e; }
   }
@@ -1472,7 +1537,9 @@ function snapshotProgress() {                              // what the save file
     if (q.t === 'gear' && q.got) got.push(q.uid); else if (q.t === 'barrel' && q.dead) brk.push(q.uid);
     else if (q.t === 'lost' && q.got) lost.push(q.uid); else if (q.t === 'fwall' && q.dead) fw.push(q.uid);
   }
-  S.progress = { cp: { x: checkpoint.x, y: checkpoint.y }, hp: P.hpMax, gears: P.gears, savedAt: Date.now(), got: got, brk: brk, door: Level.doorOpen, lost: lost, fw: fw, boss: Level.bossDown };
+  const slot = { cp: { x: checkpoint.x, y: checkpoint.y }, hp: P.hpMax, gears: P.gears, savedAt: Date.now(), got: got, brk: brk, door: Level.doorOpen, lost: lost, fw: fw, boss: Level.bossDown,
+    stage: Level.stage, flags: JSON.parse(JSON.stringify(Level.flags)), d: Level.dOpen.slice(0, 4) };
+  if (Level.stage === 'lab') S.lab = slot; else S.progress = slot;
 }
 function saveAtClock(e) {
   P.hp = P.hpMax; P.special = 100;
@@ -1495,11 +1562,13 @@ function toggleDoor(lever) {
     FX.dust(Level.doorTx * U + U / 2, (G - 4) * U + 20, 10, 0);
   }
 }
-function activate(e) { if (e.t === 'clock') saveAtClock(e); else if (e.t === 'lever') toggleDoor(e); }
+function activate(e) { if (e.t === 'clock') saveAtClock(e); else if (e.t === 'lever' && e.puz === undefined) toggleDoor(e); else activateStage(e); }
 
 function worldUpdate(dt) {
   Level.doorAnim = approach(Level.doorAnim, Level.doorOpen ? 1 : 0, dt / 0.7);
   combatUpdate(dt);
+  stageUpdate(dt);
+  Pow.update(dt);
   const p = P;
   for (let i = 0; i < Level.ents.length; i++) {
     const e = Level.ents[i];
@@ -1545,7 +1614,13 @@ const BOSS = {
   wakeT: 1.7, breakT: 1.5, dieT: 2.6, walk: 2.0 * U, idleMin: 0.8, idleMax: 1.4, fast: 1.25
 };
 /* arena layout in tiles (see buildCombatZone) */
-const AR = { gate: 242, x0: 243, trig: 247, bossX: 272, tabL: 253, tabR: 270, racks: [251, 257, 263, 269, 275] };
+const AR = { gate: 242, x0: 243, trig: 247, bossX: 272, tabL: 253, tabR: 270, racks: [251, 257, 263, 269, 275], shelves: [[245, 250], [273, 278]], end: 279 };   // the arena of the current stage (setArena fills it)
+function setArena(gate, end) {                                    // lays the boss hall out relative to its gate column (the lab's hall has its gate at 242)
+  const o = gate - 242;
+  AR.gate = gate; AR.x0 = 243 + o; AR.trig = 247 + o; AR.bossX = 272 + o; AR.tabL = 253 + o; AR.tabR = 270 + o;
+  AR.racks = [251, 257, 263, 269, 275].map(function (x) { return x + o; });
+  AR.shelves = [[245 + o, 250 + o], [273 + o, 278 + o]]; AR.end = end;
+}
 const Hit = { box: null, cx: 0, cy: 0, r: 0 };           // geometry of the player's current attack, so the boss can tell whether the weak point was struck
 
 for (let i = 0; i < 8; i++) Level.shots.push({ on: false, x: 0, y: 0, vx: 0, vy: 0, life: 0, r: 0.4 * U, ph: 0 });
@@ -1578,10 +1653,7 @@ function buildCombatZone() {
   const w2 = mkWall(228, G - 2, 2, { x0: 222 * U, y0: (G - 2) * U, x1: 228 * U, y1: G * U });
   fill(193, G - 2, 194, G, 6); fill(228, G - 2, 229, G, 6);
   Level.ents.push(w1); Level.ents.push(w2);
-  /* arena: gate, long central table (one-way), two shelves */
-  fill(AR.gate, G - 6, AR.gate + 1, G, 5);
-  fill(AR.tabL, G - 2, AR.tabR, G - 1, 2);
-  fill(245, G - 5, 250, G - 4, 2); fill(273, G - 5, 278, G - 4, 2);
+  setArena(242, LW - 1); buildArena();
   [[181, 'sg_roach', 3.3], [191, 'sg_wall', 3.1], [201.5, 'sg_rat', 4.1], [238, 'sg_boss', 3.5], [271, 'sg_end', 3.2, true]]
     .forEach(function (s) { Level.signs.push({ x: s[0] * U + U / 2, h: s[2] * U, key: s[1], after: !!s[3] }); });
   /* enemies */
@@ -1597,13 +1669,20 @@ function buildCombatZone() {
   lm[2].room = w1; lm[3].room = w2;
   lm.forEach(function (m) { Level.ents.push(m); });
   Level.lostTotal = lm.length;
-  /* the save clock before the arena, and extra gears as a reward on the right shelf */
+  /* the save clock before the arena */
   const c = { t: 'clock', id: 5, x: 236 * U + U / 2, y: G * U, wind: 0 };
   Level.ents.push(c); Level.clocks.push(c);
-  [275, 276, 277].forEach(function (tx, i) { Level.ents.push({ t: 'gear', x: tx * U + U / 2, y: (G - 5) * U - 0.9 * U, ph: i * 0.7, got: false }); });
-  /* the boss, asleep at the far end of the hall */
+  arenaEnts();
+}
+function buildArena() {                                           // the hall's tiles: gate, long central table (one-way), two shelves
+  fill(AR.gate, G - 6, AR.gate + 1, G, 5);
+  fill(AR.tabL, G - 2, AR.tabR, G - 1, 2);
+  AR.shelves.forEach(function (s) { fill(s[0], G - 5, s[1], G - 4, 2); });
+}
+function arenaEnts() {                                            // the reward gears on the right shelf and the sleeping boss (pushed last, so older saves keep their entity ids)
+  [AR.shelves[1][0] + 2, AR.shelves[1][0] + 3, AR.shelves[1][0] + 4].forEach(function (tx, i) { Level.ents.push({ t: 'gear', x: tx * U + U / 2, y: (G - 5) * U - 0.9 * U, ph: i * 0.7, got: false }); });
   const b = { t: 'boss', x: AR.bossX * U, y: G * U, dir: -1, hp: BOSS.hp, hpMax: BOSS.hp, phase: 1, state: 'sleep', st: 0, jy: 0, glow: 0, flash: 0, shake: 0, lastAtk: 0, dead: false,
-    last: '', idleT: 1, armBroken: false, from: 0, to: 0, vents: [], spin: 0, wph: 0, onHigh: 0, dieFx: 0, tankHit: 0 };
+    last: '', idleT: 1, armBroken: false, from: 0, to: 0, vents: [], spin: 0, wph: 0, onHigh: 0, hiHold: 0, rainCd: 0, dieFx: 0, tankHit: 0 };
   Level.ents.push(b); Level.boss = b;
 }
 function pulsesFor(n) { return 5 + Math.min(4, Math.floor(n / 5)); }      // health pulses: 5 at the start, +1 for every 5 lost minutes, at most +4
@@ -1848,6 +1927,7 @@ function startBreak(b) {
   Snd.play('bossBreak', 0, b.x); Cam.shake(10, 0.5); Game.hitStop = Math.max(Game.hitStop, 0.12);
   FX.chips(b.x + b.dir * 1.1 * U, b.y - 1.5 * U, 16, 6); FX.sparks(b.x + b.dir * 1.1 * U, b.y - 1.6 * U, 14, 4); FX.dust(b.x, b.y, 10, 0);
   bossQuake(2);
+  Pow.drop('sand', (AR.tabL + AR.tabR + 1) / 2 * U, (G - 2) * U - 1.0 * U);                  // the broken arm shakes a time-piece loose onto the table
 }
 function startDying(b) {
   b.glow = 0; b.jy = 0; bossToState(b, 'dying'); b.dieFx = 0;
@@ -1864,7 +1944,7 @@ function finishBoss(b) {
 }
 function nextAttack(b) {
   const list = b.phase === 2 ? ['sweep', 'suck', 'steam', 'spin'] : ['sweep', 'suck', 'steam'];
-  if (b.onHigh > 2.5 && b.last !== 'steam') { bossStartAttack(b, 'steam'); return; }       // camping on the table or a shelf draws steam
+  if (b.onHigh > 1.6 && b.last !== 'steam') { bossStartAttack(b, 'steam'); return; }       // staying on the table or a shelf draws steam at once (the column is 6.5 tiles tall)
   let k = list[(Math.random() * list.length) | 0];
   if (k === b.last) k = list[(list.indexOf(k) + 1) % list.length];
   bossStartAttack(b, k);
@@ -1876,7 +1956,7 @@ function bossStartAttack(b, k) {
     case 'suck': bossToState(b, 'suckT'); Snd.play('bossWarn', 0, b.x); break;
     case 'steam': {
       bossToState(b, 'steamT');
-      const lo = (AR.x0 + 1) * U, hi = (LW - 2) * U, tx = clamp(P.x + P.vx * 0.18, lo, hi);
+      const lo = (AR.x0 + 1) * U, hi = (AR.end - 1) * U, tx = clamp(P.x + P.vx * 0.18, lo, hi);
       b.vents.length = 0; b.vents.push(tx);
       if (b.phase === 2) b.vents.push(clamp(tx + (tx > b.x ? -1 : 1) * 3.6 * U, lo, hi));
       Snd.play('steamWarn', 0, tx);
@@ -1890,7 +1970,15 @@ function updBoss(b, dt) {
   const p = P, ph2 = b.phase === 2, spd = ph2 ? BOSS.fast : 1, lv = live();
   b.st += dt; if (b.flash > 0) b.flash -= dt; if (b.shake > 0) b.shake -= dt; if (b.glow > 0) b.glow -= dt;
   b.wph += dt * (b.state === 'sleep' ? 0 : 1);
-  b.onHigh = (lv && p.onGround && p.y < G * U - 1.5 * U) ? b.onHigh + dt : 0;
+  /* anti-camping: "raised ground" is the table (2 tiles) and the shelves (5 tiles). Standing there keeps a timer running that a short hop does not reset;
+     the boss answers with steam (see nextAttack), with a stomp that shakes the table (see sweepJ) and, after two seconds, with tools dropped right onto the player */
+  const raised = lv && p.onGround && p.y < G * U - 1.0 * U;
+  if (raised) b.hiHold = 0.45; else if (b.hiHold > 0) b.hiHold -= dt;
+  b.onHigh = (raised || b.hiHold > 0) ? b.onHigh + dt : 0;
+  if (b.rainCd > 0) b.rainCd -= dt;
+  if (lv && b.onHigh > 2.6 && b.rainCd <= 0 && (b.state === 'idle' || b.state === 'recover' || b.state === 'stun' || b.state === 'dizzy' || b.state === 'steamT' || b.state === 'steam')) {
+    b.rainCd = ph2 ? 1.8 : 2.4; spawnTool(clamp(p.x, (AR.x0 + 1) * U, (AR.end - 1) * U));
+  }
   switch (b.state) {
     case 'sleep': return;
     case 'wake':
@@ -1915,6 +2003,8 @@ function updBoss(b, dt) {
       if (k >= 1) {
         b.jy = 0; Snd.play('bossLand', 0, b.x); Cam.shake(9, 0.3); FX.dust(b.x, b.y, 14, 0); FX.ring(b.x, b.y - 8, 130, 0, 0.4);
         bossQuake(ph2 ? 3 : 2); bossToState(b, 'recover');
+        FX.ring(b.x, b.y - 2.0 * U, 5.4 * U, 0, 0.4);
+        if (lv && raised && Math.abs(p.x - b.x) < 5.4 * U) { Snd.play('jolt', 0, p.x); FX.dust(p.x, p.y, 8, 0); hurtPlayer(b.x, 1); }       // the landing shakes the table and the shelves: hop, or be thrown off
       }
       break;
     }
@@ -1994,8 +2084,9 @@ function updBoss(b, dt) {
 function startBossFight(b) {
   Level.gateShut = true; Snd.play('door', 0, AR.gate * U + U / 2);
   b.dir = -1; bossToState(b, 'wake'); Snd.play('bossWake', 0, b.x); Cam.shake(5, 0.7);
-  Cam.lock = { x0: AR.x0 * U, x1: (LW - 1) * U };
+  Cam.lock = { x0: AR.x0 * U, x1: AR.end * U };
   HUD.bossDirty = true;
+  if (Level.stage !== 'lab') Cine.run([['cam', b.x, b.y - 2.4 * U], ['wait', 1.7], ['uncam']], null, { skip: false });          // the camera looks at the waking machine
 }
 function arenaTrigger() {
   const b = Level.boss;
@@ -2006,18 +2097,18 @@ function arenaTrigger() {
 /* ---------- per-step update ---------- */
 function combatUpdate(dt) {
   const ents = Level.ents;
-  const on = Game.state === 'play';
+  const on = Game.state === 'play', edt = dt * Pow.eSlow();                                // the hourglass slows the enemies, the boss, bubbles and falling tools
   for (let i = 0; i < ents.length; i++) {
     const e = ents[i];
     switch (e.t) {
       case 'lost': updLost(e, dt); break;
       case 'fwall': if (e.flash > 0) e.flash -= dt; if (e.shake > 0) e.shake -= dt; break;
-      case 'roach': if (on) updRoach(e, dt); break;
-      case 'ratoil': if (on) updRat(e, dt); break;
-      case 'boss': if (on) updBoss(e, dt); break;
+      case 'roach': if (on) updRoach(e, edt); break;
+      case 'ratoil': if (on) updRat(e, edt); break;
+      case 'boss': if (on) updBoss(e, edt); break;
     }
   }
-  if (on) { updShots(dt); updTools(dt); arenaTrigger(); }
+  if (on) { updShots(edt); updTools(edt); arenaTrigger(); }
   Level.gateAnim = approach(Level.gateAnim, Level.gateShut ? 1 : 0, dt / 0.8);
 }
 
@@ -2028,13 +2119,13 @@ function resetEncounters() {
     if (e.t === 'roach' || e.t === 'ratoil') {
       e.dead = false; e.hp = e.t === 'roach' ? CB.roach.hp : CB.rat.hp; e.x = e.homeX; e.y = e.homeY; e.state = e.t === 'roach' ? 'patrol' : 'idle'; e.st = 0; e.kb = 0; e.flash = 0; e.swell = 0; e.cool = 0; e.cd = 0.6; e.lastAtk = 0;
     } else if (e.t === 'boss' && !Level.bossDown) {
-      e.dead = false; e.hp = e.hpMax; e.phase = 1; e.armBroken = false; e.x = AR.bossX * U; e.jy = 0; e.dir = -1; e.glow = 0; e.state = 'sleep'; e.st = 0; e.last = ''; e.lastAtk = 0; e.flash = 0; e.vents.length = 0; e.onHigh = 0;
+      e.dead = false; e.hp = e.hpMax; e.phase = 1; e.armBroken = false; e.x = AR.bossX * U; e.jy = 0; e.dir = -1; e.glow = 0; e.state = 'sleep'; e.st = 0; e.last = ''; e.lastAtk = 0; e.flash = 0; e.vents.length = 0; e.onHigh = 0; e.hiHold = 0; e.rainCd = 0;
     }
   }
   for (let i = 0; i < Level.shots.length; i++) Level.shots[i].on = false;
   for (let i = 0; i < Level.tools.length; i++) Level.tools[i].on = false;
   if (!Level.bossDown) { Level.gateShut = false; Level.gateAnim = 0; }
-  Cam.lock = null; HUD.bossDirty = true;
+  Cam.lock = null; HUD.bossDirty = true; Pow.resetEncounter();
 }
 
 /* ---------- 14. player (Nader) ---------- */
@@ -2165,11 +2256,11 @@ function startDodge() {
 }
 function startAttack(n) {
   P.combo = n; P.phase = 'wind'; P.atkId = ++Game.atkSeq; P.atkHit = false;
-  Input.consume('attack'); P.vx *= 0.35; Snd.play('swing', n); setState('attack');
+  Input.consume('attack'); P.vx *= 0.35; Snd.play('swing', n); setState('attack'); Pow.onAttack();
 }
 function startAirAttack() {
   P.phase = 'wind'; P.atkId = ++Game.atkSeq; P.atkHit = false; P.airUsed = true;
-  Input.consume('attack'); Snd.play('swing', 1); setState('airattack');
+  Input.consume('attack'); Snd.play('swing', 1); setState('airattack'); Pow.onAttack();
 }
 function startInteract(e) {
   P.target = e; P.didAct = false; P.dir = e.x >= P.x ? 1 : -1; P.vx = 0; Input.consume('interact');
@@ -2197,12 +2288,12 @@ function die() {
 
 /* --- attack hit detection --- */
 function attackBox() {
-  const d = P.dir, front = P.w / 2;
+  const d = P.dir, front = P.w / 2, rm = Pow.rangeMul();
   if (P.state === 'airattack') {
-    const x0 = d > 0 ? P.x - 0.3 * U : P.x - AIR_ATK.range, x1 = d > 0 ? P.x + AIR_ATK.range : P.x + 0.3 * U;
+    const ar = AIR_ATK.range * rm, x0 = d > 0 ? P.x - 0.3 * U : P.x - ar, x1 = d > 0 ? P.x + ar : P.x + 0.3 * U;
     return [x0, P.y - P.h - 0.1 * U, x1, P.y + 0.9 * U];
   }
-  const r = ATK[P.combo].range;
+  const r = ATK[P.combo].range * rm;
   const x0 = d > 0 ? P.x + front - 6 : P.x - front - r, x1 = d > 0 ? P.x + front + r : P.x - front + 6;
   return [x0, P.y - P.h - 0.1 * U, x1, P.y + 4];
 }
@@ -2397,7 +2488,7 @@ function updAttack(dt, ctl) {
   if (t < a.wind) p.phase = 'wind';
   else if (t < a.wind + a.act) {
     if (p.phase !== 'act') { p.phase = 'act'; p.vx = p.dir * a.lunge; if (a.heavy) Cam.shake(2, 0.1); }
-    doHits(a.dmg, a.heavy, a.stop);
+    doHits(a.dmg + Pow.dmgPlus(), a.heavy, a.stop);
   } else p.phase = 'rec';
   if (p.phase === 'rec' && ctl) {
     if (p.dodgeCd <= 0 && Input.peek('dodge', TUNE.dbuf)) { startDodge(); return; }
@@ -2416,7 +2507,7 @@ function updAirAttack(dt, ax) {
   if (t < a.wind) { p.phase = 'wind'; p.vy = Math.min(p.vy, 2 * U) * 0.5; p.noGrav = true; }
   else if (t < a.wind + a.act) {
     if (p.phase !== 'act') { p.phase = 'act'; p.vy = 13 * U; }
-    p.noGrav = true; doHits(a.dmg, false, a.stop);
+    p.noGrav = true; doHits(a.dmg + Pow.dmgPlus(), false, a.stop);
   } else p.phase = 'rec';
   if (p.onGround && p.phase !== 'wind') {
     if (p.phase === 'act') { FX.dust(p.x, p.y, 7, 0); Cam.shake(3, 0.1); Snd.play('land', true); }
@@ -2564,6 +2655,745 @@ const Amb = (function () {
   }
   return { update: update, setState: setState, gearPos: gearPos, get rate() { return rate; }, get steps() { return steps; } };
 })();
+/* ---------- 13c. stages: the registry and loader, the dialogue box, Tik, the new pieces (saw, chest, machine, scan spot, levers, lift) and "Nader's workshop" ----------
+   A stage is a record: its size, its theme (backdrop + tile art), a builder that lays tiles / props / entities out, and an optional restore() that puts
+   saved state back. Everything a stage needs to remember lives in Level.flags (a small map saved with the progress file). */
+Object.assign(STR.ar, {
+  lab: 'مختبر الحركة (للتجربة)', st_s1: 'المرحلة 1 · ورشة نادر', sp_tik: 'تِك', sp_nader: 'نادر', sp_master: 'الساعة الأم',
+  sg_run: 'فجوات: اركض ثم اقفز', sg_chest: 'الصندوق: افتحه بمفتاحك', sg_tools: 'الأدوات المتجمّدة في الهواء منصّات: قف عليها', sg_tunnel: 'سقف منخفض: لا تُطِل ضغطة القفز', sg_saw: 'المنشار بطيء: اقفز فوقه أو راوغ عبره',
+  sg_bench: 'الأعداء هنا: مدحرج التروس ومضخّة الزيت', sg_pow: 'ساعة زمنية: التقطها لتحصل على قدرة مؤقتة', sg_scan: 'حفرة متجمّدة: انزل إليها، وتِك سيفحص ما في قاعها', sg_machine: 'الآلة تحتاج ترسًا ناقصًا', sg_levers: 'اقرأ النقوش على الجدار: الترتيب مهم',
+  sg_hall: 'القاعة الرئيسية: المنظِّف-٧ ينتظر', sg_lift: 'المصعد يحتاج ثلاثة تروس',
+  p_open: 'افتح الصندوق', p_scan: 'اطلب فحص تِك', p_insert: 'ركّب الترس', p_lift: 'المصعد',
+  m_keygear: 'التقطت الترس الناقص', m_need_tik: 'تحتاج صديقك تِك: عُد وافتح الصندوق عند بداية الورشة', m_machine_need: 'الآلة تحتاج ترسًا ناقصًا', m_machine_ok: 'دار الترس · انفتح الباب', m_puz_wrong: 'ترتيب خاطئ: عادت العتلات', m_puz_ok: 'انفتح الباب',
+  m_lift_need: 'المصعد يحتاج ثلاثة تروس (معك %s)', m_clue: 'دليل جديد: %s', clue_c_400: 'ورقة الإصلاح 400', clue_c_secret: 'دفتر الشكاوى القديم', clue_c_log: 'سجل الورشة',
+  nr_open1: 'في ليلة الاحتفال تدقّ ساعة البرج اثنتي عشرة دقّة…', nr_open2: '…ثم تأتي دقّة ثالثة عشرة لا وجود لها في أي جدول.', nr_open3: 'فيتوقف قلب أورليا، ويتجمّد معه كل ما يعدّ الوقت: الساعات والتروس والأدوات.', nr_open3b: 'إلا شيئًا واحدًا: مفتاح غريب في درج الورشة بدأ يتكتك ويتوهّج. المفتاح وحده لا يتبع القلب.', nr_open4: 'ورشة الساعات · الطابق السفلي',
+  nr_chest1: 'يدير نادر مفتاحه في قفل الصندوق، فيتكتك القفل وينفتح.', tk_wake1: 'تأخرت.', tk_intro: 'أنا تِك. كرة نحاسية بمروحة، أرى ما لا تراه وأحسب الاحتمالات.', tk_wake2: 'الورشة كلها متجمّدة: الأدوات معلّقة في الهواء ونحن الوحيدان اللذان يتحركان. هذا مقلق بنسبة 80%.', tk_wake2b: 'السبب بسيط: المفتاح معك، وأنا كنت محفوظًا معه. والمفتاح لا يتبع القلب.', tk_wake3: 'اسمع… شيء ينظّف في الداخل. كل ما يتحرك.',
+  tk_saw: 'منشار! من الناحية الفنية: لا تلمسه.', tk_pit: 'لمعة نحاسية في أسفل الحفرة… 87% ترس.', tk_scan: 'فحص… فحص… ها هو! ترس ناقص.', tk_machine: 'هذه الآلة ينقصها ترس. المقاس يطابق ما وجدناه.',
+  tk_levers: 'نقوش على الجدار. من الناحية الفنية، هذا هو الحل.', tk_wrong: 'ليس هذا الترتيب. اقرأ الجدار يا نادر.', tk_right: 'أحسنت. بنسبة 100% أنا فخور.', tk_hall: 'هذا هو. المنظِّف-٧. ينظّف كل ما يتحرك… أي نحن.',
+  tk_bench: 'مدحرج التروس يهتز قبل أن يندفع. راوغ ثم اضرب.',
+  nr_end1: 'الساعة الأم… بندولها واقف في منتصف الأرجحة، وعقرب دقائقها ما زال مرفوعًا في منتصف الدقّة.', tk_end0: 'لحظة… أفحصها.', tk_end2: 'قلب المملكة توقف عند الدقّة الثالثة عشرة، وكل ساعة تتبع القلب تتوقف معه. لهذا لا تتحرك.', nd_end0: 'ونحن؟', tk_end3: 'نتحرك لأن المفتاح معك. هو الوحيد الذي لا يتبع القلب.', nr_end2: 'يفتح نادر بابًا صغيرًا عند قاعدة الساعة، ويضبط عقاربها على الوقت الصحيح بدقة، ثم يغلقه.',
+  tk_end1: 'الساعة لن تتحرك.', nd_end1: 'عندما تتحرك، أريدها أن تكون صحيحة.',
+  nr_lift1: 'يصعد المصعد بنادر وتِك إلى سطح الورشة.', nr_lift2: 'العاصمة متجمّدة، ورجل بمعطف بنفسجي فوق البرج.', nr_lift3: 'ست نقاط خافتة على خريطة الزمن… أقربها تضيء: سوق اللحظة.',
+  nr_lift4: 'نهاية المرحلة 1 · المرحلة 2 (سوق اللحظة) تأتي في الدفعة التالية.'
+});
+Object.assign(STR.en, {
+  lab: 'Movement lab (test level)', st_s1: 'Stage 1 · Nader\'s workshop', sp_tik: 'Tik', sp_nader: 'Nader', sp_master: 'The Mother Clock',
+  sg_run: 'Gaps: run, then jump', sg_chest: 'The chest: open it with your key', sg_tools: 'Tools frozen in the air are platforms: stand on them', sg_tunnel: 'Low ceiling: do not hold the jump long', sg_saw: 'The saw is slow: jump over it or dodge through it',
+  sg_bench: 'Enemies ahead: cog roller and oil pump', sg_pow: 'A time-piece: pick it up for a temporary power', sg_scan: 'A frozen pit: climb down, Tik will scan the bottom', sg_machine: 'The machine is missing a gear', sg_levers: 'Read the carvings on the wall: the order matters',
+  sg_hall: 'The main hall: Cleaner-7 is waiting', sg_lift: 'The lift needs three gears',
+  p_open: 'Open the chest', p_scan: 'Ask Tik to scan', p_insert: 'Fit the gear', p_lift: 'Lift',
+  m_keygear: 'You picked up the missing gear', m_need_tik: 'You need your friend Tik: go back and open the chest at the start of the workshop', m_machine_need: 'The machine is missing a gear', m_machine_ok: 'The gear turns · the door opens', m_puz_wrong: 'Wrong order: the levers reset', m_puz_ok: 'The door opens',
+  m_lift_need: 'The lift needs three gears (you have %s)', m_clue: 'New clue: %s', clue_c_400: 'Repair slip no. 400', clue_c_secret: 'The old complaints ledger', clue_c_log: 'The workshop log',
+  nr_open1: 'On festival night the tower clock strikes twelve…', nr_open2: '…then a thirteenth chime that is in no schedule.', nr_open3: 'Then the heart of Aurelia stops, and everything that counts time stops with it: the clocks, the gears, the tools.', nr_open3b: 'Everything but one thing: a strange key in the workshop drawer begins to tick and glow. The key alone does not follow the heart.', nr_open4: 'The clock workshop · lower floor',
+  nr_chest1: 'Nader turns his key in the lock of the chest, and the lock ticks open.', tk_wake1: 'You are late.', tk_intro: 'I am Tik. A copper ball with a propeller. I see what you cannot, and I count the odds.', tk_wake2: 'The whole workshop is frozen: the tools hang in the air and we are the only ones moving. That is 80% worrying.', tk_wake2b: 'The reason is simple: you carry the key, and I was kept with it. The key does not follow the heart.', tk_wake3: 'Listen… something inside is cleaning. Everything that moves.',
+  tk_saw: 'A saw! Technically: do not touch it.', tk_pit: 'A copper glint at the bottom of the pit… 87% gear.', tk_scan: 'Scanning… scanning… there! A missing gear.', tk_machine: 'This machine is missing a gear. The size matches what we found.',
+  tk_levers: 'Carvings on the wall. Technically, that is the solution.', tk_wrong: 'Not that order. Read the wall, Nader.', tk_right: 'Well done. I am 100% proud.', tk_hall: 'That is it. Cleaner-7. It cleans everything that moves… meaning us.',
+  tk_bench: 'The cog roller shakes before it charges. Dodge, then strike.',
+  nr_end1: 'The Mother Clock… its pendulum hangs in the middle of a swing and its minute hand is still raised in the middle of a minute.', tk_end0: 'One moment… scanning it.', tk_end2: 'The heart of the kingdom stopped at the thirteenth chime, and every clock that follows the heart stops with it. That is why it does not move.', nd_end0: 'And us?', tk_end3: 'We move because you carry the key. It is the only thing that does not follow the heart.', nr_end2: 'Nader opens a small door at the foot of the clock, sets its hands exactly to the right time, and closes it again.',
+  tk_end1: 'The watch will not move.', nd_end1: 'When it does move, I want it to be right.',
+  nr_lift1: 'The lift carries Nader and Tik up to the workshop roof.', nr_lift2: 'The capital is frozen, and a man in a purple coat stands on top of the tower.', nr_lift3: 'Six faint points on the map of time… the nearest glows: the Moment Market.',
+  nr_lift4: 'End of stage 1 · Stage 2 (the Moment Market) comes in the next batch.'
+});
+
+/* ---------- stage registry and loader ---------- */
+const STAGES = {
+  lab: { id: 'lab', slot: 'lab', theme: 'kingdom', w: 280, h: 26, build: function () { buildLab(); labPows(); } },
+  s1: { id: 's1', slot: 'main', theme: 'workshop', w: 261, h: 26, build: function () { buildS1(); }, restore: function () { restoreS1(); } }
+};
+function setStageSize(w, h) {
+  LW = w; LH = h; Level.w = w; Level.h = h;
+  if (Level.grid.length !== w * h) { Level.grid = new Uint8Array(w * h); Level.hid = new Uint8Array(w * h); }
+}
+function resetLevelState() {
+  Level.ver++;                                                       // the cached ground blocks (see drawTiles) are rebuilt for the new layout
+  Level.grid.fill(0); Level.hid.fill(0);
+  Level.ents.length = 0; Level.signs.length = 0; Level.clocks.length = 0; Level.doors.length = 0; Level.deco.length = 0; Level.trig.length = 0; Level.flags = {};
+  Level.dOpen = [false, false, false, false]; Level.doorOpen = false; Level.doorAnim = 0; Level.S1 = null;
+  Level.boss = null; Level.lostN = 0; Level.lostTotal = 0; Level.gateShut = false; Level.gateAnim = 0; Level.bossDown = false; Level.fwalls.length = 0; Level.cine = false;
+  Level.spawn = { x: 4.5 * U, y: G * U };
+  Talk.reset(); Tik.reset(); Cine.reset(); Pow.reset();
+}
+function buildLevel(id) {
+  const st = STAGES[id || Level.stage] || STAGES.lab;
+  Level.stage = st.id; setStageSize(st.w, st.h); resetLevelState();
+  st.build();
+  for (let i = 0; i < Level.ents.length; i++) Level.ents[i].uid = i;          // stable ids, used by the save file
+  applyTheme(st.theme);
+}
+function applyTheme(name) {
+  if (BG.theme === name) return;
+  BG.theme = name; buildAtlas(); buildBackgrounds(); BGS.key = -1; Chunks.map.clear();
+}
+function slotOf(id) { return (STAGES[id] || STAGES.s1).slot === 'lab' ? 'lab' : 'progress'; }
+
+/* ---------- dialogue box and full-screen story cards ----------
+   Nobody has a voice in this game, so every speaker gets a small "speech effect" instead: the text types itself out, each letter group plays a short blip
+   (a different timbre per speaker: Nader a soft watch tone, Tik a chirp, the Mother Clock a low gong tap, narration a typewriter tick), and the speaker
+   shows talk marks in the world while the line is being typed. A tap completes the line; a second tap moves on. */
+const SPEAK = {
+  nader: { snd: 'blipN', cps: 30, every: 2 }, tik: { snd: 'blipT', cps: 38, every: 2 },
+  master: { snd: 'blipM', cps: 22, every: 3 }, narr: { snd: 'blipS', cps: 34, every: 3 }
+};
+const Talk = {
+  q: [], cur: null, t: 0, dur: 0, type: 0, active: false, done: null, mode: 'box', el: null, who: null, txt: null, full: '', shown: 0, spk: SPEAK.narr, blipN: 0,
+  init() {
+    this.el = $('#talk'); this.who = $('#talk-who'); this.txt = $('#talk-text');
+    const self = this; this.el.addEventListener('pointerdown', function (e) { e.stopPropagation(); self.advance(); });
+  },
+  reset() { this.q.length = 0; this.cur = null; this.active = false; this.done = null; this.full = ''; this.shown = 0; if (this.el) this.el.className = ''; },
+  say(lines, done) { this.start(lines, done, 'box'); },
+  card(lines, done) { this.start(lines, done, 'card'); },
+  start(lines, done, mode) {
+    if (this.active) { for (let i = 0; i < lines.length; i++) this.q.push(lines[i]); return; }
+    this.q = lines.slice(); this.done = done || null; this.mode = mode; this.active = true;
+    this.next();
+  },
+  next() {
+    const L = this.q.shift();
+    if (!L) { this.close(); return; }
+    this.cur = L; this.t = 0;
+    const txt = t(L.k); this.full = txt; this.shown = 0; this.spk = SPEAK[L.w || 'narr'] || SPEAK.narr; this.blipN = 0;
+    this.type = txt.length / this.spk.cps;
+    this.dur = this.type + (this.mode === 'card' ? clamp(1.3 + txt.length * 0.03, 1.8, 5) : clamp(1.0 + txt.length * 0.03, 1.6, 4.5));
+    this.who.textContent = L.w && L.w !== 'narr' ? t('sp_' + L.w) : ''; this.who.className = 'w-' + (L.w || 'narr');
+    this.txt.textContent = '';
+    this.el.className = (this.mode === 'card' ? 'card on' : 'on');
+  },
+  talking(w) { return this.active && !!this.cur && (this.cur.w || 'narr') === w && this.shown < this.full.length; },
+  finishType() { this.shown = this.full.length; this.txt.textContent = this.full; if (this.t < this.type) this.t = this.type; },
+  close() {
+    this.active = false; this.cur = null; this.el.className = '';
+    Input.consume('jump'); Input.consume('interact'); Input.consume('attack');
+    const d = this.done; this.done = null; if (d) d();
+  },
+  abort() {                                                          // a skipped cutscene: drop everything quietly (the callback is not run)
+    this.q.length = 0; this.done = null; this.active = false; this.cur = null; this.full = ''; this.shown = 0; this.el.className = '';
+    Input.consume('jump'); Input.consume('interact'); Input.consume('attack');
+  },
+  advance() {
+    if (!this.active || this.t < 0.12) return;
+    if (this.shown < this.full.length) this.finishType(); else this.next();
+  },
+  update(dt) {
+    if (!this.active) return;
+    this.t += dt; P.inv = Math.max(P.inv, 0.3);
+    if (this.shown < this.full.length) {
+      const n = Math.min(this.full.length, Math.floor(this.t * this.spk.cps));
+      if (n > this.shown) {
+        const prev = this.shown; this.shown = n; this.txt.textContent = this.full.slice(0, n);
+        for (let i = prev; i < n; i++) {                              // one blip per few letters, never for spaces or punctuation, at most one per frame
+          if (/[\s.,!?؟،…:\-]/.test(this.full.charAt(i))) continue;
+          if ((this.blipN++ % this.spk.every) === 0) { Snd.play(this.spk.snd); break; }
+        }
+      }
+    }
+    if (this.t > 0.2 && (Input.peek('jump', 0.2) || Input.peek('interact', 0.2) || Input.peek('attack', 0.2))) {
+      Input.consume('jump'); Input.consume('interact'); Input.consume('attack'); this.advance(); return;
+    }
+    if (this.t >= this.dur) this.next();
+  }
+};
+
+/* ---------- cutscenes: black bars, a camera that can look at something else, and a script of steps ----------
+   Steps: ['say', lines] ['card', lines] ['wait', seconds] ['do', fn] ['cam', x, y] ['uncam'].  A cutscene can be skipped with the button
+   (every 'do' still runs, so the world ends up in the same state; only the talking and the waiting are dropped). */
+const Cine = {
+  on: false, steps: [], i: 0, wait: 0, hold: false, skipping: false, done: null, top: null, bot: null, btn: null, bars: true, canSkip: true,
+  init() {
+    this.top = $('#cine-t'); this.bot = $('#cine-b'); this.btn = $('#cine-skip');
+    const self = this; this.btn.addEventListener('pointerdown', function (e) { e.stopPropagation(); e.preventDefault(); self.skip(); });
+  },
+  reset() { this.on = false; this.steps.length = 0; this.hold = false; this.wait = 0; this.done = null; Cam.focus = null; Level.cine = false; if (this.top) this.show(false); },
+  show(v) {
+    const b = v && this.bars;
+    this.top.className = b ? 'on' : ''; this.bot.className = b ? 'on' : ''; this.btn.className = v && this.canSkip ? 'on' : '';
+  },
+  run(steps, done, opt) {
+    this.steps = steps.slice(); this.i = 0; this.wait = 0; this.hold = false; this.skipping = false; this.done = done || null; this.on = true;
+    this.bars = !opt || opt.bars !== false; this.canSkip = !opt || opt.skip !== false;
+    Level.cine = true; this.show(true); this.advance();
+  },
+  advance() {
+    const self = this;
+    while (this.on && !this.hold && this.wait <= 0) {
+      const s = this.steps[this.i++];
+      if (!s) { this.finish(); return; }
+      switch (s[0]) {
+        case 'wait': this.wait = this.skipping ? 0 : s[1]; break;
+        case 'do': s[1](); break;
+        case 'cam': Cam.focus = { x: s[1], y: s[2] }; break;
+        case 'uncam': Cam.focus = null; break;
+        case 'say': case 'card':
+          if (this.skipping) break;
+          this.hold = true; Talk[s[0] === 'say' ? 'say' : 'card'](s[1], function () { self.hold = false; });
+          break;
+      }
+    }
+  },
+  update(dt) {
+    if (!this.on) return;
+    P.inv = Math.max(P.inv, 0.3);
+    if (this.wait > 0) this.wait -= dt;
+    if (!this.hold && this.wait <= 0) this.advance();
+  },
+  skip() {
+    if (!this.on || !this.canSkip) return;
+    this.skipping = true; this.wait = 0; this.hold = false; Talk.abort(); this.advance();
+  },
+  finish() {
+    this.on = false; Cam.focus = null; this.show(false); Level.cine = false;
+    const d = this.done; this.done = null; if (d) d();
+  }
+};
+
+/* ---------- Tik: a small copper drone ball — a sphere with a clock-dial lens and a propeller on top. It flies beside Nader, scans things and speaks in short bubbles ---------- */
+const Tik = {
+  on: false, x: 0, y: 0, vx: 0, face: 1, t: 0, glow: 0, mode: 'follow', scanE: null, scanT: 0, bub: null, y0: 0, riseT: 0, look: null,
+  reset() { this.on = false; this.mode = 'follow'; this.scanE = null; this.bub = null; this.glow = 0; this.look = null; this.vx = 0; },
+  wake(x, y, rise) {
+    this.on = true; this.x = x; this.y = y; this.glow = 1; this.face = 1; this.vx = 0; this.look = null;
+    if (rise) { this.mode = 'rise'; this.riseT = 0; this.y0 = y; Snd.play('rotor', 0, x); } else this.mode = 'follow';
+    FX.ring(x, y, 50, 2, 0.6); FX.sparks(x, y, 10, 2);
+  },
+  say(key, dur) { if (!this.on) return; this.bub = { k: key, t: 0, dur: dur || 3.4 }; },
+  update(dt) {
+    if (!this.on) return;
+    this.t += dt; if (this.glow > 0) this.glow = Math.max(0, this.glow - dt * 0.8);
+    const px = this.x;
+    if (this.mode === 'rise') {                                      // lifts out of the chest, spinning up
+      this.riseT += dt; const k = Math.min(1, this.riseT / 1.5), e = k * k * (3 - 2 * k);
+      this.y = this.y0 - e * 2.3 * U; this.face = P.x >= this.x ? 1 : -1; this.glow = Math.max(this.glow, 0.5);
+      this.vx = 0; if (this.bub) { this.bub.t += dt; if (this.bub.t > this.bub.dur) this.bub = null; }
+      return;
+    }
+    let tx, ty;
+    if (this.mode === 'look' && this.look) {                         // hovers in front of something and reads it
+      tx = this.look.x - 1.7 * U; ty = this.look.y - 3.0 * U + Math.sin(this.t * 7) * 4; this.glow = 1;
+    } else if (this.mode === 'scan' && this.scanE) {
+      tx = this.scanE.x; ty = this.scanE.y - 1.5 * U + Math.sin(this.t * 9) * 4; this.scanT += dt; this.glow = 1;
+      if (this.scanT > 0.4 && ((this.scanT * 12) | 0) !== (((this.scanT - dt) * 12) | 0)) FX.sparks(this.scanE.x, this.scanE.y - 10, 2, 2);
+      if (this.scanT >= 1.7) finishScan(this.scanE);
+    } else { tx = P.x - P.dir * 1.15 * U; ty = P.y - 1.85 * U; }
+    const d = Math.hypot(tx - this.x, ty - this.y);
+    if (d > 16 * U) { this.x = tx; this.y = ty; } else { const k = 1 - Math.exp(-(this.mode === 'scan' || this.mode === 'look' ? 7 : 4.5) * dt); this.x += (tx - this.x) * k; this.y += (ty - this.y) * k; }
+    this.vx += ((this.x - px) / Math.max(dt, 0.001) - this.vx) * Math.min(1, dt * 10);
+    if (this.mode === 'look' && this.look) this.face = this.look.x > this.x ? 1 : -1;
+    else if (Math.abs(tx - this.x) > 6) this.face = tx > this.x ? 1 : -1; else this.face = this.mode === 'scan' ? (this.scanE.x > this.x ? 1 : -1) : P.dir;
+    if (this.bub) { this.bub.t += dt; if (this.bub.t > this.bub.dur) this.bub = null; }
+  }
+};
+function drawTikBubble(c) {
+  const b = Tik.bub; if (!b || !Tik.on) return;
+  const a = Math.min(1, b.t / 0.2, (b.dur - b.t) / 0.4);
+  drawSpeech(c, Tik.x, Tik.y - 62, t(b.k), Math.max(0, a));
+}
+
+/* ---------- doors (stage doors use tile codes 9..12) ---------- */
+function addDoor(id, tx, ty0, rows) {
+  Level.doors[id] = { id: id, tx: tx, ty: ty0, rows: rows, a: 0 };
+  fill(tx, 0, tx + 1, ty0, 1);                                                 // a wall above the door, so it cannot be jumped over
+  fill(tx, ty0, tx + 1, ty0 + rows, 9 + id);
+}
+function openDoor(id) {
+  if (Level.dOpen[id]) return;
+  Level.dOpen[id] = true; const d = Level.doors[id];
+  Snd.play('door', 0, d.tx * U + U / 2); FX.dust(d.tx * U + U / 2, (d.ty + 1) * U, 10, 0); Cam.shake(3, 0.2);
+}
+function drawStageDoors(c, cx) {
+  const A = Atlas.cv, vw = Game.viewW;
+  for (let i = 0; i < Level.doors.length; i++) {
+    const d = Level.doors[i]; if (!d) continue;
+    const dx = d.tx * U, dy = d.ty * U, h = d.rows * U;
+    if (dx + U < cx - 20 || dx > cx + vw + 20) continue;
+    c.save(); c.beginPath(); c.rect(dx, dy, U, h); c.clip();
+    const lift = d.a * (h - 0.2 * U);
+    for (let k = 0; k < d.rows; k++) c.drawImage(A, 8 * TS, 0, TS, TS, dx, dy + k * U - lift, U + 1, U + 1);
+    c.restore();
+    c.fillStyle = '#b88a3b'; c.fillRect(dx - 4, dy - 8, U + 8, 8); c.fillStyle = '#1b222d'; c.fillRect(dx - 4, dy - 8, U + 8, 3);
+  }
+}
+
+/* ---------- tool platforms: things frozen in the air whose tiles are solid / one-way but are drawn as the object itself ---------- */
+function toolTiles(kind, tx, ty, wT, hT) {
+  const ow = kind !== 'crate';
+  for (let y = ty; y < ty + hT; y++) for (let x = tx; x < tx + wT; x++) { Level.grid[y * LW + x] = ow ? 2 : 1; Level.hid[y * LW + x] = 1; }
+  const x0 = tx * U, y0 = ty * U, w = wT * U, h = hT * U;
+  if (kind === 'wrench') addDeco(x0 - 10, y0 - 24, x0 + w + 10, y0 + h + 24, function (c) { pWrench(c, x0, y0, w, h); });
+  else if (kind === 'nail') addDeco(x0 - 10, y0 - 24, x0 + w + 10, y0 + h + 24, function (c) { pNail(c, x0, y0, w, h); });
+  else if (kind === 'crate') addDeco(x0 - 4, y0 - 4, x0 + w + 4, y0 + h + 4, function (c) { pCrate(c, x0, y0, w, h); });
+  else if (kind === 'wheel') { const R = 1.6 * U; addDeco(x0 + w / 2 - R - 12, y0 - 12, x0 + w / 2 + R + 12, y0 + 2 * R + 12, function (c) { pBigGear(c, x0 + w / 2, y0 + R - 2, R); }); }
+}
+function shelfLedge(tx, ty, wT) {                                  // a visible wooden shelf board with things on it
+  fill(tx, ty, tx + wT, ty + 1, 2);
+  addDeco(tx * U, ty * U - 70, (tx + wT) * U, ty * U + 2 * U, function (c) { pShelfUnit(c, tx * U, ty * U, wT * U, false); });
+}
+
+/* ---------- the pieces of stage 1 ---------- */
+function mkSaw(ax, bx, speed) { return { t: 'saw', x: ax * U, y: G * U, ax: ax * U, bx: bx * U, dir: 1, v: speed * U, r: 40, rot: 0 }; }
+function mkGear(tx, rowsUp) { return { t: 'gear', x: tx * U + U / 2, y: G * U - rowsUp * U, ph: tx * 0.7, got: false }; }
+function mkClue(key, tx, y, after) { return { t: 'clue', x: tx * U + U / 2, y: y, key: key, got: false, after: !!after }; }
+
+function buildS1() {
+  const S1 = Level.S1 = { chest: null, machine: null, scan: null, levers: [], lift: null, master: null, pgear: null };
+  Level.spawn = { x: 4.5 * U, y: G * U };
+  const LWc = LW;
+  fill(0, 0, 1, LH, 1); fill(LWc - 1, 0, LWc, LH, 1);                                   // outer walls
+  /* ===== A. the learning hall (columns 1..110) ===== */
+  fill(1, G, 34, LH, 1);                                                                 // floor 1..33
+  fill(37, G, 42, LH, 1);                                                                // gap of 3, floor 37..41
+  fill(46, G, 51, LH, 1);                                                                // gap of 4, floor 46..50
+  fill(71, G, 112, LH, 1);                                                               // the floor after the tool bridge
+  /* the frozen-tool bridge over the void: wrench, nail, iron wheel (all hang in the air) */
+  toolTiles('wrench', 53, G - 1, 5, 1); toolTiles('nail', 60, G - 2, 4, 1); toolTiles('wheel', 67, G - 1, 2, 1);
+  toolTiles('wrench', 62, G - 5, 4, 1);                                                  // the high wrench: a lost minute lies on it
+  /* training pieces before the first gap: a crate to climb, barrels and a dummy to hit */
+  toolTiles('crate', 24, G - 2, 3, 2);
+  Level.ents.push({ t: 'barrel', x: 14 * U + U / 2, y: G * U, hp: 3, shake: 0, flash: 0, lastAtk: 0, dead: false });
+  Level.ents.push({ t: 'barrel', x: 16 * U + U / 2, y: G * U, hp: 3, shake: 0, flash: 0, lastAtk: 0, dead: false });
+  Level.ents.push({ t: 'dummy', x: 20 * U + U / 2, y: G * U, shake: 0, flash: 0, lean: 1, hits: 0, lastAtk: 0 });
+  /* the low tunnel: a short hop is needed to clear the spikes without hitting the ceiling */
+  fill(74, G - 9, 87, G - 5, 1);
+  fill(78, G - 1, 80, G, 3); fill(83, G - 1, 85, G, 3);
+  /* two slow saws in the floor */
+  Level.ents.push(mkSaw(90, 95, 2.1)); Level.ents.push(mkSaw(99, 104, 2.4));
+  /* props of the first hall */
+  addDeco(2 * U, (G - 5) * U, 6 * U + 60, G * U, function (c) { pWorkbench(c, 2 * U, G * U); });
+  addDeco(7.4 * U, (G - 4) * U, 11 * U, G * U, function (c) { pDrawers(c, 8 * U, G * U); });
+  addDeco(3 * U, (G - 7) * U, 5 * U, (G - 5) * U, function (c) { pLamp(c, 4.2 * U, (G - 6) * U); });
+  addDeco(12 * U, (G - 7) * U, 14 * U, (G - 5) * U, function (c) { pLamp(c, 13 * U, (G - 6) * U); });
+  addDeco(40 * U, (G - 8) * U, 42 * U, (G - 6) * U, function (c) { pLamp(c, 41 * U, (G - 7) * U); });
+  addDeco(88 * U, (G - 7) * U, 90 * U, (G - 5) * U, function (c) { pLamp(c, 89 * U, (G - 6) * U); });
+  addDeco(97 * U, (G - 7) * U, 99 * U, (G - 5) * U, function (c) { pLamp(c, 98 * U, (G - 6) * U); });
+  addDeco(88 * U, (G - 1) * U, 106 * U, G * U, function (c) { pOilStain(c, 92.5 * U, G * U, 60); pOilStain(c, 101 * U, G * U, 52); });
+  /* the chest with Tik inside, and the paper of repair no. 400 beside the key's drawer */
+  S1.chest = { t: 'chest', x: 13 * U + U / 2 + 0.01, y: G * U, open: 0, done: false }; S1.chest.x = 11.5 * U; Level.ents.push(S1.chest);
+  Level.ents.push(mkClue('c_400', 10, (G - 1.4) * U, false));
+  /* ===== B. the enemies' workshop (111..160) ===== */
+  fill(112, G, 154, LH, 1); fill(154, G, 161, LH, 1);
+  toolTiles('wrench', 124, G - 3, 5, 1); toolTiles('wheel', 131, G - 6, 2, 1);
+  shelfLedge(135, G - 9, 5);                                                             // the high shelf: lost minute and gears
+  addDeco(111 * U, (G - 5) * U, 117 * U, G * U, function (c) { pWorkbench(c, 112 * U, G * U); });
+  fill(142, G - 3, 150, G, 1); fill(143, G - 2, 149, G, 0);                              // a bunker with a cracked wall on its left side
+  const w1 = mkWall(142, G - 2, 2, { x0: 143 * U, y0: (G - 2) * U, x1: 149 * U, y1: G * U }); fill(142, G - 2, 143, G, 6); Level.ents.push(w1);
+  Level.ents.push(mkRoach(118, 114, 121)); Level.ents.push(mkRat(129, 126, 133)); Level.ents.push(mkRoach(154, 152, 158));
+  addDeco(118 * U, (G - 7) * U, 120 * U, (G - 5) * U, function (c) { pLamp(c, 119 * U, (G - 6) * U); });
+  addDeco(138 * U, (G - 12) * U, 141 * U, (G - 10) * U, function (c) { pLamp(c, 139.5 * U, (G - 11) * U); });
+  /* ===== C. the frozen pit, the machine door, the three levers (161..212) ===== */
+  fill(161, G, 170, LH, 1);                                                              // floor 161..169
+  fill(170, G + 4, 178, LH, 1);                                                          // the pit: 8 wide, 4 deep
+  toolTiles('wrench', 170, G + 2, 3, 1); toolTiles('wrench', 175, G + 2, 3, 1);          // two frozen tools on its walls: the way back up
+  fill(178, G, 213, LH, 1);                                                              // floor 178..212
+  S1.scan = { t: 'scan', x: 174 * U + U / 2, y: (G + 4) * U, done: false }; Level.ents.push(S1.scan);
+  S1.machine = { t: 'machine', x: 183 * U + U / 2, y: G * U, done: false, spin: 0, timer: 0 }; Level.ents.push(S1.machine);
+  addDoor(0, 187, G - 4, 4);                                                             // door 0: the machine opens it
+  [191, 195, 199].forEach(function (tx, i) { const lv = { t: 'lever', x: tx * U + U / 2, y: G * U, on: false, anim: 0, puz: i }; S1.levers.push(lv); Level.ents.push(lv); });
+  addDeco(191.7 * U, (G - 6.4) * U, 197 * U, (G - 3.4) * U, function (c) { pPanel(c, 192.2 * U, (G - 3.5) * U + 0 * U + 0); });
+  addDoor(1, 208, G - 4, 4);                                                             // door 1: the levers open it
+  toolTiles('crate', 202, G - 2, 2, 2); toolTiles('crate', 204, G - 1, 1, 1); shelfLedge(197, G - 5, 5);                       // a crate and a shelf: the secret clue is up there
+  Level.ents.push(mkClue('c_secret', 199, (G - 5) * U - 0.9 * U, false));
+  addDeco(165 * U, (G - 7) * U, 167 * U, (G - 5) * U, function (c) { pLamp(c, 166 * U, (G - 6) * U); });
+  addDeco(181 * U, (G - 7) * U, 183 * U, (G - 5) * U, function (c) { pLamp(c, 182 * U, (G - 6) * U); });
+  fill(193, G - 8, 197, G - 7, 2);                                                       // a high wooden ledge above the carvings: Tik's hidden minute is up there
+  addDeco(189 * U, (G - 9) * U, 191 * U, (G - 7) * U, function (c) { pLamp(c, 190 * U, (G - 8) * U); });
+  /* ===== D/E. before the hall, the hall itself, and the alcove with the lift (213..260) ===== */
+  fill(213, G, 252, LH, 1);                                                              // the floor continues under the hall
+  setArena(214, 251); buildArena();
+  fill(AR.gate, 0, AR.gate + 1, G - 6, 1);                                               // walls above the hall's gate and its exit door
+  addDeco(AR.gate * U, (G - 14) * U, AR.end * U, G * U, function (c) { pBigClock(c, (AR.x0 + 18) * U, (G - 9.5) * U, 2.3 * U); });
+  fill(252, G, LWc - 1, LH, 1);                                                          // the alcove floor
+  addDoor(2, 251, G - 6, 6);                                                             // door 2: opens when the boss is down
+  Level.dOpen[2] = false;
+  S1.lift = { t: 'lift', x: 258.4 * U, y: G * U, lift: 0, state: 'idle', ready: false, t0: 0 }; Level.ents.push(S1.lift);
+  Level.ents.push(mkClue('c_log', 253, (G - 1.2) * U, true));
+  /* ===== signs ===== */
+  [[4, 'sg_start', 2.6], [12.5, 'sg_chest', 3.6], [111.5, 'sg_pow', 5.0], [18, 'sg_steps', 3.2], [27, 'sg_tools', 5.6], [37.5, 'sg_run', 3.5], [56, 'sg_tools', 4.0], [74, 'sg_tunnel', 3.2], [88, 'sg_saw', 3.3],
+   [114, 'sg_bench', 3.5], [127, 'sg_rat', 4.1], [140.5, 'sg_wall', 3.0], [165, 'sg_scan', 3.6], [181, 'sg_machine', 3.6], [192, 'sg_levers', 3.6], [209.4, 'sg_hall', 3.6]]
+    .forEach(function (s) { Level.signs.push({ x: s[0] * U + U / 2, h: s[2] * U, key: s[1] }); });
+  /* ===== save clocks: after the learning hall, before the pit, before the hall ===== */
+  [108, 160, 212].forEach(function (tx, i) { const c = { t: 'clock', id: i, x: tx * U + U / 2, y: G * U, wind: 0 }; Level.ents.push(c); Level.clocks.push(c); });
+  /* ===== lost minutes: a high wrench, a high shelf, a cracked wall, a Tik find, the hall's left shelf ===== */
+  const lm = [mkLost(63.5 * U, (G - 5) * U - 0.95 * U, 'far'), mkLost(137 * U, (G - 9) * U - 0.95 * U, 'far'), mkLost(146 * U, G * U - 0.9 * U, 'wall'),
+    mkLost(195 * U, (G - 8) * U - 0.95 * U, 'tik'), mkLost((AR.shelves[0][0] + 2.5) * U, (G - 5) * U - 0.95 * U, 'far')];
+  lm[2].room = w1; lm.forEach(function (m) { Level.ents.push(m); }); Level.lostTotal = lm.length;
+  /* ===== gears (the lift needs three; the rest are the currency) ===== */
+  [[9, 0.6], [18, 0.6], [22, 0.6], [28, 3.8], [30, 3.8], [39.5, 0.8], [44, 3.2], [48, 0.8], [55, 2.2], [62, 2.2], [69, 1.9], [63.5, 5.8], [76, 0.7], [81, 0.7], [86, 0.7],
+   [92, 3.2], [101, 3.2], [105, 0.7], [116, 0.7], [126, 3.8], [132, 6.8], [137, 9.8], [138, 9.8], [144, 0.7], [147, 0.7], [157, 0.7], [165, 0.7], [172, -3.3], [176, -3.3],
+   [185, 0.7], [193, 0.7], [197, 0.7], [199, 5.8], [210, 0.7], [220, 0.7]].forEach(function (g) { Level.ents.push(mkGear(g[0], g[1])); });
+  arenaEnts();
+  /* ===== the Mother Clock (frozen), and the time-pieces: pushed after everything else so that older saves keep their entity ids ===== */
+  S1.master = { t: 'master', x: 255.5 * U, y: G * U, ph: 0, state: 'frozen', scan: 0, setK: 0, talk: 0 }; Level.ents.push(S1.master);
+  Level.ents.push(mkPow('blade', 113.5, 0)); Level.ents.push(mkPow('bell', 151, 0)); Level.ents.push(mkPow('sand', 210.5, 0));
+  /* ===== scripted beats ===== */
+  const T = function (flag, x0, x1, fn, tik) { Level.trig.push({ flag: flag, x0: x0 * U, x1: x1 * U, fn: fn, tik: !!tik }); };
+  T('opening', -1, 1e6, function () {
+    Cine.run([['card', [{ k: 'nr_open1' }, { k: 'nr_open2' }, { k: 'nr_open3' }, { k: 'nr_open3b' }, { k: 'nr_open4' }]]], null, { bars: false });
+  });
+  T('h_saw', 85, 100, function () { Tik.say('tk_saw'); }, true);
+  T('h_bench', 112, 122, function () { Tik.say('tk_bench'); }, true);
+  T('h_pit', 164, 169, function () { Tik.say('tk_pit'); }, true);
+  T('h_levers', 188, 193, function () { Tik.say('tk_levers'); }, true);
+  T('h_hall', 209, 213, function () { Tik.say('tk_hall'); }, true);
+  T('end', 253, 256, function () {
+    if (!Level.bossDown) return;
+    const M = S1.master;
+    Cine.run([
+      ['cam', M.x, M.y - 2.6 * U], ['wait', 0.9],
+      ['say', [{ w: 'narr', k: 'nr_end1' }]],
+      ['do', function () { Tik.mode = 'look'; Tik.look = { x: M.x, y: M.y - 3.4 * U }; M.state = 'scan'; Snd.play('rotor', 0, M.x); }],
+      ['say', [{ w: 'tik', k: 'tk_end0' }]], ['wait', 1.3],
+      ['say', [{ w: 'tik', k: 'tk_end2' }, { w: 'nader', k: 'nd_end0' }, { w: 'tik', k: 'tk_end3' }]],
+      ['do', function () { Tik.mode = 'follow'; Tik.look = null; M.state = 'frozen'; }],
+      ['say', [{ w: 'narr', k: 'nr_end2' }]],
+      ['do', function () { M.state = 'set'; Snd.play('ratchet', 0, M.x); }], ['wait', 2.2],
+      ['do', function () { M.state = 'done'; M.setK = 1; Snd.play('interact', 0, M.x); FX.ring(M.x, M.y - 3.8 * U, 80, 2, 0.7); FX.sparks(M.x, M.y - 3.8 * U, 12, 2); }], ['wait', 0.6],
+      ['say', [{ w: 'tik', k: 'tk_end1' }, { w: 'nader', k: 'nd_end1' }]],
+      ['wait', 0.4]
+    ], function () { snapshotProgress(); setTimeout(persist, 200); });
+  });
+}
+function restoreS1() {
+  const S1 = Level.S1, f = Level.flags;
+  if (f.machine) Level.dOpen[0] = true;                                   // a save made in the second between the event and the door opening still opens it
+  if (f.pzok) Level.dOpen[1] = true;
+  if (Level.bossDown) Level.dOpen[2] = true;
+  Level.doors.forEach(function (d) { d.a = Level.dOpen[d.id] ? 1 : 0; });
+  if (f.chest) { S1.chest.open = 1; S1.chest.done = true; Tik.on = true; Tik.x = P.x - 40; Tik.y = P.y - 90; }
+  if (f.scan) S1.scan.done = true;
+  if (f.scan && !f.keygear && !f.machine) spawnKeyGear();
+  if (f.machine) S1.machine.done = true;
+  if (f.end && S1.master) { S1.master.state = 'done'; S1.master.setK = 1; }
+  if (f.pzok) S1.levers.forEach(function (lv) { lv.on = true; lv.anim = 1; });
+  Level.ents.forEach(function (e) { if (e.t === 'clue' && f[e.key]) e.got = true; });
+}
+function spawnKeyGear() {
+  const sc = Level.S1.scan; if (Level.S1.pgear) return;
+  const g = { t: 'pgear', x: sc.x, y: sc.y - 0.9 * U, got: false }; Level.S1.pgear = g; g.uid = Level.ents.length; Level.ents.push(g);
+}
+
+/* ---------- interaction with the new pieces ---------- */
+const STAGE_INT = { chest: 1, scan: 1, machine: 1, lift: 1 };            // entity types that show the interaction prompt (when stageInteractable says so)
+function stageInteractable(e) {
+  switch (e.t) {
+    case 'chest': return !e.done;
+    case 'scan': return !e.done && Tik.mode !== 'scan';
+    case 'machine': return !e.done;
+    case 'lift': return Level.bossDown && e.state === 'idle';
+    case 'lever': return e.puz === undefined || (!Level.flags.pzok);
+  }
+  return false;
+}
+function activateStage(e) {
+  const f = Level.flags;
+  switch (e.t) {
+    case 'chest':
+      f.chest = true;
+      Cine.run([
+        ['cam', e.x, e.y - 1.6 * U], ['wait', 0.5],
+        ['say', [{ w: 'narr', k: 'nr_chest1' }]],
+        ['do', function () { e.done = true; Snd.play('interact', 0, e.x); Snd.play('door', 0, e.x); Cam.shake(3, 0.2); }], ['wait', 0.9],
+        ['do', function () { Tik.wake(e.x, e.y - 40, true); Snd.play('save', 0, e.x); }], ['wait', 1.7],
+        ['say', [{ w: 'tik', k: 'tk_wake1' }, { w: 'tik', k: 'tk_intro' }, { w: 'tik', k: 'tk_wake2' }, { w: 'tik', k: 'tk_wake2b' }, { w: 'tik', k: 'tk_wake3' }]],
+        ['do', function () { Tik.mode = 'follow'; }]
+      ], null);
+      break;
+    case 'scan':
+      if (!Tik.on) { Snd.play('deny'); UI.toast(t('m_need_tik')); break; }
+      Tik.mode = 'scan'; Tik.scanE = e; Tik.scanT = 0; Tik.say('tk_scan', 2.2); break;
+    case 'machine':
+      if (!f.keygear) { Snd.play('deny'); UI.toast(t('m_machine_need')); Tik.say('tk_machine'); break; }
+      f.keygear = false; f.machine = true; e.done = true; e.timer = 1.0; Snd.play('interact'); FX.sparks(e.x, e.y - 64, 12, 4); UI.toast(t('m_machine_ok'));
+      break;
+    case 'lift':
+      if (P.gears < 3) { Snd.play('deny'); UI.toast(t('m_lift_need', P.gears)); break; }
+      e.state = 'ride'; e.t0 = 0; Level.cine = true; Snd.play('door', 0, e.x); break;
+    case 'lever': puzzleLever(e); break;
+  }
+}
+function finishScan(e) {
+  Tik.mode = 'follow'; Tik.scanE = null; e.done = true; Level.flags.scan = true;
+  FX.ring(e.x, e.y - 20, 70, 2, 0.7); FX.sparks(e.x, e.y - 20, 14, 2); Snd.play('save', 0, e.x);
+  spawnKeyGear();
+}
+function puzzleLever(lv) {
+  const f = Level.flags; if (f.pzok) return;
+  if (lv.on) { Snd.play('deny'); return; }
+  lv.on = true; Snd.play('lever', 0, lv.x);
+  f.pz = (f.pz || '') + lv.puz;
+  const want = '120';                                            // triangle, square, circle: the order carved on the panel
+  if (f.pz !== want.slice(0, f.pz.length)) {
+    f.pz = ''; f.pzFails = (f.pzFails || 0) + 1;
+    Level.S1.levers.forEach(function (l) { l.on = false; });
+    Snd.play('deny'); UI.toast(t('m_puz_wrong')); if (f.pzFails >= 2) Tik.say('tk_wrong');
+  } else if (f.pz.length === 3) {
+    f.pzok = true; UI.toast(t('m_puz_ok')); Tik.say('tk_right'); setTimeout(function () { openDoor(1); }, 350);
+  }
+}
+
+/* ---------- per-step update of the stage (called from worldUpdate) ---------- */
+function stageUpdate(dt) {
+  for (let i = 0; i < Level.doors.length; i++) { const d = Level.doors[i]; if (d) d.a = approach(d.a, Level.dOpen[d.id] ? 1 : 0, dt / 0.8); }
+  Talk.update(dt); Cine.update(dt);
+  if (Level.stage === 'lab') return;
+  const f = Level.flags, on = live();
+  if (on) {
+    for (let i = 0; i < Level.trig.length; i++) {
+      const g = Level.trig[i];
+      if (!f[g.flag] && (!g.tik || Tik.on) && P.x >= g.x0 && P.x <= g.x1 && !Talk.active && !Level.cine) { f[g.flag] = true; g.fn(); }
+    }
+  }
+  const p = P;
+  for (let i = 0; i < Level.ents.length; i++) {
+    const e = Level.ents[i];
+    switch (e.t) {
+      case 'saw':
+        e.x += e.dir * e.v * dt; if (e.x >= e.bx) { e.x = e.bx; e.dir = -1; } else if (e.x <= e.ax) { e.x = e.ax; e.dir = 1; }
+        e.rot += dt * 9 * e.dir;
+        if (on && Math.abs(e.x - p.x) < 2 * U) {
+          if (circleHitsP(e.x, e.y + e.r * 0.1, e.r * 0.9)) hurtPlayer(e.x, 1);
+          if (((Game.time * 18) | 0) !== (((Game.time - dt) * 18) | 0) && Math.abs(e.x - p.x) < 5 * U) emit(PT.SPARK, e.x + e.dir * e.r * 0.7, e.y - 6, e.dir * rnd(40, 140), -rnd(60, 180), 0.25, rnd(4, 8), 4, 500);
+        }
+        break;
+      case 'chest': e.open = approach(e.open, e.done ? 1 : 0, dt / 0.5); break;
+      case 'master':
+        e.ph += dt; e.talk = approach(e.talk, Talk.talking('master') ? 1 : 0, dt * 6);
+        e.scan = approach(e.scan, e.state === 'scan' ? 1 : 0, dt * 2);
+        if (e.state === 'set') e.setK = Math.min(0.96, e.setK + dt / 2.3);
+        break;
+      case 'machine':
+        if (e.done) { e.spin += dt * 2.2; if (e.timer > 0) { e.timer -= dt; if (e.timer <= 0) openDoor(0); } }
+        break;
+      case 'pgear':
+        if (e.got) break;
+        if (Math.abs(e.x - p.x) < 0.9 * U && Math.abs(e.y - (p.y - 0.55 * U)) < 1.1 * U) {
+          e.got = true; f.keygear = true; Snd.play('pickup', 0, e.x); FX.sparks(e.x, e.y, 10, 2); UI.toast(t('m_keygear'));
+        }
+        break;
+      case 'clue':
+        if (e.got || (e.after && !Level.bossDown)) break;
+        if (Math.abs(e.x - p.x) < 0.9 * U && Math.abs(e.y - (p.y - 0.55 * U)) < 1.2 * U) {
+          e.got = true; f[e.key] = true; Snd.play('pickup', 0, e.x); FX.sparks(e.x, e.y, 8, 4); FX.ring(e.x, e.y, 40, 2, 0.5); UI.toast(t('m_clue', t('clue_' + e.key)), 3200);
+        }
+        break;
+      case 'lift':
+        e.ready = P.gears >= 3;
+        if (e.state === 'ride') {
+          e.t0 += dt;
+          const k = clamp(e.t0 / 2.6, 0, 1), eased = k * k * (3 - 2 * k);
+          e.lift = eased * 9 * U;
+          p.x = e.x; p.y = e.y - e.lift; p.vx = 0; p.vy = 0; p.noGrav = true; p.state = 'idle'; p.landT = 0; p.onGround = true; p.idleT = 0;
+          if (!e.cut && e.t0 > 1.6) { e.cut = true; Game.fadeTo(1, 1.0, function () { endStage1(); }); }
+          if (((e.t0 * 10) | 0) !== (((e.t0 - dt) * 10) | 0)) emit(PT.SQ, e.x + rnd(-30, 30), e.y - e.lift + 4, rnd(-20, 20), rnd(60, 140), 0.5, rnd(3, 6), 0, 0);
+        }
+        break;
+    }
+  }
+  Tik.update(dt);
+  if (Level.bossDown && Level.doors[2] && !Level.dOpen[2]) openDoor(2);
+}
+function endStage1() {
+  const lift = Level.S1.lift; Game.fade.a = 1;
+  S.done = S.done || {}; S.done.s1 = true; persist();
+  Cine.run([['card', [{ k: 'nr_lift1' }, { k: 'nr_lift2' }, { k: 'nr_lift3' }, { k: 'nr_lift4' }]]], function () { lift.state = 'idle'; P.noGrav = false; toMenu(); }, { bars: false, skip: false });
+}
+
+/* ---------- drawing hooks for the new entity types ---------- */
+function drawStageEnt(c, e) {
+  switch (e.t) {
+    case 'saw': drawSaw(c, e); break;
+    case 'chest': drawChest(c, e); break;
+    case 'machine': drawMachine(c, e); break;
+    case 'scan': drawScanSpot(c, e); break;
+    case 'pgear': drawKeyGear(c, e); break;
+    case 'lift': drawLift(c, e); break;
+    case 'master': drawMaster(c, e); break;
+    case 'pow': drawPow(c, e); break;
+    case 'clue':
+      if (e.got || (e.after && !Level.bossDown)) break;
+      { const bob = Math.sin(Game.time * 3 + e.x) * 4;
+        c.fillStyle = 'rgba(47,214,196,0.2)'; c.beginPath(); c.arc(e.x, e.y + bob, 22, 0, 6.3); c.fill();
+        c.save(); c.translate(e.x, e.y + bob); c.rotate(-0.08); c.fillStyle = '#d9cba6'; c.fillRect(-12, -15, 24, 30); c.strokeStyle = '#2b2433'; c.lineWidth = 2; c.strokeRect(-12, -15, 24, 30);
+        c.fillStyle = '#7a1f1a'; c.fillRect(-7, -9, 14, 3); c.fillRect(-7, -3, 10, 2); c.fillRect(-7, 2, 12, 2); c.restore(); }
+      break;
+  }
+}
+/* ---------- 13d. time-pieces: temporary powers shaped like things that measure time ----------
+   Three of them, each lasting a few seconds and shown as a small icon with a shrinking bar beside the hearts:
+     blade  (the minute hand)  : the hammer gets a brass blade — longer reach (x1.55) and +1 damage
+     sand   (the hourglass)    : time runs slow for the enemies, the boss, their bubbles and the falling tools (x0.4); Nader is not slowed
+     bell   (the alarm clock)  : every swing also throws a ringing wave that flies forward and hurts the first thing it meets
+   They are picked up from the floor (entity type 'pow'); they are not saved, they come back after a death or a restart. The boss drops one when his arm breaks. */
+Object.assign(STR.ar, {
+  pw_blade: 'عقرب الدقائق', pw_sand: 'الساعة الرملية', pw_bell: 'المنبّه',
+  pw_get_blade: 'عقرب الدقائق · ضرباتك أطول وأقوى (%s ث)', pw_get_sand: 'الساعة الرملية · الأعداء والزعيم أبطأ (%s ث)', pw_get_bell: 'المنبّه · كل ضربة تطلق موجة رنين (%s ث)',
+  pw_end: 'انتهى مفعول %s', cine_skip: 'تخطّي', sg_pow_lab: 'ساعات زمنية: قدرات مؤقتة'
+});
+Object.assign(STR.en, {
+  pw_blade: 'Minute hand', pw_sand: 'Hourglass', pw_bell: 'Alarm clock',
+  pw_get_blade: 'Minute hand · longer, stronger swings (%s s)', pw_get_sand: 'Hourglass · enemies and the boss slow down (%s s)', pw_get_bell: 'Alarm clock · every swing throws a ringing wave (%s s)',
+  pw_end: '%s has run out', cine_skip: 'Skip', sg_pow_lab: 'Time-pieces: temporary powers'
+});
+
+const POW = {
+  blade: { dur: 18, rgb: '230,192,106', spr: null },
+  sand: { dur: 10, rgb: '127,216,255', spr: null },
+  bell: { dur: 15, rgb: '255,179,71', spr: null }
+};
+const POWK = ['blade', 'sand', 'bell'];
+function mkPow(kind, tx, up) { return { t: 'pow', kind: kind, x: tx * U + U / 2, y: G * U - (up || 0) * U - 1.0 * U, got: false, ph: Math.random() * 6 }; }
+function labPows() {                                              // the movement lab gets them too, so they can be tried without playing stage 1
+  Level.ents.push(mkPow('blade', 7, 0)); Level.ents.push(mkPow('bell', 176, 0)); Level.ents.push(mkPow('sand', 233, 0));
+  Level.signs.push({ x: 7.5 * U, h: 3.2 * U, key: 'sg_pow_lab' });
+}
+
+/* the pictures: drawn once into 64 x 64 canvases, used by the pickups in the world and by the small icons of the HUD */
+function powSprite(kind) {
+  const d = POW[kind]; if (d.spr) return d.spr;
+  const cv = document.createElement('canvas'); cv.width = 64; cv.height = 64;
+  const c = cv.getContext('2d'); c.translate(32, 32); c.lineJoin = 'round'; c.lineCap = 'round';
+  const IN = '#1a1620', BR = '#b88a3b', BL = '#e6c06a';
+  if (kind === 'blade') {                                          // a clock face with a long brass minute hand over it
+    c.fillStyle = '#1b1a24'; c.beginPath(); c.arc(0, 0, 27, 0, 6.3); c.fill(); c.strokeStyle = BR; c.lineWidth = 3.5; c.stroke();
+    c.strokeStyle = 'rgba(230,192,106,0.55)'; c.lineWidth = 2;
+    for (let i = 0; i < 12; i++) { const a = i / 12 * 6.2832; c.beginPath(); c.moveTo(Math.sin(a) * 23, -Math.cos(a) * 23); c.lineTo(Math.sin(a) * 19.5, -Math.cos(a) * 19.5); c.stroke(); }
+    c.save(); c.rotate(0.7);
+    c.fillStyle = BL; c.strokeStyle = IN; c.lineWidth = 2;
+    c.beginPath(); c.moveTo(0, -30); c.lineTo(5.5, -19); c.lineTo(2, -16); c.lineTo(3, 8); c.lineTo(-3, 8); c.lineTo(-2, -16); c.lineTo(-5.5, -19); c.closePath(); c.fill(); c.stroke();
+    c.restore();
+    c.fillStyle = BR; c.beginPath(); c.arc(0, 0, 5.5, 0, 6.3); c.fill(); c.stroke(); c.fillStyle = IN; c.beginPath(); c.arc(0, 0, 1.8, 0, 6.3); c.fill();
+  } else if (kind === 'sand') {                                    // an hourglass in a brass frame
+    c.fillStyle = 'rgba(190,235,255,0.22)'; c.strokeStyle = '#bfe9ff'; c.lineWidth = 2;
+    c.beginPath(); c.moveTo(-12, -22); c.lineTo(12, -22); c.lineTo(2.5, -1); c.lineTo(12, 22); c.lineTo(-12, 22); c.lineTo(-2.5, -1); c.closePath(); c.fill(); c.stroke();
+    c.fillStyle = '#e8c26a'; c.beginPath(); c.moveTo(-7, -11); c.lineTo(7, -11); c.lineTo(1.6, -2); c.lineTo(-1.6, -2); c.closePath(); c.fill();
+    c.beginPath(); c.moveTo(-10, 21); c.lineTo(10, 21); c.lineTo(0, 9); c.closePath(); c.fill();
+    c.strokeStyle = '#e8c26a'; c.lineWidth = 1.6; c.beginPath(); c.moveTo(0, -2); c.lineTo(0, 10); c.stroke();
+    c.strokeStyle = BR; c.lineWidth = 3; c.beginPath(); c.moveTo(-14, -24); c.lineTo(-14, 24); c.moveTo(14, -24); c.lineTo(14, 24); c.stroke();
+    c.fillStyle = BR; c.strokeStyle = IN; c.lineWidth = 2; c.fillRect(-17, -29, 34, 6); c.strokeRect(-17, -29, 34, 6); c.fillRect(-17, 23, 34, 6); c.strokeRect(-17, 23, 34, 6);
+  } else {                                                         // an alarm clock: two bells on top, a hammer between them, two small feet
+    c.fillStyle = BL; c.strokeStyle = IN; c.lineWidth = 2.2;
+    c.beginPath(); c.arc(-13, -15, 9, 3.14, 6.28); c.closePath(); c.fill(); c.stroke();
+    c.beginPath(); c.arc(13, -15, 9, 3.14, 6.28); c.closePath(); c.fill(); c.stroke();
+    c.strokeStyle = IN; c.lineWidth = 3; c.beginPath(); c.moveTo(0, -17); c.lineTo(0, -26); c.stroke(); c.fillStyle = BR; c.beginPath(); c.arc(0, -27, 3.4, 0, 6.3); c.fill();
+    c.beginPath(); c.moveTo(-12, 22); c.lineTo(-17, 29); c.moveTo(12, 22); c.lineTo(17, 29); c.stroke();
+    c.fillStyle = BR; c.strokeStyle = IN; c.lineWidth = 2.5; c.beginPath(); c.arc(0, 4, 21, 0, 6.3); c.fill(); c.stroke();
+    c.fillStyle = '#e9dfc4'; c.beginPath(); c.arc(0, 4, 15.5, 0, 6.3); c.fill(); c.lineWidth = 1.5; c.stroke();
+    c.strokeStyle = IN; c.lineWidth = 1.8; for (let i = 0; i < 4; i++) { const a = i * 1.5708; c.beginPath(); c.moveTo(Math.sin(a) * 13, 4 - Math.cos(a) * 13); c.lineTo(Math.sin(a) * 10.5, 4 - Math.cos(a) * 10.5); c.stroke(); }
+    c.lineWidth = 2.4; c.beginPath(); c.moveTo(0, 4); c.lineTo(0, -6); c.moveTo(0, 4); c.lineTo(6, 7); c.stroke();
+  }
+  d.spr = cv; return cv;
+}
+
+const Pow = {
+  t: { blade: 0, sand: 0, bell: 0 }, rings: [], seq: 0, els: {}, shown: { blade: false, sand: false, bell: false }, last: { blade: -1, sand: -1, bell: -1 }, tint: null, tintOn: false,
+  init() {
+    for (let i = 0; i < 4; i++) this.rings.push({ on: false, x: 0, y: 0, vx: 0, life: 0, ph: 0, id: 0, dir: 1 });
+    const host = $('#hud-left'), row = document.createElement('div'); row.id = 'pows';
+    for (let i = 0; i < POWK.length; i++) {
+      const k = POWK[i], w = document.createElement('div'), cv = document.createElement('canvas'), bar = document.createElement('i');
+      w.className = 'pw'; w.id = 'pw-' + k; cv.width = 44; cv.height = 44;
+      cv.getContext('2d').drawImage(powSprite(k), 0, 0, 64, 64, 0, 0, 44, 44);
+      w.appendChild(cv); w.appendChild(bar); row.appendChild(w); this.els[k] = { w: w, bar: bar };
+    }
+    host.appendChild(row); this.tint = $('#powtint');
+  },
+  clear() {
+    for (let i = 0; i < POWK.length; i++) this.t[POWK[i]] = 0;
+    for (let i = 0; i < this.rings.length; i++) this.rings[i].on = false;
+    this.paint();
+  },
+  reset() { this.clear(); },
+  resetEncounter() {                                              // after a death the pieces are back on the floor and every power is gone
+    this.clear();
+    while (Level.ents.length && Level.ents[Level.ents.length - 1].dyn) Level.ents.pop();
+    for (let i = 0; i < Level.ents.length; i++) if (Level.ents[i].t === 'pow') Level.ents[i].got = false;
+  },
+  eSlow() { return this.t.sand > 0 ? 0.4 : 1; },
+  rangeMul() { return this.t.blade > 0 ? 1.55 : 1; },
+  dmgPlus() { return this.t.blade > 0 ? 1 : 0; },
+  give(kind) {
+    const d = POW[kind]; this.t[kind] = d.dur;
+    Snd.play('powGet'); if (kind === 'sand') Snd.play('sandSlow'); else if (kind === 'blade') Snd.play('bladeOn');
+    FX.ring(P.x, P.y - 0.9 * U, 70, 4, 0.5); FX.glow(P.x, P.y - 0.9 * U, 90, 4, 0.7); FX.sparks(P.x, P.y - 0.9 * U, 10, 4);
+    UI.toast(t('pw_get_' + kind, d.dur), 3200); this.paint();
+  },
+  drop(kind, x, y) { const e = { t: 'pow', kind: kind, x: x, y: y, got: false, ph: 0, dyn: true }; Level.ents.push(e); FX.ring(x, y, 60, 4, 0.5); FX.sparks(x, y, 10, 4); Snd.play('lostPing', 0, x); return e; },
+  onAttack() {                                                    // called when a swing starts
+    if (this.t.bell <= 0) return;
+    for (let i = 0; i < this.rings.length; i++) {
+      const r = this.rings[i]; if (r.on) continue;
+      r.on = true; r.x = P.x + P.dir * 0.9 * U; r.y = P.y - 1.0 * U; r.vx = P.dir * 13 * U; r.dir = P.dir; r.life = 0.7; r.ph = 0; r.id = 900000 + (++this.seq);
+      Snd.play('ringShot', 0, r.x); return;
+    }
+  },
+  paint() {                                                       // the HUD: which icons show, how full their bars are
+    for (let i = 0; i < POWK.length; i++) {
+      const k = POWK[i], on = this.t[k] > 0, el = this.els[k]; if (!el) continue;
+      if (on !== this.shown[k]) { this.shown[k] = on; el.w.className = on ? 'pw on' : 'pw'; this.last[k] = -1; }
+      if (on) {
+        const r = this.t[k] / POW[k].dur;
+        if (Math.abs(r - this.last[k]) > 0.01) { this.last[k] = r; el.bar.style.transform = 'scaleX(' + r.toFixed(3) + ')'; }
+        const low = this.t[k] < 3; if (el.low !== low) { el.low = low; el.w.className = low ? 'pw on low' : 'pw on'; }
+      }
+    }
+    const sand = this.t.sand > 0;
+    if (this.tint && sand !== this.tintOn) { this.tintOn = sand; this.tint.className = sand ? 'on' : ''; }
+  },
+  update(dt) {
+    const play = Game.state === 'play';
+    if (play) {
+      for (let i = 0; i < POWK.length; i++) {
+        const k = POWK[i];
+        if (this.t[k] > 0) { this.t[k] -= dt; if (this.t[k] <= 0) { this.t[k] = 0; Snd.play('powEnd'); UI.toast(t('pw_end', t('pw_' + k)), 1800); } }
+      }
+      this.paint();
+    }
+    const ents = Level.ents, lv = live();
+    for (let i = 0; i < ents.length; i++) {
+      const e = ents[i]; if (e.t !== 'pow' || e.got) continue;
+      e.ph += dt;
+      if (lv && Math.abs(e.x - P.x) < 0.95 * U && Math.abs(e.y - (P.y - 0.55 * U)) < 1.3 * U) { e.got = true; this.give(e.kind); }
+    }
+    for (let i = 0; i < this.rings.length; i++) {                  // the ringing waves of the alarm clock
+      const r = this.rings[i]; if (!r.on) continue;
+      r.life -= dt; r.ph += dt; r.x += r.vx * dt;
+      let dead = r.life <= 0 || solidT(tileAt(Math.floor((r.x + r.dir * 0.4 * U) / U), Math.floor(r.y / U)));
+      if (!dead) {
+        for (let j = 0; j < ents.length; j++) {
+          const e = ents[j], eb = entBox(e); if (!eb || e.dead) continue;
+          const ex = clamp(r.x, eb[0], eb[2]), ey = clamp(r.y, eb[1], eb[3]);
+          if (Math.hypot(ex - r.x, ey - r.y) <= 0.5 * U && damageEnt(e, 1, r.dir, false, r.id)) { dead = true; Snd.play('hit', false, r.x); break; }
+        }
+      }
+      if (dead) { r.on = false; FX.ring(r.x, r.y, 46, 4, 0.3); FX.sparks(r.x, r.y, 6, 4); }
+    }
+  },
+  draw(c) {
+    for (let i = 0; i < this.rings.length; i++) {
+      const r = this.rings[i]; if (!r.on) continue;
+      const a = Math.min(1, r.life / 0.25);
+      c.save(); c.translate(r.x, r.y); c.scale(r.dir, 1);
+      for (let k = 0; k < 3; k++) {
+        c.strokeStyle = 'rgba(255,200,100,' + (a * (0.9 - k * 0.26)) + ')'; c.lineWidth = 5 - k; c.lineCap = 'round';
+        c.beginPath(); c.arc(-14 + k * 2, 0, 15 + k * 11 + Math.sin(r.ph * 40 + k) * 1.5, -0.95, 0.95); c.stroke();
+      }
+      c.fillStyle = 'rgba(255,230,160,' + a + ')'; c.beginPath(); c.arc(0, 0, 4, 0, 6.3); c.fill();
+      c.restore();
+    }
+  }
+};
+
+function drawPow(c, e) {
+  if (e.got) return;
+  const d = POW[e.kind], bob = Math.sin(Game.time * 2.6 + e.ph) * 5, pulse = 0.5 + 0.5 * Math.sin(Game.time * 4 + e.ph);
+  c.save(); c.translate(e.x, e.y + bob);
+  c.fillStyle = 'rgba(' + d.rgb + ',' + (0.12 + 0.1 * pulse) + ')'; c.beginPath(); c.arc(0, 0, 42, 0, 6.3); c.fill();
+  c.strokeStyle = 'rgba(' + d.rgb + ',' + (0.35 + 0.25 * pulse) + ')'; c.lineWidth = 2; c.beginPath(); c.arc(0, 0, 36 + pulse * 3, 0, 6.3); c.stroke();
+  for (let i = 0; i < 3; i++) { const a = Game.time * 1.6 + i * 2.094 + e.ph; c.fillStyle = 'rgba(' + d.rgb + ',0.85)'; c.beginPath(); c.arc(Math.cos(a) * 38, Math.sin(a) * 38, 2.2, 0, 6.3); c.fill(); }
+  if (e.kind === 'bell') c.rotate(Math.sin(Game.time * 28) * 0.07 * (Math.sin(Game.time * 2) > 0.3 ? 1 : 0.2));
+  else if (e.kind === 'sand') c.rotate(Math.sin(Game.time * 1.3 + e.ph) * 0.22);
+  else c.rotate(Math.sin(Game.time * 1.7 + e.ph) * 0.1);
+  c.drawImage(powSprite(e.kind), -32, -32);
+  c.restore();
+}
 
 /* ---------- 15. art registry (sprite sheets plug in here; placeholders are used otherwise) ---------- */
 const FONT = '"Noto Sans Arabic","Noto Kufi Arabic","Noto Naskh Arabic","Segoe UI",Tahoma,"DejaVu Sans",system-ui,sans-serif';
@@ -2614,6 +3444,7 @@ function gearPath(c, cx, cy, r, teeth, depth) {
   c.closePath();
 }
 function buildAtlas() {
+  if (BG.theme === 'workshop') { buildAtlasWorkshop(); return; }
   const cv = mk(TS * Atlas.n, TS), c = cv.getContext('2d');
   const r = rng32(11);
   function brick(ox, variant) {
@@ -2673,7 +3504,7 @@ function buildAtlas() {
   Atlas.cv = cv;
 }
 
-const BG = { sky: null, mid: null, near: null, vig: null, gear: null, gears: [], W: 1680, H: 800, ovl: {}, ovlKey: '', noise: null, fadeA: -1 };
+const BG = { theme: 'kingdom', sky: null, mid: null, near: null, vig: null, gear: null, gears: [], W: 1680, H: 800, ovl: {}, ovlKey: '', noise: null, fadeA: -1 };
 function wrapDraw(W, x, w, fn) { fn(x); if (x + w > W) fn(x - W); if (x < 0) fn(x + W); }
 function buildBackgrounds() {
   /* the backdrops are painted once, as one seamless period each (1680 = the widest view), and blitted into the game canvas each frame (a strip is at most
@@ -2710,8 +3541,9 @@ function buildBackgrounds() {
     const hz = c.createLinearGradient(0, 480, 0, H); hz.addColorStop(0, 'rgba(120,150,150,0)'); hz.addColorStop(1, 'rgba(120,150,140,0.28)');
     c.fillStyle = hz; c.fillRect(0, 480, W, H - 480);
   };
-  BG.sky = mk(W, H); farDraw(BG.sky.getContext('2d'));
-  BG.mid = layer(function (c) {
+  const ws = BG.theme === 'workshop';
+  BG.sky = mk(W, H); if (ws) paintWorkshopFar(BG.sky.getContext('2d'), W, H); else farDraw(BG.sky.getContext('2d'));
+  BG.mid = ws ? layer(function (c) { paintWorkshopMid(c, W, H); }) : layer(function (c) {
     for (let i = 0; i < 6; i++) {          // arched aqueduct
       const x = i * 280 - 40; c.fillStyle = 'rgba(14,22,40,0.94)';
       wrapDraw(W, x, 280, function (xx) { c.fillRect(xx, 560, 280, 260); c.globalCompositeOperation = 'destination-out'; c.beginPath(); c.arc(xx + 140, 690, 80, Math.PI, 0); c.lineTo(xx + 220, 820); c.lineTo(xx + 60, 820); c.fill(); c.globalCompositeOperation = 'source-over'; });
@@ -2719,7 +3551,7 @@ function buildBackgrounds() {
     c.strokeStyle = 'rgba(214,165,74,0.18)'; c.lineWidth = 3;
     for (let i = 0; i < 8; i++) { const x = r() * W; c.beginPath(); c.moveTo(x, 0); c.lineTo(x, 120 + r() * 200); c.stroke(); }
   });
-  BG.near = layer(function (c) {
+  BG.near = ws ? layer(function (c) { paintWorkshopNear(c, W, H); }) : layer(function (c) {
     for (let i = 0; i < 5; i++) {
       const x = i * (W / 5) + r() * 60, w = 62 + r() * 30;
       wrapDraw(W, x, w, function (xx) {
@@ -2736,11 +3568,11 @@ function buildBackgrounds() {
   /* the big wall gears: one small sprite each, drawn rotated in front of the middle backdrop; they click forward one tooth per world beat */
   BG.gears = [[175, 470, 120, 14, 1], [660, 540, 90, 11, -1], [1050, 450, 150, 16, 1], [1380, 520, 105, 12, -1], [1590, 430, 80, 10, 1]].map(function (g) {
     const R = g[2], sz = R * 2 + 12, cv = mk(sz, sz), c = cv.getContext('2d'), m = sz / 2;
-    c.fillStyle = 'rgba(18,28,50,0.95)'; gearPath(c, m, m, R, g[3], 14); c.fill();
-    c.strokeStyle = 'rgba(214,165,74,0.24)'; c.lineWidth = 3; c.stroke();
+    c.fillStyle = ws ? 'rgba(36,28,26,0.95)' : 'rgba(18,28,50,0.95)'; gearPath(c, m, m, R, g[3], 14); c.fill();
+    c.strokeStyle = ws ? 'rgba(214,165,74,0.2)' : 'rgba(214,165,74,0.24)'; c.lineWidth = 3; c.stroke();
     c.beginPath(); c.arc(m, m, R * 0.35, 0, 6.3); c.stroke();
-    const sp = g[3] % 4 === 0 ? 4 : g[3] % 3 === 0 ? 3 : g[3] % 2 === 0 ? 2 : 0;       // spokes repeat every whole tooth, so the resting gear never changes its look
-    for (let i = 0; i < sp; i++) { const a = i * 6.2832 / sp + 0.4; c.beginPath(); c.moveTo(m + Math.cos(a) * R * 0.35, m + Math.sin(a) * R * 0.35); c.lineTo(m + Math.cos(a) * R * 0.78, m + Math.sin(a) * R * 0.78); c.stroke(); }
+    /* one tick per tooth, on the tooth's own angle: turning exactly one tooth gives the very same picture, so the click never shows a snap back */
+    for (let i = 0; i < g[3]; i++) { const a = i / g[3] * 6.2832; c.beginPath(); c.moveTo(m + Math.cos(a) * R * 0.5, m + Math.sin(a) * R * 0.5); c.lineTo(m + Math.cos(a) * R * 0.78, m + Math.sin(a) * R * 0.78); c.stroke(); }
     c.fillStyle = 'rgba(8,12,24,0.9)'; c.beginPath(); c.arc(m, m, R * 0.12, 0, 6.3); c.fill();
     return { cv: cv, x: g[0], y: g[1], teeth: g[3], dir: g[4], half: m, sz: sz };
   });
@@ -2866,12 +3698,13 @@ const CHK = 8, CHK_PX = CHK * U + 1;                   // tiles per side; pixel 
 const Chunks = { map: new Map(), ver: -1, k: 1 };
 function tileIdx(tx, ty) {                             // atlas cell for this tile, or -1 when nothing is drawn there (air / the door, which has its own sprite)
   const v = Level.grid[ty * LW + tx];
-  if (v === 0 || v === 4 || v === 5 || v === 6) return -1;     // the door, the arena gate and the cracked walls are drawn as entities
+  if (v === 0 || v === 4 || v === 5 || v === 6 || v >= 9 || Level.hid[ty * LW + tx]) return -1;     // the doors, the arena gate, the cracked walls and the frozen tools are drawn as pictures of their own
   const h = (tx * 7 + ty * 13) & 3;
   if (v === 1) return (ty > 0 && Level.grid[(ty - 1) * LW + tx] === 1) ? h : 4 + (h & 1);
   return v === 2 ? 6 : 7;
 }
 function chunkHasTiles(ci, cj) {
+  if (decoTouches(ci, cj)) return true;
   const t0x = ci * CHK, t0y = cj * CHK;
   for (let ty = t0y; ty < t0y + CHK && ty < LH; ty++) for (let tx = t0x; tx < t0x + CHK && tx < LW; tx++) if (tileIdx(tx, ty) >= 0) return true;
   return false;
@@ -2882,6 +3715,7 @@ function chunkAt(ci, cj) {
   if (Hitch.on) Hitch.note('chunk');
   const k = Chunks.k, px = Math.ceil(CHK_PX * k) + 1, t0x = ci * CHK, t0y = cj * CHK;
   let cv = null, g = null;
+  if (decoTouches(ci, cj)) { cv = mk(px, px); g = cv.getContext('2d'); g.scale(k, k); paintDeco(g, t0x, t0y); }       // props first (behind), then the tiles
   for (let ty = t0y; ty < t0y + CHK && ty < LH; ty++) for (let tx = t0x; tx < t0x + CHK && tx < LW; tx++) {
     const idx = tileIdx(tx, ty); if (idx < 0) continue;
     if (!cv) { cv = mk(px, px); g = cv.getContext('2d'); g.scale(k, k); }
@@ -2916,7 +3750,8 @@ function drawTiles(c, cx, cy) {
   if (bi >= 0) chunkAt(bi, bj);
   // sliding door
   const A = Atlas.cv, dx = Level.doorTx * U, dy = (G - 4) * U;
-  if (dx + U > cx && dx < cx + Game.viewW) {
+  if (Level.doors.length) drawStageDoors(c, cx);
+  if (Level.stage === 'lab' && dx + U > cx && dx < cx + Game.viewW) {
     c.save(); c.beginPath(); c.rect(dx, dy, U, 4 * U); c.clip();
     const lift = Level.doorAnim * 3.75 * U;
     for (let i = 0; i < 4; i++) c.drawImage(A, 8 * TS, 0, TS, TS, dx, dy + i * U - lift, U + 1, U + 1);
@@ -2942,6 +3777,7 @@ function drawEntities(c, cx) {
         c.fillStyle = 'rgba(255,233,168,0.18)'; c.beginPath(); c.arc(e.x, e.y + bob, 17, 0, 6.3); c.fill();
         drawGearSprite(c, e.x, e.y + bob, e.ph * 0.6, 26);
       } break;
+      default: drawStageEnt(c, e);
     }
   }
   for (let i = 0; i < Level.drops.length; i++) { const d = Level.drops[i]; if (d.on) drawGearSprite(c, d.x, d.y, d.age * 8, 22); }
@@ -2974,19 +3810,26 @@ function drawLever(c, e) {
   c.save(); c.translate(0, -14); c.rotate(lerp(-0.6, 0.6, e.anim));
   c.strokeStyle = '#d6a54a'; c.lineWidth = 6; c.lineCap = 'round'; c.beginPath(); c.moveTo(0, 0); c.lineTo(0, -40); c.stroke();
   c.fillStyle = e.on ? '#2fd6c4' : '#e0564a'; c.beginPath(); c.arc(0, -42, 8, 0, 6.3); c.fill(); c.restore();
+  if (e.puz !== undefined) {                                                 // a carved symbol on the base, the same one the wall panel shows
+    c.strokeStyle = e.on ? '#2fd6c4' : '#e6c06a'; c.lineWidth = 2.5; c.lineCap = 'round'; c.lineJoin = 'round'; leverSymbol(c, e.puz, 0, -7, 12);
+  }
   c.restore();
 }
-function drawDummy(c, e) {
+function drawDummy(c, e) {                                        // a training target on a spring post (it used to look like a scarecrow)
   c.save(); c.translate(e.x, e.y);
-  const sh = Math.max(0, e.shake), ang = Math.sin(sh * 45) * 0.16 * (sh / 0.25) * e.lean;
+  const sh = Math.max(0, e.shake), ang = Math.sin(sh * 45) * 0.16 * (sh / 0.25) * e.lean, wh = e.flash > 0;
   c.fillStyle = 'rgba(0,0,0,0.28)'; c.beginPath(); c.ellipse(0, 0, 28, 6, 0, 0, 6.3); c.fill();
-  c.fillStyle = '#5b4426'; c.fillRect(-22, -10, 44, 10);
-  c.rotate(ang);
-  c.fillStyle = '#6a5030'; c.fillRect(-5, -88, 10, 80);
-  c.fillStyle = e.flash > 0 ? '#ffffff' : '#a58250'; c.beginPath(); c.ellipse(0, -52, 20, 28, 0, 0, 6.3); c.fill();
-  c.fillStyle = '#6a5030'; c.fillRect(-32, -62, 64, 7);
-  c.fillStyle = e.flash > 0 ? '#ffffff' : '#c9a86a'; c.beginPath(); c.arc(0, -84, 13, 0, 6.3); c.fill();
-  c.strokeStyle = '#e0564a'; c.lineWidth = 3; c.beginPath(); c.arc(0, -50, 13, 0, 6.3); c.stroke(); c.beginPath(); c.arc(0, -50, 5, 0, 6.3); c.stroke();
+  c.fillStyle = '#5b4426'; c.fillRect(-22, -10, 44, 10); c.fillStyle = '#b88a3b'; c.fillRect(-22, -10, 44, 3);
+  c.save(); c.translate(0, -10); c.rotate(ang);
+  c.strokeStyle = '#1b1710'; c.lineWidth = 6; c.lineCap = 'round'; c.lineJoin = 'round'; c.beginPath(); c.moveTo(0, 0); for (let i = 0; i < 5; i++) c.lineTo(i % 2 ? -7 : 7, -4 - i * 5); c.lineTo(0, -28); c.stroke();
+  c.strokeStyle = wh ? '#fff' : '#9aa3ad'; c.lineWidth = 3; c.beginPath(); c.moveTo(0, 0); for (let i = 0; i < 5; i++) c.lineTo(i % 2 ? -7 : 7, -4 - i * 5); c.lineTo(0, -28); c.stroke();
+  c.fillStyle = '#6a5030'; c.fillRect(-4, -48, 8, 22);
+  c.fillStyle = '#1b1710'; c.beginPath(); c.arc(0, -60, 26, 0, 6.3); c.fill();
+  c.fillStyle = wh ? '#fff' : '#d9cfb4'; c.beginPath(); c.arc(0, -60, 24, 0, 6.3); c.fill();
+  c.fillStyle = wh ? '#fff' : '#c9463d'; c.beginPath(); c.arc(0, -60, 18, 0, 6.3); c.fill();
+  c.fillStyle = wh ? '#fff' : '#d9cfb4'; c.beginPath(); c.arc(0, -60, 11.5, 0, 6.3); c.fill();
+  c.fillStyle = wh ? '#fff' : '#c9463d'; c.beginPath(); c.arc(0, -60, 5.5, 0, 6.3); c.fill();
+  c.restore();
   c.restore();
 }
 function drawBarrel(c, e) {
@@ -3137,12 +3980,18 @@ function drawNaderPlaceholder(c) {
       c.fillStyle = INK; c.fillRect(L - 8, -hh / 2 - 2.5, hw + 5, hh + 5);
       c.fillStyle = col('brass'); c.fillRect(L - 6, -hh / 2, hw, hh);
       c.fillStyle = white ? '#fff' : (p.phase === 'wind' && p.st > (s === 'attack' ? ATK[p.combo].wind * 0.6 : 0.08) ? '#ffffff' : C.teal); c.fillRect(L - 1, -3, 9, 6);
+      if (Pow.t.blade > 0) {                                  // the minute hand: a long brass blade past the head
+        const b0 = L - 6 + hw, bl = 40;
+        c.fillStyle = INK; c.beginPath(); c.moveTo(b0 - 2, -7); c.lineTo(b0 + bl + 7, 0); c.lineTo(b0 - 2, 7); c.closePath(); c.fill();
+        c.fillStyle = white ? '#fff' : '#e6c06a'; c.beginPath(); c.moveTo(b0, -4.5); c.lineTo(b0 + bl + 2, 0); c.lineTo(b0, 4.5); c.closePath(); c.fill();
+        c.fillStyle = 'rgba(255,255,255,0.55)'; c.fillRect(b0 + 2, -1, bl - 6, 1.6);
+      }
       c.restore();
       glove(c, hx, hy, white);
       if (p.phase === 'act') {                                // swing arc
         const a1 = ha, start = s === 'airattack' ? -125 * D : [-120, 70, -165][p.combo] * D;
-        c.save(); c.translate(sx0, sy0); c.strokeStyle = 'rgba(190,255,245,0.65)'; c.lineWidth = 9; c.lineCap = 'round';
-        c.beginPath(); c.arc(0, 0, L + 16, Math.min(start, a1), Math.max(start, a1)); c.stroke(); c.restore();
+        c.save(); c.translate(sx0, sy0); c.strokeStyle = Pow.t.blade > 0 ? 'rgba(255,214,120,0.75)' : 'rgba(190,255,245,0.65)'; c.lineWidth = 9; c.lineCap = 'round';
+        c.beginPath(); c.arc(0, 0, L + 16 + (Pow.t.blade > 0 ? 40 : 0), Math.min(start, a1), Math.max(start, a1)); c.stroke(); c.restore();
       }
     } else glove(c, hx + 4, hy, white);                       // interact: reaching out
   } else if (s === 'special') {
@@ -3212,12 +4061,14 @@ function drawPopups(c) {
   }
   c.globalAlpha = 1;
 }
+const PROMPT_KEY = { clock: 'p_wind', lever: 'p_lever', chest: 'p_open', scan: 'p_scan', machine: 'p_insert', lift: 'p_lift' };
+const PROMPT_UP = { clock: 158, lever: 96, chest: 78, scan: 80, machine: 150, lift: 150 };
 function drawPrompt(c) {
   const tg = P.target;
   if (!tg || Game.state !== 'play') return;
-  const line1 = tg.t === 'clock' ? t('p_wind') : t('p_lever');
+  const line1 = t(PROMPT_KEY[tg.t] || 'p_lever');
   const line2 = Input.lastDevice === 'touch' ? t('p_tap') : t('p_press', keyLabel((S.keys.interact || [])[0]));
-  const y = tg.y - (tg.t === 'clock' ? 158 : 96) + Math.sin(Game.time * 4) * 3;
+  const y = tg.y - (PROMPT_UP[tg.t] || 96) + Math.sin(Game.time * 4) * 3;
   c.font = '400 18px ' + FONT; c.textAlign = 'center'; c.textBaseline = 'middle'; c.direction = LANG === 'ar' ? 'rtl' : 'ltr';
   const w = Math.max(c.measureText(line1).width, c.measureText(line2).width) + 30;
   c.fillStyle = 'rgba(5,8,14,0.84)'; rrect(c, tg.x - w / 2, y - 28, w, 56, 8); c.fill();
@@ -3264,14 +4115,16 @@ function render() {
   c.setTransform(s, 0, 0, s, 0, 0);
   if (DX.on.world) {
     c.save(); c.translate(-cx, -cy);
-    if (Game.state !== 'menu' && Game.state !== 'pause') drawSigns(c, cx);
+    const sgOn = Game.state !== 'menu' && Game.state !== 'pause', sgAbove = Level.stage !== 'lab';       // in the stages the props are baked into the ground blocks, so the hints are drawn over them
+    if (sgOn && !sgAbove) drawSigns(c, cx);
     drawTiles(c, cx, cy); Hitch.mark('tl');
+    if (sgOn && sgAbove) drawSigns(c, cx);
     drawEntities(c, cx);
     drawCombat(c, cx); Hitch.mark('en');
-    drawNader(c); Hitch.mark('nd');
+    drawNader(c); if (Tik.on) drawTik(c); Pow.draw(c); drawTalkFx(c); Hitch.mark('nd');
     drawParticles(c);
     drawPopups(c);
-    drawPrompt(c); Hitch.mark('pt');
+    drawPrompt(c); if (Tik.bub) drawTikBubble(c); Hitch.mark('pt');
     if (Game.showBoxes) drawBoxes(c);
     c.restore();
   }
@@ -3381,52 +4234,57 @@ function drawFwall(c, e) {
   c.strokeStyle = 'rgba(255,179,71,' + (0.5 + 0.3 * Math.sin(Game.time * 4)) + ')'; c.lineWidth = 1.5; c.setLineDash([6, 5]); c.strokeRect(x - 2, y - 2, U + 4, h + 4); c.setLineDash([]);
 }
 
-/* ---- cog cockroach ---- */
+/* ---- cog roller: a toothed wheel under a brass plate with a warning lamp (a machine, not a creature) ---- */
 function drawRoach(c, e) {
   const sh = e.state === 'shake', dash = e.state === 'dash', white = e.flash > 0;
   c.save();
   c.translate(e.x + (sh ? Math.sin(e.st * 110) * 3 : 0), e.y);
   c.fillStyle = 'rgba(0,0,0,0.3)'; c.beginPath(); c.ellipse(0, 0, 30, 5, 0, 0, 6.3); c.fill();
   if (sh || dash) { c.fillStyle = 'rgba(224,86,74,' + (sh ? 0.18 + 0.12 * Math.sin(e.st * 50) : 0.14) + ')'; c.beginPath(); c.arc(0, -16, 38, 0, 6.3); c.fill(); }
-  if (sh) {                                                      // "!" above its head: it is about to lunge
-    c.fillStyle = CBC.red; c.fillRect(e.dir * 22 - 2, -58, 4, 12); c.fillRect(e.dir * 22 - 2, -42, 4, 4);
+  if (sh) {                                                      // "!" above it: it is about to lunge
+    c.fillStyle = CBC.red; c.fillRect(e.dir * 22 - 2, -62, 4, 12); c.fillRect(e.dir * 22 - 2, -46, 4, 4);
   }
-  c.scale(e.dir, 1); if (dash) c.rotate(0.12);
-  const lp = e.ph * (dash ? 40 : e.state === 'patrol' ? 9 : 2);
-  c.strokeStyle = white ? '#fff' : '#2b1c0e'; c.lineWidth = 3; c.lineCap = 'round';
-  for (let i = 0; i < 3; i++) for (let s = -1; s <= 1; s += 2) {
-    const bx = -12 + i * 12, sw = Math.sin(lp + i * 2.1 + (s > 0 ? 3.14 : 0)) * 6;
-    c.beginPath(); c.moveTo(bx, -12); c.lineTo(bx + sw, -4 - (s > 0 ? 0 : 3)); c.lineTo(bx + sw * 1.4, 0); c.stroke();
-  }
-  c.fillStyle = white ? '#fff' : '#7a5a2c'; c.beginPath(); c.ellipse(0, -17, 27, 14, 0, 0, 6.3); c.fill();     // shell
-  c.strokeStyle = white ? '#fff' : '#2b1c0e'; c.lineWidth = 2; c.stroke();
-  c.fillStyle = white ? '#fff' : CBC.brass; gearPath(c, -3, -22, 10, 8, 3); c.fill();                          // the cog on its back
-  c.fillStyle = '#2b1c0e'; c.beginPath(); c.arc(-3, -22, 3.5, 0, 6.3); c.fill();
-  c.fillStyle = white ? '#fff' : '#5c4120'; c.beginPath(); c.ellipse(24, -15, 9, 8, 0, 0, 6.3); c.fill();     // head
-  c.strokeStyle = '#2b1c0e'; c.lineWidth = 1.6; c.beginPath(); c.moveTo(28, -21); c.quadraticCurveTo(40, -36, 48, -28); c.moveTo(26, -21); c.quadraticCurveTo(34, -40, 44, -40); c.stroke();
-  c.fillStyle = sh || dash ? CBC.red : CBC.amber; c.beginPath(); c.arc(27, -17, 2.4, 0, 6.3); c.fill();
+  c.scale(e.dir, 1); if (dash) c.rotate(0.1);
+  const INKC = white ? '#fff' : '#1b1710', STEEL = white ? '#fff' : CBC.steel, STEELD = white ? '#fff' : CBC.steelD, BRS = white ? '#fff' : CBC.brass;
+  c.lineJoin = 'round'; c.lineCap = 'round';
+  c.strokeStyle = INKC; c.lineWidth = 3; c.beginPath(); c.moveTo(-26, -13); for (let i = 0; i < 4; i++) c.lineTo(-24 + i * 3 + (i % 2 ? 2 : -2), -17 + (i % 2 ? 5 : 0) - i * 0.2); c.lineTo(-14, -15); c.stroke();     // the wind-up spring at the back
+  const roll = e.x * 0.07 + (sh ? Math.sin(e.st * 90) * 0.1 : 0);
+  c.save(); c.translate(0, -16); c.rotate(roll);
+  c.fillStyle = INKC; gearPath(c, 0, 0, 17.5, 11, 6.5); c.fill();
+  c.fillStyle = STEELD; gearPath(c, 0, 0, 16, 11, 5.5); c.fill();
+  c.fillStyle = STEEL; c.beginPath(); c.arc(0, 0, 10.5, 0, 6.3); c.fill();
+  c.fillStyle = BRS; c.beginPath(); c.arc(0, 0, 5.2, 0, 6.3); c.fill(); c.fillStyle = INKC; c.beginPath(); c.arc(0, 0, 1.8, 0, 6.3); c.fill();
+  c.restore();
+  c.fillStyle = INKC; rrect(c, -18, -42, 36, 13, 5); c.fill(); c.fillStyle = BRS; rrect(c, -16, -40, 32, 9, 4); c.fill();                          // the brass plate over the wheel
+  c.fillStyle = INKC; c.fillRect(17, -36, 11, 24); c.fillStyle = STEELD; c.fillRect(18.5, -34.5, 8, 21);                                        // the ram plate in front
+  c.fillStyle = CBC.amber; for (let i = 0; i < 3; i++) c.fillRect(18.5, -33 + i * 7.5, 8, 3);
+  c.fillStyle = INKC; c.beginPath(); c.arc(5, -45, 5.6, 0, 6.3); c.fill();
+  c.fillStyle = white ? '#fff' : (sh || dash ? CBC.red : CBC.amber); c.beginPath(); c.arc(5, -45, 4.2, 0, 6.3); c.fill();                         // the lamp
+  c.fillStyle = 'rgba(255,255,255,0.6)'; c.beginPath(); c.arc(3.8, -46.4, 1.3, 0, 6.3); c.fill();
   c.restore();
 }
 
-/* ---- oil rat ---- */
+/* ---- oil pump: a pressure drum on small wheels with a gauge, a piston and a spout ---- */
 function drawRat(c, e) {
   const white = e.flash > 0, k = e.swell, sc = 1 + 0.38 * k;
   c.save(); c.translate(e.x, e.y);
   c.fillStyle = 'rgba(0,0,0,0.3)'; c.beginPath(); c.ellipse(0, 0, 28 * sc, 5, 0, 0, 6.3); c.fill();
   c.scale(e.dir, 1);
   if (k > 0) { c.fillStyle = 'rgba(255,212,90,' + (0.12 + 0.3 * k) + ')'; c.beginPath(); c.arc(4, -22 * sc, 46 * sc, 0, 6.3); c.fill(); }
-  const tw = Math.sin(e.ph * 4) * 0.2;
-  c.strokeStyle = white ? '#fff' : '#26293a'; c.lineWidth = 3.5; c.lineCap = 'round';
-  c.beginPath(); c.moveTo(-20 * sc, -14); c.quadraticCurveTo(-38 * sc, -10 + tw * 30, -44 * sc, -26 + tw * 40); c.stroke();                // tail
-  c.fillStyle = white ? '#fff' : (k > 0.2 ? '#6a5a3a' : '#43485e');
-  c.beginPath(); c.ellipse(0, -20 * sc, 22 * sc, 20 * sc, 0, 0, 6.3); c.fill();
-  c.strokeStyle = white ? '#fff' : '#1c1f2c'; c.lineWidth = 2; c.stroke();
-  if (k > 0) { c.fillStyle = 'rgba(255,224,110,' + (0.35 + 0.5 * k) + ')'; c.beginPath(); c.ellipse(2, -18 * sc, 12 * sc, 12 * sc, 0, 0, 6.3); c.fill(); }
-  c.fillStyle = white ? '#fff' : '#43485e'; c.beginPath(); c.ellipse(20 * sc, -26 * sc, 10 * sc, 9 * sc, 0, 0, 6.3); c.fill(); c.strokeStyle = '#1c1f2c'; c.stroke();    // head
-  c.beginPath(); c.arc(14 * sc, -35 * sc, 5, 0, 6.3); c.fill(); c.stroke();                                                                                      // ear
-  c.fillStyle = CBC.amber; c.beginPath(); c.arc(24 * sc, -28 * sc, 2.6, 0, 6.3); c.fill();
-  c.fillStyle = '#1c1f2c'; c.beginPath(); c.arc(30 * sc, -25 * sc, 2, 0, 6.3); c.fill();                                                                         // nose
-  c.strokeStyle = '#1c1f2c'; c.lineWidth = 3; c.beginPath(); c.moveTo(-8, -2); c.lineTo(-8, 0); c.moveTo(10, -2); c.lineTo(10, 0); c.stroke();
+  const INKC = white ? '#fff' : '#1c1f2c', body = white ? '#fff' : (k > 0.2 ? '#6a5a3a' : '#43485e'), BRS = white ? '#fff' : CBC.brass;
+  c.lineJoin = 'round'; c.lineCap = 'round';
+  for (let i = -1; i <= 1; i += 2) { c.fillStyle = INKC; c.beginPath(); c.arc(i * 13, -6, 7, 0, 6.3); c.fill(); c.fillStyle = white ? '#fff' : '#2a2f3d'; c.beginPath(); c.arc(i * 13, -6, 4.6, 0, 6.3); c.fill(); }   // wheels
+  c.save(); c.translate(0, -8); c.scale(sc, sc);                                                                                                       // the drum swells with pressure
+  c.fillStyle = INKC; rrect(c, -22, -40, 44, 34, 11); c.fill(); c.fillStyle = body; rrect(c, -20, -38, 40, 30, 9); c.fill();
+  c.fillStyle = BRS; c.fillRect(-20, -30, 40, 3.5); c.fillRect(-20, -17, 40, 3.5);
+  if (k > 0) { c.fillStyle = 'rgba(255,224,110,' + (0.3 + 0.5 * k) + ')'; c.beginPath(); c.ellipse(-6, -23, 8, 9, 0, 0, 6.3); c.fill(); }
+  c.fillStyle = INKC; c.beginPath(); c.arc(7, -24, 8.2, 0, 6.3); c.fill(); c.fillStyle = white ? '#fff' : '#e9dfc4'; c.beginPath(); c.arc(7, -24, 6.6, 0, 6.3); c.fill();          // the gauge
+  const na = -2.3 + k * 3.7; c.strokeStyle = k > 0.6 ? CBC.red : '#1a1620'; c.lineWidth = 1.8; c.beginPath(); c.moveTo(7, -24); c.lineTo(7 + Math.cos(na) * 5.4, -24 + Math.sin(na) * 5.4); c.stroke();
+  c.strokeStyle = INKC; c.lineWidth = 4; c.beginPath(); c.moveTo(-8, -38); c.lineTo(-8, -48 - 6 * k + Math.sin(e.ph * 3) * 1.5); c.stroke();                                          // the piston and its T-handle
+  c.lineWidth = 3; c.beginPath(); c.moveTo(-15, -48 - 6 * k + Math.sin(e.ph * 3) * 1.5); c.lineTo(-1, -48 - 6 * k + Math.sin(e.ph * 3) * 1.5); c.stroke();
+  c.strokeStyle = INKC; c.lineWidth = 6; c.beginPath(); c.moveTo(20, -26); c.lineTo(31, -30); c.stroke(); c.strokeStyle = white ? '#fff' : '#5d7690'; c.lineWidth = 3.2; c.beginPath(); c.moveTo(20, -26); c.lineTo(31, -30); c.stroke();    // the spout
+  c.fillStyle = k > 0.5 ? CBC.amber : INKC; c.beginPath(); c.arc(32, -30.5, 2.6, 0, 6.3); c.fill();
+  c.restore();
   c.restore();
 }
 function drawBubble(c, s) {
@@ -3450,7 +4308,7 @@ function drawArenaDeco(c, cx) {
   c.fillStyle = '#4a3622'; c.fillRect(AR.tabL * U + 6, ty + 8, (AR.tabR - AR.tabL) * U - 12, 16);
   c.fillStyle = CBC.brass; c.fillRect(AR.tabL * U, ty - 2, (AR.tabR - AR.tabL) * U, 5);
   c.fillStyle = '#4a3622';                                                 // shelf brackets
-  [[245, 250], [273, 278]].forEach(function (s) {
+  AR.shelves.forEach(function (s) {
     const sy = (G - 5) * U + 10;
     for (let x = s[0] + 0.6; x < s[1]; x += 2) { c.beginPath(); c.moveTo(x * U, sy); c.lineTo((x + 0.3) * U, sy); c.lineTo(x * U, sy + 0.8 * U); c.closePath(); c.fill(); }
     c.fillStyle = CBC.brass; c.fillRect(s[0] * U, (G - 5) * U - 2, (s[1] - s[0]) * U, 4); c.fillStyle = '#4a3622';
@@ -3597,6 +4455,476 @@ function drawBossArm(c, b, col, brass, far, st) {
   c.strokeStyle = 'rgba(0,0,0,0.3)'; c.lineWidth = 1.5; for (let i = -2; i <= 2; i++) { c.beginPath(); c.moveTo(i * 0.1 * U, 6); c.lineTo(i * 0.12 * U, 0.6 * U); c.stroke(); }
   c.restore();
 }
+/* ---------- 17b. stage art (all drawn in code): the workshop theme (tile atlas, three backdrops), static props that are painted into the ground blocks,
+   and the animated pieces (Tik, the frozen master, saws, machine, chest, lift). Nothing here is loaded from outside. ---------- */
+const FRZ = 'rgba(150,215,235,';                         // the shimmer of things that are frozen in time
+const WOOD = '#6b4a2b', WOOD2 = '#3a2a1b', BRASS = '#b88a3b', BRASS_L = '#e6c06a';
+
+/* ---- tile atlas of the workshop: warm stone, a wooden floor, riveted iron plates ---- */
+function buildAtlasWorkshop() {
+  const cv = mk(TS * Atlas.n, TS), c = cv.getContext('2d'), r = rng32(23);
+  function stone(ox, v) {
+    c.fillStyle = v === 3 ? '#2d333f' : '#37323a'; c.fillRect(ox, 0, TS, TS);
+    if (v === 3) {                                               // riveted iron plate
+      c.fillStyle = '#3b4352'; c.fillRect(ox + 4, 4, TS - 8, TS - 8);
+      c.fillStyle = '#262c37'; c.fillRect(ox, 0, TS, 3); c.fillRect(ox, TS - 3, TS, 3); c.fillRect(ox, 0, 3, TS); c.fillRect(ox + TS - 3, 0, 3, TS);
+      c.fillStyle = '#5a6578'; for (const q of [[12, 12], [TS - 12, 12], [12, TS - 12], [TS - 12, TS - 12]]) { c.beginPath(); c.arc(ox + q[0], q[1], 3.2, 0, 6.3); c.fill(); }
+      c.fillStyle = 'rgba(255,255,255,.05)'; c.fillRect(ox + 4, 4, TS - 8, 6);
+      return;
+    }
+    c.fillStyle = '#26222b';
+    for (let row = 0; row < 3; row++) {
+      const y = row * 32; c.fillRect(ox, y + 30, TS, 2);
+      const off = (row + v) % 2 ? 0 : 24;
+      for (let x = off; x < TS + 48; x += 48) c.fillRect(ox + x, y, 2, 30);
+    }
+    c.fillStyle = '#4a444f'; for (let row = 0; row < 3; row++) c.fillRect(ox, row * 32, TS, 2);
+    c.fillStyle = 'rgba(0,0,0,.16)'; for (let i = 0; i < 12; i++) c.fillRect(ox + r() * TS, r() * TS, 2 + r() * 6, 2);
+    c.fillStyle = 'rgba(214,165,74,.05)'; for (let i = 0; i < 5; i++) c.fillRect(ox + r() * TS, r() * TS, 6 + r() * 8, 2);
+  }
+  for (let v = 0; v < 4; v++) stone(v * TS, v);
+  for (let v = 0; v < 2; v++) {                                  // the floor surface: wooden boards over a stone course
+    const ox = (4 + v) * TS; stone(ox, v);
+    c.fillStyle = '#4a321c'; c.fillRect(ox, 0, TS, 24);
+    c.fillStyle = '#8a5f35'; c.fillRect(ox, 0, TS, 19);
+    c.fillStyle = '#b98550'; c.fillRect(ox, 0, TS, 4);
+    c.fillStyle = '#5a3c20'; c.fillRect(ox, 19, TS, 3);
+    const seams = v ? [20, 58, 80] : [34, 70];
+    for (const sx of seams) c.fillRect(ox + sx, 4, 2, 15);
+    c.fillStyle = '#d6a54a'; for (const sx of seams) { c.beginPath(); c.arc(ox + sx - 6, 11, 1.8, 0, 6.3); c.arc(ox + sx + 8, 11, 1.8, 0, 6.3); c.fill(); }
+    c.fillStyle = 'rgba(0,0,0,.14)'; for (let i = 0; i < 5; i++) c.fillRect(ox + 4 + r() * (TS - 14), 6 + r() * 9, 6 + r() * 12, 2);
+  }
+  { // one-way: a wooden shelf board on iron brackets
+    const ox = 6 * TS;
+    c.fillStyle = '#4f361f'; c.fillRect(ox, 8, TS, 20);
+    c.fillStyle = '#a9774a'; c.fillRect(ox, 0, TS, 18);
+    c.fillStyle = '#d29a63'; c.fillRect(ox, 0, TS, 4);
+    c.fillStyle = '#5a3c20'; c.fillRect(ox, 18, TS, 3);
+    c.fillStyle = '#7a5530'; c.fillRect(ox + 30, 4, 2, 14); c.fillRect(ox + 66, 4, 2, 14);
+    c.fillStyle = '#262c37'; c.beginPath(); c.moveTo(ox + 6, 21); c.lineTo(ox + 30, 21); c.lineTo(ox + 6, 50); c.fill();
+    c.beginPath(); c.moveTo(ox + TS - 6, 21); c.lineTo(ox + TS - 30, 21); c.lineTo(ox + TS - 6, 50); c.fill();
+  }
+  { // spikes (steel on a dark plate)
+    const ox = 7 * TS;
+    c.fillStyle = '#2d333f'; c.fillRect(ox, TS - 16, TS, 16);
+    for (let i = 0; i < 3; i++) {
+      const x0 = ox + 4 + i * 30, g = c.createLinearGradient(x0, 0, x0 + 26, 0);
+      g.addColorStop(0, '#e1e7f2'); g.addColorStop(0.5, '#9ca6ba'); g.addColorStop(1, '#5f687c');
+      c.fillStyle = g; c.beginPath(); c.moveTo(x0, TS - 14); c.lineTo(x0 + 13, 20); c.lineTo(x0 + 26, TS - 14); c.closePath(); c.fill();
+    }
+  }
+  { // door segment (iron bars in a brass frame)
+    const ox = 8 * TS;
+    c.fillStyle = '#141a28'; c.fillRect(ox, 0, TS, TS);
+    c.fillStyle = '#2b3550'; for (let i = 0; i < 4; i++) c.fillRect(ox + 10 + i * 22, 0, 9, TS);
+    c.fillStyle = '#b88a3b'; c.fillRect(ox, 0, 8, TS); c.fillRect(ox + TS - 8, 0, 8, TS);
+    c.fillStyle = '#8f6a26'; c.fillRect(ox, 44, TS, 8); c.fillStyle = '#e6c06a'; c.fillRect(ox, 44, TS, 2);
+  }
+  Atlas.cv = cv;
+}
+
+/* ---- backdrops of the workshop: far = the wall with its high windows (static), mid = shelves and chains, near = timber posts and hanging threads ---- */
+function paintWorkshopFar(c, W, H) {
+  const r = rng32(31);
+  const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#0a0e19'); g.addColorStop(0.45, '#171c2b'); g.addColorStop(1, '#2b2630');
+  c.fillStyle = g; c.fillRect(0, 0, W, H);
+  for (let row = 0; row * 46 < H; row++) {                      // stone courses
+    c.fillStyle = 'rgba(255,255,255,0.028)'; c.fillRect(0, row * 46, W, 2);
+    c.fillStyle = 'rgba(0,0,0,0.2)';
+    for (let x = (row % 2) * 70; x < W; x += 140) c.fillRect(x + ((r() * 8) | 0), row * 46 + 2, 2, 44);
+  }
+  const wins = [[300, 70, 140, 300], [840, 40, 380, 360, 1], [1380, 70, 140, 300]];
+  wins.forEach(function (w) {
+    const x = w[0] - w[2] / 2, y = w[1], ww = w[2], hh = w[3], big = w[4];
+    c.save();
+    c.beginPath(); c.moveTo(x, y + hh); c.lineTo(x, y + ww / 2); c.arc(x + ww / 2, y + ww / 2, ww / 2, Math.PI, 0); c.lineTo(x + ww, y + hh); c.closePath(); c.clip();
+    const sg = c.createLinearGradient(0, y, 0, y + hh); sg.addColorStop(0, '#071022'); sg.addColorStop(0.6, '#1a3158'); sg.addColorStop(1, '#3a4f6a');
+    c.fillStyle = sg; c.fillRect(x, y, ww, hh);
+    c.fillStyle = '#fff'; for (let i = 0; i < 26; i++) { c.globalAlpha = 0.2 + r() * 0.5; c.fillRect(x + r() * ww, y + r() * hh * 0.6, 1.6, 1.6); }
+    c.globalAlpha = 1;
+    for (let i = 0; i < (big ? 11 : 4); i++) {                  // the capital's towers, with a few lit windows
+      const tw = (big ? 26 : 18) + r() * 24, tx = x + r() * (ww - tw), th = (big ? 70 : 50) + r() * (big ? 170 : 90);
+      c.fillStyle = 'rgba(8,12,24,0.95)'; c.fillRect(tx, y + hh - th, tw, th);
+      c.beginPath(); c.moveTo(tx - 2, y + hh - th); c.lineTo(tx + tw / 2, y + hh - th - 14 - r() * 18); c.lineTo(tx + tw + 2, y + hh - th); c.fill();
+      c.fillStyle = 'rgba(232,195,106,0.55)'; for (let k = 0; k < 5; k++) if (r() < 0.5) c.fillRect(tx + 4 + r() * (tw - 10), y + hh - th + 10 + k * 22, 3, 5);
+    }
+    if (big) {                                                   // the clock tower, stopped at the missing chime
+      const cx = x + ww * 0.62, tw = 40;
+      c.fillStyle = 'rgba(8,12,24,0.98)'; c.fillRect(cx - tw / 2, y + 60, tw, hh - 60);
+      c.beginPath(); c.moveTo(cx - tw / 2 - 5, y + 60); c.lineTo(cx, y + 6); c.lineTo(cx + tw / 2 + 5, y + 60); c.fill();
+      c.fillStyle = 'rgba(233,223,196,0.85)'; c.beginPath(); c.arc(cx, y + 104, 15, 0, 6.3); c.fill();
+      c.strokeStyle = '#2b2433'; c.lineWidth = 2; c.beginPath(); c.moveTo(cx, y + 104); c.lineTo(cx, y + 92); c.moveTo(cx, y + 104); c.lineTo(cx + 3, y + 94); c.stroke();
+    }
+    for (let i = 0; i < (big ? 4 : 1); i++) {                    // fireworks, frozen mid-burst
+      const fx = x + (big ? 0.12 + i * 0.22 : 0.5) * ww + r() * 20, fy = y + (big ? 50 + r() * 90 : 70) + (i & 1) * 30, n = 16, rad = big ? 34 + r() * 18 : 22;
+      const col = ['255,196,110', '150,215,235', '255,130,110', '190,160,255'][i % 4];
+      c.fillStyle = 'rgba(' + col + ',0.12)'; c.beginPath(); c.arc(fx, fy, rad * 1.5, 0, 6.3); c.fill();
+      c.strokeStyle = 'rgba(' + col + ',0.85)'; c.lineWidth = 2; c.lineCap = 'round';
+      for (let k = 0; k < n; k++) { const a = k / n * 6.2832; c.beginPath(); c.moveTo(fx + Math.cos(a) * rad * 0.45, fy + Math.sin(a) * rad * 0.45); c.lineTo(fx + Math.cos(a) * rad, fy + Math.sin(a) * rad); c.stroke(); c.fillStyle = 'rgba(' + col + ',1)'; c.fillRect(fx + Math.cos(a) * rad * 1.12 - 1.5, fy + Math.sin(a) * rad * 1.12 - 1.5, 3, 3); }
+    }
+    c.restore();
+    c.strokeStyle = '#3d3745'; c.lineWidth = 12; c.beginPath(); c.moveTo(x, y + hh); c.lineTo(x, y + ww / 2); c.arc(x + ww / 2, y + ww / 2, ww / 2, Math.PI, 0); c.lineTo(x + ww, y + hh); c.stroke();
+    c.strokeStyle = '#2a2530'; c.lineWidth = 6; c.beginPath(); c.moveTo(x + ww / 2, y); c.lineTo(x + ww / 2, y + hh); c.moveTo(x, y + hh * (big ? 0.5 : 0.62)); c.lineTo(x + ww, y + hh * (big ? 0.5 : 0.62)); c.stroke();
+    const bg = c.createLinearGradient(0, y + hh, 0, H);          // the slanting amber beam
+    bg.addColorStop(0, 'rgba(255,190,100,0.13)'); bg.addColorStop(1, 'rgba(255,190,100,0)');
+    c.fillStyle = bg; c.beginPath(); c.moveTo(x + 6, y + hh); c.lineTo(x + ww - 6, y + hh); c.lineTo(x + ww + 300, H); c.lineTo(x + 250, H); c.closePath(); c.fill();
+  });
+  const hz = c.createLinearGradient(0, H - 260, 0, H); hz.addColorStop(0, 'rgba(60,40,30,0)'); hz.addColorStop(1, 'rgba(60,40,30,0.35)'); c.fillStyle = hz; c.fillRect(0, H - 260, W, 260);
+}
+function paintWorkshopMid(c, W, H) {
+  const r = rng32(37);
+  c.fillStyle = 'rgba(32,26,24,0.95)';                           // the ceiling beam and its braces
+  c.fillRect(0, 0, W, 54); c.fillStyle = 'rgba(70,52,34,0.9)'; c.fillRect(0, 50, W, 5);
+  for (let x = 120; x < W; x += 420) { c.fillStyle = 'rgba(32,26,24,0.95)'; c.beginPath(); c.moveTo(x, 54); c.lineTo(x + 120, 54); c.lineTo(x, 150); c.closePath(); c.fill(); }
+  c.strokeStyle = 'rgba(20,18,22,0.9)'; c.lineWidth = 4;        // hanging chains
+  for (let i = 0; i < 6; i++) { const x = 40 + i * 280 + r() * 60, len = 90 + r() * 160; c.beginPath(); c.moveTo(x, 54); c.lineTo(x, 54 + len); c.stroke(); for (let y = 60; y < len; y += 14) { c.beginPath(); c.ellipse(x, 54 + y, 4, 7, 0, 0, 6.3); c.stroke(); } c.beginPath(); c.arc(x, 54 + len + 10, 9, 0.6, 5.7); c.stroke(); }
+  function shelf(x, y, w) {
+    c.fillStyle = 'rgba(52,38,26,0.96)'; c.fillRect(x, y, w, 10); c.fillStyle = 'rgba(214,165,74,0.22)'; c.fillRect(x, y, w, 2);
+    c.fillStyle = 'rgba(20,18,22,0.95)'; c.fillRect(x + 8, y + 10, 6, 26); c.fillRect(x + w - 14, y + 10, 6, 26);
+    for (let ix = x + 14; ix < x + w - 22;) {
+      const k = (r() * 4) | 0, iw = 18 + r() * 24;
+      c.fillStyle = 'rgba(16,14,20,0.96)';
+      if (k === 0) { c.fillRect(ix, y - 34, iw, 34); c.fillStyle = 'rgba(214,165,74,0.3)'; c.fillRect(ix + 3, y - 30, iw - 6, 3); }                  // a jar
+      else if (k === 1) { c.beginPath(); c.arc(ix + iw / 2, y - iw / 2, iw / 2, 0, 6.3); c.fill(); c.strokeStyle = 'rgba(214,165,74,0.4)'; c.lineWidth = 2; c.beginPath(); c.moveTo(ix + iw / 2, y - iw / 2); c.lineTo(ix + iw / 2 + 3, y - iw + 5); c.stroke(); }   // a clock
+      else if (k === 2) { for (let q = 0; q < 3; q++) c.fillRect(ix + q * 2, y - 8 - q * 8, iw - q * 4, 7); }                                   // a stack of gear discs
+      else { c.fillRect(ix, y - 40, 5, 40); c.beginPath(); c.arc(ix + 2.5, y - 42, 9, 0, 6.3); c.fill(); }                                     // a tool
+      ix += iw + 8;
+    }
+  }
+  shelf(310, 372, 250); shelf(318, 458, 232); shelf(762, 396, 128);
+  c.strokeStyle = 'rgba(214,165,74,0.12)'; c.lineWidth = 2;      // a belt drive between two pulleys
+  c.beginPath(); c.moveTo(1230, 180); c.lineTo(1262, 180); c.stroke();
+}
+function paintWorkshopNear(c, W, H) {
+  const r = rng32(41);
+  for (let i = 0; i < 5; i++) {
+    const x = i * (W / 5) + r() * 60, w = 66 + r() * 26;
+    c.fillStyle = 'rgba(24,18,16,0.97)'; c.fillRect(x, 0, w, H);
+    c.fillStyle = 'rgba(70,50,32,0.6)'; c.fillRect(x + 6, 0, 5, H);
+    c.fillStyle = 'rgba(184,138,59,0.5)'; for (let y = 130; y < H; y += 190) { c.fillRect(x - 5, y, w + 10, 10); c.fillStyle = 'rgba(100,72,30,0.7)'; c.fillRect(x - 5, y + 10, w + 10, 3); c.fillStyle = 'rgba(184,138,59,0.5)'; }
+  }
+  c.strokeStyle = 'rgba(14,12,16,0.85)'; c.lineWidth = 3;        // hanging threads with frozen dust
+  for (let i = 0; i < 9; i++) {
+    const x = 60 + i * 190 + r() * 70, len = 120 + r() * 220;
+    c.beginPath(); c.moveTo(x, 0); c.lineTo(x, len); c.stroke();
+    c.fillStyle = 'rgba(14,12,16,0.9)'; c.beginPath(); c.arc(x, len + 6, 7, 0, 6.3); c.fill();
+  }
+  c.fillStyle = 'rgba(255,214,150,0.5)';                          // dust motes, standing still
+  for (let i = 0; i < 70; i++) c.fillRect(r() * W, 60 + r() * (H - 280), 2, 2);
+  const fg = c.createLinearGradient(0, H - 260, 0, H); fg.addColorStop(0, 'rgba(70,50,36,0)'); fg.addColorStop(1, 'rgba(70,50,36,0.4)');
+  c.fillStyle = fg; c.fillRect(0, H - 260, W, 260);
+}
+
+/* ---- static props, painted once into the ground blocks (see paintDeco). Coordinates are world pixels; y is the floor line unless said otherwise. ---- */
+function specks(c, x, y, w, h, n, seed) {                        // a few motes hanging around something that is frozen
+  const r = rng32(seed); c.fillStyle = FRZ + '0.8)';
+  for (let i = 0; i < n; i++) c.fillRect(x + r() * w, y + r() * h, 2, 2);
+}
+function jaw(c, cx, cy, rad, dir) {
+  const a0 = dir > 0 ? 0 : Math.PI;
+  c.beginPath(); c.arc(cx, cy, rad, a0 + 0.55, a0 + 6.2832 - 0.55); c.arc(cx, cy, rad * 0.5, a0 + 6.2832 - 0.55, a0 + 0.55, true); c.closePath(); c.fill(); c.stroke();
+}
+function pWrench(c, x, y, w, h) {                                // a spanner hanging flat in the air: x,y,w,h = footprint of its (one-way) tiles
+  const cy = y + h * 0.5;
+  c.save(); c.lineJoin = 'round';
+  const g = c.createLinearGradient(0, y, 0, y + h); g.addColorStop(0, '#c9d2e0'); g.addColorStop(0.5, '#8a96ac'); g.addColorStop(1, '#4b5468');
+  c.fillStyle = g; c.strokeStyle = '#141824'; c.lineWidth = 3;
+  c.beginPath(); c.rect(x + 34, cy - 8, w - 68, 16); c.fill(); c.stroke();
+  jaw(c, x + 26, cy, 27, -1); jaw(c, x + w - 26, cy, 22, 1);
+  c.strokeStyle = FRZ + '0.4)'; c.lineWidth = 1.5; c.strokeRect(x + 34, cy - 10, w - 68, 20);
+  c.restore(); specks(c, x - 6, y - 12, w + 12, h + 24, 5, 3 + ((x / 7) | 0));
+}
+function pNail(c, x, y, w, h) {                                  // a giant nail lying in the air
+  const cy = y + h * 0.5;
+  c.save(); c.lineJoin = 'round';
+  const g = c.createLinearGradient(0, y, 0, y + h); g.addColorStop(0, '#d8d3c8'); g.addColorStop(0.5, '#928c82'); g.addColorStop(1, '#54504a');
+  c.fillStyle = g; c.strokeStyle = '#161410'; c.lineWidth = 3;
+  c.beginPath(); c.moveTo(x + 24, cy - 11); c.lineTo(x + w - 6, cy - 2); c.lineTo(x + w, cy); c.lineTo(x + w - 6, cy + 2); c.lineTo(x + 24, cy + 11); c.closePath(); c.fill(); c.stroke();
+  c.beginPath(); c.ellipse(x + 14, cy, 12, 20, 0, 0, 6.3); c.fill(); c.stroke();
+  c.strokeStyle = FRZ + '0.4)'; c.lineWidth = 1.5; c.beginPath(); c.moveTo(x + 24, cy - 13); c.lineTo(x + w - 8, cy - 3); c.stroke();
+  c.restore(); specks(c, x - 4, y - 12, w + 8, h + 24, 5, 9 + ((x / 7) | 0));
+}
+function pCrate(c, x, y, w, h) {                                 // a wooden crate, solid
+  c.save();
+  c.fillStyle = '#7a5530'; c.fillRect(x, y, w, h); c.strokeStyle = '#2b1c0e'; c.lineWidth = 3; c.strokeRect(x + 1.5, y + 1.5, w - 3, h - 3);
+  c.fillStyle = '#4a321c'; c.fillRect(x + 6, y + 6, w - 12, 8); c.fillRect(x + 6, y + h - 14, w - 12, 8);
+  c.strokeStyle = '#4a321c'; c.lineWidth = 7; c.beginPath(); c.moveTo(x + 8, y + 10); c.lineTo(x + w - 8, y + h - 10); c.moveTo(x + w - 8, y + 10); c.lineTo(x + 8, y + h - 10); c.stroke();
+  c.fillStyle = '#b88a3b'; for (const q of [[8, 8], [w - 8, 8], [8, h - 8], [w - 8, h - 8]]) { c.beginPath(); c.arc(x + q[0], y + q[1], 2.6, 0, 6.3); c.fill(); }
+  c.strokeStyle = FRZ + '0.3)'; c.lineWidth = 1.5; c.strokeRect(x - 2, y - 2, w + 4, h + 4);
+  c.restore();
+}
+function pBigGear(c, cx, cy, R) {                                // an iron wheel hanging in the air
+  c.save(); c.fillStyle = '#4c5666'; c.strokeStyle = '#141824'; c.lineWidth = 3; gearPath(c, cx, cy, R, 12, 12); c.fill(); c.stroke();
+  c.fillStyle = '#2d3440'; c.beginPath(); c.arc(cx, cy, R * 0.62, 0, 6.3); c.fill();
+  c.fillStyle = '#6b778b'; for (let i = 0; i < 5; i++) { const a = i / 5 * 6.2832; c.beginPath(); c.arc(cx + Math.cos(a) * R * 0.38, cy + Math.sin(a) * R * 0.38, R * 0.12, 0, 6.3); c.fill(); }
+  c.fillStyle = '#b88a3b'; c.beginPath(); c.arc(cx, cy, R * 0.16, 0, 6.3); c.fill();
+  c.strokeStyle = FRZ + '0.4)'; c.lineWidth = 1.5; gearPath(c, cx, cy, R + 3, 12, 12); c.stroke(); c.restore();
+  specks(c, cx - R - 8, cy - R - 8, R * 2 + 16, R * 2 + 16, 6, 21);
+}
+function pWorkbench(c, x, y) {                                   // x = left edge, 4 units wide, y = floor
+  const w = 4 * U;
+  c.save();
+  c.fillStyle = '#2b2420'; c.fillRect(x + 8, y - 4.2 * U, w - 16, 2.5 * U);        // pegboard with the outlines of tools
+  c.strokeStyle = 'rgba(214,165,74,0.35)'; c.lineWidth = 3; c.lineCap = 'round';
+  for (let i = 0; i < 5; i++) { const px = x + 26 + i * 34; c.beginPath(); c.moveTo(px, y - 4 * U + 8); c.lineTo(px, y - 4 * U + 8 + 34 + (i % 2) * 18); c.stroke(); c.beginPath(); c.arc(px, y - 4 * U + 8 + 40 + (i % 2) * 18, 6, 0, 6.3); c.stroke(); }
+  c.fillStyle = WOOD2; c.fillRect(x + 10, y - 1.1 * U, 8, 1.1 * U); c.fillRect(x + w - 18, y - 1.1 * U, 8, 1.1 * U);
+  c.fillStyle = '#4a321c'; c.fillRect(x + 12, y - 0.55 * U, w - 24, 6);
+  c.fillStyle = WOOD; c.fillRect(x, y - 1.25 * U, w, 14); c.fillStyle = '#a9774a'; c.fillRect(x, y - 1.25 * U, w, 4);
+  c.fillStyle = '#5d6677'; c.fillRect(x + 12, y - 1.25 * U - 16, 30, 16); c.fillRect(x + 22, y - 1.25 * U - 26, 10, 12);   // a vise
+  c.fillStyle = '#b88a3b'; c.beginPath(); c.arc(x + 98, y - 1.25 * U - 9, 9, 0, 6.3); c.fill(); c.fillStyle = '#7a5518'; c.beginPath(); c.arc(x + 98, y - 1.25 * U - 9, 3.6, 0, 6.3); c.fill();   // a gear being repaired
+  c.fillStyle = '#e9dfc4'; c.beginPath(); c.arc(x + 146, y - 1.25 * U - 11, 11, 0, 6.3); c.fill(); c.strokeStyle = '#2b2433'; c.lineWidth = 2; c.beginPath(); c.moveTo(x + 146, y - 1.25 * U - 11); c.lineTo(x + 146, y - 1.25 * U - 19); c.moveTo(x + 146, y - 1.25 * U - 11); c.lineTo(x + 152, y - 1.25 * U - 9); c.stroke();
+  c.restore();
+}
+function pDrawers(c, x, y) {                                     // the cabinet of "repairs nobody collected": the top drawer is open, a key glows inside
+  c.save();
+  const w = 2.2 * U, h = 3.1 * U;
+  c.fillStyle = '#3a2a1b'; c.fillRect(x, y - h, w, h); c.strokeStyle = '#1c130b'; c.lineWidth = 3; c.strokeRect(x + 1.5, y - h + 1.5, w - 3, h - 3);
+  for (let i = 0; i < 4; i++) { const dy = y - h + 10 + i * (h - 16) / 4; c.fillStyle = i === 0 ? '#1a120b' : '#4a321c'; c.fillRect(x + 8, dy, w - 16, (h - 16) / 4 - 6); c.fillStyle = BRASS; c.fillRect(x + w / 2 - 8, dy + (h - 16) / 8 - 5, 16, 4); }
+  const g = c.createRadialGradient(x + w / 2, y - h + 24, 2, x + w / 2, y - h + 24, 60); g.addColorStop(0, 'rgba(47,214,196,0.55)'); g.addColorStop(1, 'rgba(47,214,196,0)'); c.fillStyle = g; c.fillRect(x - 40, y - h - 36, w + 80, 120);
+  c.strokeStyle = '#7ff3e6'; c.lineWidth = 3; c.beginPath(); c.arc(x + w / 2 - 12, y - h + 24, 7, 0, 6.3); c.moveTo(x + w / 2 - 5, y - h + 24); c.lineTo(x + w / 2 + 18, y - h + 24); c.moveTo(x + w / 2 + 12, y - h + 24); c.lineTo(x + w / 2 + 12, y - h + 31); c.stroke();
+  c.fillStyle = '#d9cba6'; c.save(); c.translate(x + w + 14, y - h + 30); c.rotate(0.05); c.fillRect(0, 0, 36, 46); c.fillStyle = '#7a1f1a'; c.font = '800 16px ' + FONT; c.textAlign = 'center'; c.direction = 'ltr'; c.fillText('400', 18, 30); c.restore();
+  c.restore();
+}
+function pShelfUnit(c, x, y, w) {                                // a wall shelf with things on it, y = shelf top
+  c.save();
+  c.fillStyle = '#3a2a1b'; c.fillRect(x, y, w, 12); c.fillStyle = '#a9774a'; c.fillRect(x, y, w, 3);
+  c.fillStyle = '#262c37'; for (let bx = x + 14; bx < x + w - 10; bx += 96) { c.beginPath(); c.moveTo(bx, y + 12); c.lineTo(bx + 18, y + 12); c.lineTo(bx, y + 40); c.closePath(); c.fill(); }
+  const r = rng32((x | 0) + 5);
+  for (let ix = x + 10; ix < x + w - 30;) {
+    const k = (r() * 3) | 0, iw = 18 + r() * 16;
+    if (k === 0) { c.fillStyle = '#5f7a8c'; c.fillRect(ix, y - 30, iw, 30); c.fillStyle = 'rgba(255,255,255,.25)'; c.fillRect(ix + 3, y - 27, 4, 22); }
+    else if (k === 1) { c.fillStyle = '#d9cba6'; c.beginPath(); c.arc(ix + iw / 2, y - iw / 2, iw / 2, 0, 6.3); c.fill(); c.strokeStyle = '#2b2433'; c.lineWidth = 2; c.stroke(); }
+    else { c.fillStyle = '#b88a3b'; for (let q = 0; q < 3; q++) c.fillRect(ix + q * 2, y - 8 - q * 9, iw - q * 4, 8); }
+    ix += iw + 10;
+  }
+  c.restore();
+}
+function pLamp(c, x, y) {                                        // a gas lamp on the wall, y = the lamp's centre; the glow is part of the picture
+  const g = c.createRadialGradient(x, y, 4, x, y, 150); g.addColorStop(0, 'rgba(255,196,110,0.38)'); g.addColorStop(0.4, 'rgba(255,196,110,0.12)'); g.addColorStop(1, 'rgba(255,196,110,0)');
+  c.fillStyle = g; c.fillRect(x - 150, y - 150, 300, 300);
+  c.fillStyle = '#262c37'; c.fillRect(x - 3, y - 30, 6, 60); c.fillRect(x - 16, y - 34, 32, 6);
+  c.fillStyle = '#ffe3a1'; c.beginPath(); c.ellipse(x, y, 9, 13, 0, 0, 6.3); c.fill(); c.strokeStyle = '#b88a3b'; c.lineWidth = 2; c.stroke();
+}
+function pPanel(c, x, y) {                                       // the carved wall panel that tells the order of the three levers
+  const w = 4.6 * U, h = 2.6 * U, top = y - h;
+  c.save();
+  c.fillStyle = '#2b2630'; c.fillRect(x, top, w, h); c.strokeStyle = '#4f4852'; c.lineWidth = 5; c.strokeRect(x + 2.5, top + 2.5, w - 5, h - 5);
+  c.strokeStyle = 'rgba(214,165,74,0.8)'; c.fillStyle = 'rgba(214,165,74,0.8)'; c.lineWidth = 4; c.lineCap = 'round'; c.lineJoin = 'round';
+  const cxs = [x + w * 0.2, x + w * 0.5, x + w * 0.8], cyy = top + h * 0.5;
+  [1, 2, 0].forEach(function (id, i) { leverSymbol(c, id, cxs[i], cyy, 26); });                // the order: triangle, square, circle
+  for (let i = 0; i < 2; i++) { const ax = (cxs[i] + cxs[i + 1]) / 2; c.beginPath(); c.moveTo(ax - 14, cyy); c.lineTo(ax + 12, cyy); c.moveTo(ax + 3, cyy - 8); c.lineTo(ax + 12, cyy); c.lineTo(ax + 3, cyy + 8); c.stroke(); }
+  c.fillStyle = 'rgba(214,165,74,0.1)'; c.fillRect(x + 6, top + 6, w - 12, h - 12);
+  c.restore();
+}
+function leverSymbol(c, id, x, y, s) {                           // 0 circle, 1 triangle, 2 square (stroked in the current style)
+  c.beginPath();
+  if (id === 0) c.arc(x, y, s * 0.62, 0, 6.3);
+  else if (id === 1) { c.moveTo(x, y - s * 0.7); c.lineTo(x + s * 0.7, y + s * 0.55); c.lineTo(x - s * 0.7, y + s * 0.55); c.closePath(); }
+  else c.rect(x - s * 0.55, y - s * 0.55, s * 1.1, s * 1.1);
+  c.stroke();
+}
+function drawMaster(c, e) {                                      // the Mother Clock: a tall frozen clock case; x = centre, y = floor. Its pendulum hangs mid-swing, its hands are stuck
+  const t = e.ph, talk = e.talk, scan = e.scan, k = e.state === 'set' || e.state === 'done' ? e.setK : 0, ease = k * k * (3 - 2 * k);
+  const INKC = '#1a1620';
+  c.save(); c.translate(e.x, e.y); c.lineJoin = 'round'; c.lineCap = 'round';
+  c.fillStyle = 'rgba(0,0,0,0.3)'; c.beginPath(); c.ellipse(0, 0, 60, 8, 0, 0, 6.3); c.fill();
+  c.fillStyle = WOOD2; c.fillRect(-48, -36, 96, 36); c.strokeStyle = INKC; c.lineWidth = 3; c.strokeRect(-48, -36, 96, 36); c.fillStyle = BRASS; c.fillRect(-48, -36, 96, 5);       // plinth
+  c.fillStyle = WOOD; c.fillRect(-36, -152, 72, 118); c.strokeRect(-36, -152, 72, 118);                                                                                          // trunk
+  c.fillStyle = '#10151c'; c.beginPath(); c.moveTo(-23, -48); c.lineTo(-23, -128); c.quadraticCurveTo(-23, -144, 0, -144); c.quadraticCurveTo(23, -144, 23, -128); c.lineTo(23, -48); c.closePath(); c.fill();   // glass door
+  c.strokeStyle = BRASS; c.lineWidth = 3; c.stroke();
+  const ang = 0.36, bx = Math.sin(ang) * 66, by = -138 + Math.cos(ang) * 66;                                                                                                       // the pendulum, stopped mid-swing
+  c.strokeStyle = '#8f7a4a'; c.lineWidth = 3; c.beginPath(); c.moveTo(0, -138); c.lineTo(bx, by); c.stroke();
+  c.fillStyle = BRASS_L; c.beginPath(); c.arc(bx, by, 11, 0, 6.3); c.fill(); c.strokeStyle = INKC; c.lineWidth = 2.5; c.stroke(); c.fillStyle = BRASS; c.beginPath(); c.arc(bx, by, 4, 0, 6.3); c.fill();
+  c.fillStyle = WOOD; c.fillRect(-44, -270, 88, 118); c.strokeStyle = INKC; c.lineWidth = 3; c.strokeRect(-44, -270, 88, 118);                                                      // hood
+  c.fillStyle = BRASS; c.fillRect(-44, -156, 88, 5); c.fillRect(-44, -272, 88, 5);
+  c.fillStyle = WOOD2; c.beginPath(); c.moveTo(-50, -270); c.lineTo(0, -304); c.lineTo(50, -270); c.closePath(); c.fill(); c.stroke(); c.fillStyle = BRASS; c.beginPath(); c.arc(0, -308, 6, 0, 6.3); c.fill(); c.stroke();
+  const dx = 0, dy = -212, R = 33;
+  if (talk > 0.01) { c.fillStyle = 'rgba(224,86,74,' + (0.16 * talk) + ')'; c.beginPath(); c.arc(dx, dy, R + 16 + Math.sin(t * 25) * 3, 0, 6.3); c.fill(); }
+  c.fillStyle = '#d9cfb4'; c.beginPath(); c.arc(dx, dy, R, 0, 6.3); c.fill(); c.strokeStyle = BRASS; c.lineWidth = 5; c.stroke();
+  c.strokeStyle = '#2b2433'; c.lineWidth = 2.4; for (let i = 0; i < 12; i++) { const a = i / 12 * 6.2832; c.beginPath(); c.moveTo(dx + Math.sin(a) * (R - 3), dy - Math.cos(a) * (R - 3)); c.lineTo(dx + Math.sin(a) * (R - 9), dy - Math.cos(a) * (R - 9)); c.stroke(); }
+  const jit = talk > 0.1 ? Math.sin(t * 38) * 0.05 * talk : 0;
+  const mAng = (0.1 - (0.1 + 12.566) * ease) + jit, hAng = 0.0 + jit * 0.5, sAng = 0.5 * (1 - ease);                                  // stuck a hair past twelve; Nader spins them back to the exact hour
+  c.strokeStyle = INKC; c.lineWidth = 4.5; c.beginPath(); c.moveTo(dx, dy); c.lineTo(dx + Math.sin(hAng) * R * 0.5, dy - Math.cos(hAng) * R * 0.5); c.stroke();
+  c.lineWidth = 3; c.beginPath(); c.moveTo(dx, dy); c.lineTo(dx + Math.sin(mAng) * R * 0.82, dy - Math.cos(mAng) * R * 0.82); c.stroke();
+  if (ease < 1) { c.strokeStyle = '#a3322a'; c.lineWidth = 1.6; c.beginPath(); c.moveTo(dx, dy); c.lineTo(dx + Math.sin(sAng) * R * 0.88, dy - Math.cos(sAng) * R * 0.88); c.stroke(); }
+  c.fillStyle = INKC; c.beginPath(); c.arc(dx, dy, 3.4, 0, 6.3); c.fill();
+  if (e.state === 'done') { c.fillStyle = 'rgba(255,233,168,' + (0.1 + 0.06 * Math.sin(t * 3)) + ')'; c.beginPath(); c.arc(dx, dy, R + 10, 0, 6.3); c.fill(); }
+  if (scan > 0.01) {                                                                                                                                                              // Tik's reading: a cyan line sweeping up and down the case
+    const sy = -300 + (0.5 + 0.5 * Math.sin(t * 2.4)) * 300;
+    c.fillStyle = 'rgba(111,224,255,' + (0.3 * scan) + ')'; c.fillRect(-50, sy - 3, 100, 6); c.fillStyle = 'rgba(111,224,255,' + (0.07 * scan) + ')'; c.fillRect(-50, -310, 100, 310);
+  }
+  if (e.state !== 'done' && e.state !== 'set') { c.strokeStyle = FRZ + '0.5)'; c.lineWidth = 2; c.strokeRect(-52, -312, 104, 312); c.beginPath(); c.arc(dx, dy, R + 6, 0, 6.3); c.stroke(); }                  // the frost around it
+  c.restore();
+  if (e.state !== 'done' && e.state !== 'set') specks(c, e.x - 60, e.y - 320, 120, 320, 10, 91);
+}
+function pBigClock(c, x, y, R) {                                 // the great display clock Nader broke: cracked glass, hands stopped
+  c.save(); c.translate(x, y);
+  c.strokeStyle = '#2a2530'; c.lineWidth = 4; c.beginPath(); c.moveTo(0, -R); c.lineTo(0, -R - 200); c.stroke();
+  c.fillStyle = '#3a2a1b'; c.beginPath(); c.arc(0, 0, R + 14, 0, 6.3); c.fill(); c.strokeStyle = BRASS; c.lineWidth = 6; c.stroke();
+  c.fillStyle = '#d9cfb4'; c.beginPath(); c.arc(0, 0, R, 0, 6.3); c.fill();
+  c.strokeStyle = '#2b2433'; c.lineWidth = 3; for (let i = 0; i < 12; i++) { const a = i / 12 * 6.2832; c.beginPath(); c.moveTo(Math.sin(a) * (R - 6), -Math.cos(a) * (R - 6)); c.lineTo(Math.sin(a) * (R - 20), -Math.cos(a) * (R - 20)); c.stroke(); }
+  c.lineWidth = 6; c.lineCap = 'round'; c.beginPath(); c.moveTo(0, 0); c.lineTo(R * 0.45, -R * 0.1); c.moveTo(0, 0); c.lineTo(-R * 0.2, -R * 0.7); c.stroke();
+  c.strokeStyle = 'rgba(255,255,255,0.7)'; c.lineWidth = 2; c.beginPath(); c.moveTo(R * 0.2, -R * 0.9); c.lineTo(R * 0.1, -R * 0.3); c.lineTo(R * 0.5, 0.1 * R); c.moveTo(R * 0.1, -R * 0.3); c.lineTo(-R * 0.3, -R * 0.1); c.lineTo(-R * 0.5, R * 0.4); c.moveTo(R * 0.5, 0.1 * R); c.lineTo(R * 0.4, R * 0.6); c.stroke();
+  c.restore();
+}
+function pCratesStack(c, x, y) { pCrate(c, x, y - 1.2 * U, 1.2 * U, 1.2 * U); pCrate(c, x + 1.2 * U, y - 1.2 * U, 1.2 * U, 1.2 * U); pCrate(c, x + 0.5 * U, y - 2.4 * U, 1.2 * U, 1.2 * U); }
+function pOilStain(c, x, y, w) { c.fillStyle = 'rgba(8,6,10,0.35)'; c.beginPath(); c.ellipse(x, y - 1, w, 4, 0, 0, 6.3); c.fill(); }
+
+/* ---- paint the deco list into a ground block (g is already scaled to the block's pixel size, origin = block corner) ---- */
+function paintDeco(g, t0x, t0y) {
+  const x0 = t0x * U, y0 = t0y * U, x1 = x0 + CHK * U, y1 = y0 + CHK * U, L = Level.deco;
+  if (!L.length) return;
+  g.save(); g.translate(-x0, -y0);
+  for (let i = 0; i < L.length; i++) { const d = L[i]; if (d.x1 > x0 && d.x0 < x1 && d.y1 > y0 && d.y0 < y1) d.draw(g); }
+  g.restore();
+}
+function decoTouches(ci, cj) {
+  const x0 = ci * CHK * U, y0 = cj * CHK * U, x1 = x0 + CHK * U, y1 = y0 + CHK * U, L = Level.deco;
+  for (let i = 0; i < L.length; i++) { const d = L[i]; if (d.x1 > x0 && d.x0 < x1 && d.y1 > y0 && d.y0 < y1) return true; }
+  return false;
+}
+function addDeco(x0, y0, x1, y1, fn) { Level.deco.push({ x0: x0, y0: y0, x1: x1, y1: y1, draw: fn }); }
+
+/* ---- animated pieces (drawn every frame, a handful at most) ---- */
+const Spr = { saw: null };
+function sawSprite() {
+  if (Spr.saw) return Spr.saw;
+  const R = 40, n = R * 2 + 8, cv = mk(n, n), c = cv.getContext('2d'), m = n / 2;
+  c.lineJoin = 'round';
+  const g = c.createRadialGradient(m - 8, m - 8, 4, m, m, R); g.addColorStop(0, '#e6ebf3'); g.addColorStop(1, '#7c879b');
+  c.fillStyle = g; c.strokeStyle = '#141824'; c.lineWidth = 3;
+  c.beginPath();
+  for (let i = 0; i < 16; i++) { const a = i / 16 * 6.2832, b = (i + 0.5) / 16 * 6.2832, d = (i + 1) / 16 * 6.2832; c.lineTo(m + Math.cos(a) * (R - 9), m + Math.sin(a) * (R - 9)); c.lineTo(m + Math.cos(b) * R, m + Math.sin(b) * R); c.lineTo(m + Math.cos(d) * (R - 9), m + Math.sin(d) * (R - 9)); }
+  c.closePath(); c.fill(); c.stroke();
+  c.fillStyle = '#3a4252'; c.beginPath(); c.arc(m, m, R * 0.5, 0, 6.3); c.fill();
+  c.fillStyle = '#9aa5b8'; for (let i = 0; i < 4; i++) { const a = i / 4 * 6.2832; c.beginPath(); c.arc(m + Math.cos(a) * R * 0.3, m + Math.sin(a) * R * 0.3, 5, 0, 6.3); c.fill(); }
+  c.fillStyle = '#d6a54a'; c.beginPath(); c.arc(m, m, 7, 0, 6.3); c.fill(); c.stroke();
+  return (Spr.saw = cv);
+}
+function drawSaw(c, e) {
+  const R = e.r, x0 = Math.min(e.ax, e.bx) - R, x1 = Math.max(e.ax, e.bx) + R;
+  c.fillStyle = '#14181f'; c.fillRect(x0, e.y - 2, x1 - x0, 6);                                            // the slot in the floor
+  c.fillStyle = 'rgba(184,138,59,0.55)'; c.fillRect(x0, e.y - 2, x1 - x0, 1.5);
+  c.save(); c.beginPath(); c.rect(e.x - R - 6, e.y - R - 8, R * 2 + 12, R + 8); c.clip();                  // only the half above the floor is seen
+  c.translate(e.x, e.y + R * 0.1); c.rotate(e.rot); const sp = sawSprite(); c.drawImage(sp, -R, -R, R * 2, R * 2);
+  c.restore();
+}
+function drawTik(c) {                                            // a copper ball with a clock-dial lens in front and a propeller on top
+  const k = Tik; if (!k.on) return;
+  const f = k.face, t = k.t, talk = Talk.talking('tik'), hint = !!k.bub && k.bub.t < 1.0, busy = talk || hint || k.mode === 'scan' || k.mode === 'look' || k.mode === 'rise';
+  const bob = Math.sin(t * 3.2) * 2.5, tilt = clamp(k.vx / 900, -0.22, 0.22);
+  const tgt = k.mode === 'scan' && k.scanE ? { x: k.scanE.x, y: k.scanE.y - 10 } : (k.mode === 'look' && k.look ? k.look : null);
+  if (tgt) {                                                      // the scanning beam
+    const fl = 0.1 + 0.05 * Math.sin(t * 22);
+    c.fillStyle = 'rgba(111,224,255,' + fl + ')'; c.beginPath(); c.moveTo(k.x + f * 6, k.y + 8); c.lineTo(tgt.x - 34, tgt.y); c.lineTo(tgt.x + 34, tgt.y); c.closePath(); c.fill();
+    c.strokeStyle = 'rgba(111,224,255,0.45)'; c.lineWidth = 1.6; c.setLineDash([6, 6]); c.lineDashOffset = -t * 60;
+    c.beginPath(); c.moveTo(k.x + f * 6, k.y + 8); c.lineTo(tgt.x, tgt.y); c.stroke(); c.setLineDash([]);
+  }
+  c.save(); c.translate(k.x, k.y + bob); c.rotate(tilt);
+  if (k.glow > 0) { c.fillStyle = 'rgba(111,224,255,' + (0.2 * k.glow) + ')'; c.beginPath(); c.arc(0, 0, 42, 0, 6.3); c.fill(); }
+  c.lineJoin = 'round'; c.lineCap = 'round';
+  const INKC = INK;
+  c.fillStyle = 'rgba(111,224,255,' + (busy ? 0.26 : 0.14) + ')'; c.beginPath(); c.ellipse(0, 24, 7 + Math.sin(t * 30) * 1.5, 2.6, 0, 0, 6.3); c.fill();       // the downwash
+  c.fillStyle = INKC; c.beginPath(); c.moveTo(-5, 15); c.lineTo(5, 15); c.lineTo(3.5, 21); c.lineTo(-3.5, 21); c.closePath(); c.fill();                       // the nozzle under the ball
+  c.fillStyle = '#7a5518'; c.beginPath(); c.moveTo(-4, 15.5); c.lineTo(4, 15.5); c.lineTo(2.8, 19.5); c.lineTo(-2.8, 19.5); c.closePath(); c.fill();
+  c.strokeStyle = INKC; c.lineWidth = 6; c.beginPath(); c.moveTo(0, -13); c.lineTo(0, -22); c.stroke(); c.strokeStyle = '#7a5518'; c.lineWidth = 3; c.beginPath(); c.moveTo(0, -13); c.lineTo(0, -22); c.stroke();   // the mast
+  const spin = (busy ? 54 : 40) * (k.mode === 'rise' ? Math.min(1, k.riseT / 0.6) : 1), a = t * spin;
+  c.fillStyle = 'rgba(205,232,255,0.17)'; c.beginPath(); c.ellipse(0, -24, 31, 4.6, 0, 0, 6.3); c.fill();                                                  // the propeller: a blur and two blades turning
+  for (let i = 0; i < 2; i++) {
+    const L = Math.cos(a + i * 1.5708) * 29;
+    c.strokeStyle = INKC; c.lineWidth = 5.4; c.beginPath(); c.moveTo(-L, -24); c.lineTo(L, -24); c.stroke();
+    c.strokeStyle = '#cfd5de'; c.lineWidth = 2.6; c.beginPath(); c.moveTo(-L, -24); c.lineTo(L, -24); c.stroke();
+  }
+  c.fillStyle = BRASS; c.beginPath(); c.arc(0, -24, 3.6, 0, 6.3); c.fill(); c.strokeStyle = INKC; c.lineWidth = 1.6; c.stroke();
+  c.fillStyle = INKC; c.beginPath(); c.arc(0, 0, 18, 0, 6.3); c.fill();                                                                                       // the ball
+  c.fillStyle = '#c9923f'; c.beginPath(); c.arc(0, 0, 16, 0, 6.3); c.fill();
+  c.fillStyle = '#8f5d26'; c.beginPath(); c.arc(0, 0, 16, 0.2, 2.3); c.lineTo(0, 0); c.fill();
+  c.fillStyle = '#c9923f'; c.beginPath(); c.arc(-1.5, -1.5, 14.2, 0, 6.3); c.fill();
+  c.strokeStyle = 'rgba(255,236,180,0.6)'; c.lineWidth = 2.4; c.beginPath(); c.arc(0, 0, 12.5, 3.5, 4.5); c.stroke();                                         // a glint
+  c.strokeStyle = '#6b4a1c'; c.lineWidth = 2; c.beginPath(); c.ellipse(0, 1, 15.6, 4.2, 0, 0, 6.3); c.stroke();                                              // the seam round the ball
+  c.fillStyle = '#e6c06a'; for (let i = 0; i < 3; i++) { c.beginPath(); c.arc(-10 + i * 3.5, 2.6 + (i === 1 ? 1.1 : 0), 1.1, 0, 6.3); c.fill(); }
+  c.scale(f, 1);                                                                                                                                             // everything below faces where Tik looks
+  const lx = 6, ly = -0.5;
+  c.fillStyle = INKC; c.beginPath(); c.arc(lx, ly, 10.5, 0, 6.3); c.fill(); c.fillStyle = '#8f5d26'; c.beginPath(); c.arc(lx, ly, 9.4, 0, 6.3); c.fill();
+  c.fillStyle = busy ? '#aef1ff' : '#e9dfc4'; c.beginPath(); c.arc(lx, ly, 7.6, 0, 6.3); c.fill();
+  c.strokeStyle = '#2b2433'; c.lineWidth = 1.2; for (let i = 0; i < 4; i++) { const q = i * 1.5708; c.beginPath(); c.moveTo(lx + Math.sin(q) * 6.6, ly - Math.cos(q) * 6.6); c.lineTo(lx + Math.sin(q) * 5, ly - Math.cos(q) * 5); c.stroke(); }
+  const mA = talk ? t * 11 + Math.sin(t * 34) * 0.5 : Math.floor(t * 1.6) * 0.5236, hA = talk ? -t * 3 : 1.2;
+  c.strokeStyle = '#1a1620'; c.lineWidth = 1.6; c.beginPath(); c.moveTo(lx, ly); c.lineTo(lx + Math.sin(hA) * 3.6, ly - Math.cos(hA) * 3.6); c.stroke();
+  c.lineWidth = 1.2; c.beginPath(); c.moveTo(lx, ly); c.lineTo(lx + Math.sin(mA) * 5.6, ly - Math.cos(mA) * 5.6); c.stroke();
+  c.fillStyle = 'rgba(255,255,255,0.65)'; c.beginPath(); c.arc(lx - 2.6, ly - 3, 1.5, 0, 6.3); c.fill();
+  c.restore();
+}
+function drawTalkFx(c) {                                         // "speech effects": little sound arcs beside whoever is talking while their line is still being typed
+  if (!Talk.active || !Talk.cur) return;
+  const w = Talk.cur.w || 'narr'; if (!Talk.talking(w)) return;
+  let x, y, d = 1, rgb;
+  if (w === 'nader') { x = P.x + P.dir * 22; y = P.y - P.h - 4; d = P.dir; rgb = '230,192,106'; }
+  else if (w === 'tik' && Tik.on) { x = Tik.x + Tik.face * 22; y = Tik.y - 22; d = Tik.face; rgb = '111,224,255'; }
+  else if (w === 'master' && Level.S1 && Level.S1.master) { const m = Level.S1.master; x = m.x + 56; y = m.y - 4.2 * U; rgb = '224,86,74'; }
+  else return;
+  const t = Game.time * 8;
+  c.save(); c.translate(x, y); c.scale(d, 1); c.lineCap = 'round';
+  for (let i = 0; i < 3; i++) {
+    const q = (t + i * 0.8) % 3, a = Math.max(0, 1 - q / 3) * (0.35 + 0.65 * Math.abs(Math.sin(t * 2 + i)));
+    c.strokeStyle = 'rgba(' + rgb + ',' + a + ')'; c.lineWidth = 3;
+    c.beginPath(); c.arc(-6, 0, 7 + i * 6, -0.75, 0.75); c.stroke();
+  }
+  c.restore();
+}
+function drawSpeech(c, x, y, text, a) {                           // a speech bubble over the world (Tik's hints)
+  c.font = '400 18px ' + FONT; c.textAlign = 'center'; c.textBaseline = 'middle'; c.direction = LANG === 'ar' ? 'rtl' : 'ltr';
+  const w = c.measureText(text).width + 30;
+  c.globalAlpha = a;
+  c.fillStyle = 'rgba(5,8,14,0.86)'; rrect(c, x - w / 2, y - 18, w, 36, 10); c.fill();
+  c.strokeStyle = 'rgba(111,224,255,0.7)'; c.lineWidth = 1.2; c.stroke();
+  c.beginPath(); c.moveTo(x - 6, y + 18); c.lineTo(x, y + 26); c.lineTo(x + 6, y + 18); c.fillStyle = 'rgba(5,8,14,0.86)'; c.fill();
+  c.fillStyle = '#e4ddcc'; c.fillText(text, x, y + 1);
+  c.globalAlpha = 1;
+}
+function drawChest(c, e) {
+  c.save(); c.translate(e.x, e.y);
+  c.fillStyle = 'rgba(0,0,0,0.3)'; c.beginPath(); c.ellipse(0, 0, 36, 6, 0, 0, 6.3); c.fill();
+  c.fillStyle = '#4a321c'; c.fillRect(-30, -34, 60, 34); c.strokeStyle = '#1c130b'; c.lineWidth = 3; c.strokeRect(-30, -34, 60, 34);
+  c.fillStyle = BRASS; c.fillRect(-30, -22, 60, 5); c.fillRect(-22, -34, 6, 34); c.fillRect(16, -34, 6, 34);
+  if (e.open > 0) { c.fillStyle = 'rgba(111,224,255,' + (0.5 * e.open) + ')'; c.beginPath(); c.ellipse(0, -34, 26, 8 * e.open, 0, 0, 6.3); c.fill(); }
+  c.save(); c.translate(-30, -34); c.rotate(-e.open * 1.9);                                                    // the lid, hinged at the back
+  c.fillStyle = '#5a3c20'; c.beginPath(); c.moveTo(0, 0); c.lineTo(60, 0); c.quadraticCurveTo(60, -22, 30, -22); c.quadraticCurveTo(0, -22, 0, 0); c.fill(); c.stroke();
+  c.fillStyle = BRASS; c.fillRect(8, -8, 6, 8); c.fillRect(46, -8, 6, 8); c.restore();
+  if (e.open < 0.5) { c.fillStyle = '#7ff3e6'; c.beginPath(); c.arc(0, -26, 4, 0, 6.3); c.fill(); }          // a small blue glint through the keyhole
+  c.restore();
+}
+function drawMachine(c, e) {
+  c.save(); c.translate(e.x, e.y);
+  c.fillStyle = 'rgba(0,0,0,0.3)'; c.beginPath(); c.ellipse(0, 0, 44, 7, 0, 0, 6.3); c.fill();
+  c.fillStyle = '#2d333f'; c.fillRect(-36, -118, 72, 118); c.strokeStyle = '#141824'; c.lineWidth = 3; c.strokeRect(-36, -118, 72, 118);
+  c.fillStyle = BRASS; c.fillRect(-36, -118, 72, 8); c.fillRect(-36, -8, 72, 8);
+  c.fillStyle = '#141a28'; c.beginPath(); c.arc(0, -64, 25, 0, 6.3); c.fill(); c.strokeStyle = BRASS; c.lineWidth = 4; c.stroke();
+  if (e.done) { c.save(); c.translate(0, -64); c.rotate(e.spin); c.fillStyle = '#d6a54a'; gearPath(c, 0, 0, 20, 10, 6); c.fill(); c.fillStyle = '#7a5518'; c.beginPath(); c.arc(0, 0, 6, 0, 6.3); c.fill(); c.restore(); c.fillStyle = 'rgba(255,233,168,' + (0.15 + 0.1 * Math.sin(Game.time * 6)) + ')'; c.beginPath(); c.arc(0, -64, 38, 0, 6.3); c.fill(); }
+  else { c.strokeStyle = 'rgba(214,165,74,0.5)'; c.lineWidth = 3; c.save(); c.translate(0, -64); gearPath(c, 0, 0, 18, 10, 6); c.setLineDash([4, 5]); c.stroke(); c.restore(); }
+  c.fillStyle = e.done ? '#2fd6c4' : '#e0564a'; c.beginPath(); c.arc(0, -100, 5, 0, 6.3); c.fill();
+  c.restore();
+}
+function drawScanSpot(c, e) {                                    // a faint glimmer in the frozen pit until Tik has looked at it
+  if (e.done) return;
+  const a = 0.25 + 0.15 * Math.sin(Game.time * 3);
+  c.fillStyle = FRZ + a + ')'; c.beginPath(); c.ellipse(e.x, e.y - 4, 26, 6, 0, 0, 6.3); c.fill();
+  c.fillStyle = FRZ + '0.7)'; for (let i = 0; i < 4; i++) c.fillRect(e.x - 18 + i * 12, e.y - 12 - ((Game.time * 8 + i * 5) % 18), 2, 2);
+}
+function drawKeyGear(c, e) {                                     // the missing gear: bigger than the others, with a teal halo
+  if (e.got) return;
+  const bob = Math.sin(Game.time * 3) * 4;
+  c.fillStyle = 'rgba(47,214,196,0.22)'; c.beginPath(); c.arc(e.x, e.y + bob, 30, 0, 6.3); c.fill();
+  c.save(); c.translate(e.x, e.y + bob); c.rotate(Game.time * 0.9); c.drawImage(BG.gear, -22, -22, 44, 44); c.restore();
+}
+function drawLift(c, e) {
+  c.save(); c.translate(e.x, e.y - e.lift);
+  c.strokeStyle = '#2a2530'; c.lineWidth = 4; c.beginPath(); c.moveTo(-34, -2 * U); c.lineTo(-34, -1500); c.moveTo(34, -2 * U); c.lineTo(34, -1500); c.stroke();
+  c.fillStyle = '#2d333f'; c.fillRect(-52, -8, 104, 8); c.fillStyle = BRASS; c.fillRect(-52, -8, 104, 3);
+  c.fillStyle = 'rgba(46,54,70,0.55)'; c.fillRect(-52, -2.2 * U, 4, 2.2 * U - 8); c.fillRect(48, -2.2 * U, 4, 2.2 * U - 8);
+  c.fillStyle = '#2d333f'; c.fillRect(-56, -2.2 * U - 8, 112, 10); c.fillStyle = BRASS; c.fillRect(-56, -2.2 * U - 8, 112, 3);
+  c.fillStyle = e.ready ? '#2fd6c4' : '#e0564a'; c.beginPath(); c.arc(0, -2.2 * U - 18, 5, 0, 6.3); c.fill();
+  c.restore();
+}
 
 /* ---------- 19. canvas sizing, quality, language ---------- */
 const canvas = $('#game');
@@ -3630,7 +4958,8 @@ function applyLangDOM() {
   const rtl = LANG === 'ar';
   document.documentElement.lang = LANG; document.documentElement.dir = rtl ? 'rtl' : 'ltr';
   $('#screens').style.direction = rtl ? 'rtl' : 'ltr'; $('#toast').style.direction = rtl ? 'rtl' : 'ltr'; $('#stress-live').style.direction = rtl ? 'rtl' : 'ltr';
-  document.title = rtl ? 'مملكة الدقائق المسروقة — نموذج المرحلة 5' : 'The Kingdom of Stolen Minutes — Phase 5 prototype';
+  document.title = rtl ? 'مملكة الدقائق المسروقة — المرحلة 7 · بناء المراحل' : 'The Kingdom of Stolen Minutes — Phase 7 · stage building';
+  $('#talk').style.direction = rtl ? 'rtl' : 'ltr';
   document.querySelectorAll('[data-i18n]').forEach(function (el) { el.textContent = t(el.getAttribute('data-i18n')); });
   $('#b-continue').style.display = S.progress ? '' : 'none';
   UI.renderSettings(); UI.renderControls(); UI.renderPerf();
@@ -3701,7 +5030,7 @@ const Perf = {
       'update ' + this.upd.toFixed(2) + ' ms   draw ' + this.ren.toFixed(2) + ' ms\n' +
       'view ' + Game.viewW + 'x' + VIEW_H + '  canvas ' + Game.cw + 'x' + Game.ch + '  dpr ' + Game.dpr.toFixed(2) + '  res ' + Game.resScale.toFixed(2) + '  px/unit ' + (Game.cw / Game.viewW).toFixed(2) + '\n' +
       'entities ' + Level.ents.length + '  particles ' + pAliveN + '/' + Game.particleCap + '  sprites ' + Bots.n + '\n' +
-      'heap ' + heap + '   audio ' + Snd.state + '   quality ' + S.quality + (S.quality === 'auto' ? '  fx ' + Game.fxTier : '') + '   bake ' + Snd.baked + '/' + Snd.bakeTotal + '   [b3]\n' + Hitch.lines();
+      'heap ' + heap + '   audio ' + Snd.state + '   quality ' + S.quality + (S.quality === 'auto' ? '  fx ' + Game.fxTier : '') + '   bake ' + Snd.baked + '/' + Snd.bakeTotal + '   [7a-2]\n' + Hitch.lines();
   }
 };
 
@@ -3878,7 +5207,7 @@ const UI = {
     const rs = document.createElement('button'); rs.type = 'button'; rs.className = 'lnk danger'; rs.textContent = t('s_reset'); let armed = 0;
     rs.addEventListener('click', function () {
       if (!armed) { armed = 1; rs.textContent = t('s_reset_confirm'); setTimeout(function () { armed = 0; rs.textContent = t('s_reset'); }, 3500); return; }
-      S.progress = null; checkpoint = { x: Level.spawn.x, y: Level.spawn.y }; persist(); armed = 0; rs.textContent = t('s_reset'); ui.toast(t('s_reset_done')); $('#b-continue').style.display = 'none';
+      S.progress = null; S.lab = null; S.done = {}; checkpoint = { x: Level.spawn.x, y: Level.spawn.y }; persist(); armed = 0; rs.textContent = t('s_reset'); ui.toast(t('s_reset_done')); $('#b-continue').style.display = 'none';
     });
     const w = document.createElement('div'); w.style.padding = '10px 0 6px'; w.appendChild(rs); body.appendChild(w);
     if (!Store.ok) { const n = document.createElement('p'); n.className = 'note'; n.textContent = t('s_storage'); body.appendChild(n); }
@@ -3921,9 +5250,10 @@ function fadeStep(dt) {
   if (f.a !== f.target) f.a = approach(f.a, f.target, f.speed * dt);
   if (f.a === f.target && f.cb) { const cb = f.cb; f.cb = null; cb(); }
 }
-function newWorld(fromSave) {
-  buildLevel();
-  const sv = fromSave ? S.progress : null;
+function slotData(id) { return slotOf(id) === 'lab' ? S.lab : S.progress; }
+function newWorld(fromSave, id) {
+  buildLevel(id || Level.stage);
+  const sv = fromSave ? slotData(Level.stage) : null;
   checkpoint = sv ? { x: sv.cp.x, y: sv.cp.y } : { x: Level.spawn.x, y: Level.spawn.y };
   resetPlayer(checkpoint.x, checkpoint.y);
   P.special = 100; P.gears = sv ? sv.gears : 0;
@@ -3938,6 +5268,9 @@ function newWorld(fromSave) {
     }
     Level.doorOpen = sv.door; Level.doorAnim = sv.door ? 1 : 0;
     if (sv.boss && Level.boss) { Level.bossDown = true; Level.boss.dead = true; Level.boss.state = 'dead'; }
+    Level.flags = sv.flags ? JSON.parse(JSON.stringify(sv.flags)) : {};
+    for (let i = 0; i < 4; i++) Level.dOpen[i] = !!(sv.d && sv.d[i]);
+    if (STAGES[Level.stage].restore) STAGES[Level.stage].restore();
   }
   const want = pulsesFor(Level.lostN);
   if (P.hpMax !== want || HUD.built === false || $('#hp').children.length !== want) { P.hpMax = want; HUD.build(); }
@@ -3946,16 +5279,17 @@ function newWorld(fromSave) {
   pAliveN = 0; pFreeTop = PMAX; for (let i = 0; i < PMAX; i++) pFree[i] = PMAX - 1 - i;
   Cam.update(0.016, true); HUD.dirty = true;
 }
-function startGame(cont) {
-  if (cont && !S.progress) { UI.toast(t('m_nosave')); return; }
-  newWorld(cont); Game.state = 'play'; Game.pausedByRotate = false; UI.stack = []; UI.hideAll();
+function startGame(cont, id) {
+  id = id || 's1';
+  if (cont && !slotData(id)) { UI.toast(t('m_nosave')); return; }
+  newWorld(cont, id); Game.state = 'play'; Game.pausedByRotate = false; UI.stack = []; UI.hideAll();
   Input.clearAll(); Snd.resume(); $('#hud').classList.add('on'); Touch.refresh(); applyPerfHud();
   Game.fade.a = 1; Game.fadeTo(0, 1.1);          // the world fades in out of black
 }
 function toMenu() {
   Game.state = 'menu'; Input.clearAll(); newWorld(false); UI.stack = []; UI.showRaw('scr-start'); $('#hud').classList.remove('on'); Touch.refresh();
 }
-function restartFromSave() { newWorld(!!S.progress); UI.resume(); }
+function restartFromSave() { newWorld(!!slotData(Level.stage), Level.stage); UI.resume(); }
 
 /* ---------- 22b. diagnostics panel: shows with the performance HUD while playing; finds what costs frames on a given phone ---------- */
 const DX = {
@@ -4011,7 +5345,7 @@ function update(dt) {
   DX.drive();
   Game.time += dt;
   if (Game.hitStop > 0) { Game.hitStop -= dt; Cam.update(dt, false); return; }
-  Input.enabled = (Game.state === 'play');
+  Input.enabled = (Game.state === 'play') && !Talk.active && !Level.cine;
   const n = Math.max(1, Math.ceil(dt / MAX_STEP)), h = dt / n;
   for (let i = 0; i < n; i++) { Input.tick(h); playerUpdate(h); worldUpdate(h); }
   updateParticles(dt); updatePopups(dt); updateBots(dt);
@@ -4053,8 +5387,9 @@ function frame(ts) {
 }
 
 /* ---------- 24. wiring ---------- */
-$('#b-continue').addEventListener('click', function () { startGame(true); });
-$('#b-new').addEventListener('click', function () { startGame(false); });
+$('#b-continue').addEventListener('click', function () { startGame(true, 's1'); });
+$('#b-new').addEventListener('click', function () { startGame(false, 's1'); });
+$('#b-lab').addEventListener('click', function () { startGame(!!S.lab, 'lab'); });
 $('#b-controls').addEventListener('click', function () { UI.nav('scr-controls'); });
 $('#b-settings').addEventListener('click', function () { UI.nav('scr-settings'); });
 $('#b-perf').addEventListener('click', function () { UI.nav('scr-perf'); });
@@ -4092,7 +5427,8 @@ window.addEventListener('error', function (e) { window.__KSM_errors.push(String(
 window.addEventListener('unhandledrejection', function (e) { window.__KSM_errors.push('promise: ' + String(e.reason)); });
 
 ctx = canvas.getContext('2d', { alpha: false });
-buildAtlas(); buildBackgrounds(); buildBotSprite();
+BG.theme = 'kingdom'; buildAtlas(); buildBackgrounds(); buildBotSprite();
+Talk.init(); Cine.init(); Pow.init();
 Art.load(ART_CONFIG);
 Input.rebuild(); applyQuality(); HUD.build();
 newWorld(false);
@@ -4122,8 +5458,8 @@ requestAnimationFrame(frame);
 window.__KSM = {
   DX: DX, shed: shedLoad, unshed: unshedLoad, applyQuality: function () { applyQuality(); resize(); }, RES: RES,
   U: U, TUNE: TUNE, P: P, Game: Game, Level: Level, Input: Input, Art: Art, Snd: Snd, Amb: Amb, Cam: Cam, Perf: Perf, Stress: Stress, UI: UI, S: function () { return S; },
-  start: startGame, Hitch: Hitch,
-  W: { damageEnt: damageEnt, hurtPlayer: hurtPlayer, resetEncounters: resetEncounters, respawn: respawnAtCheckpoint, newWorld: newWorld, CB: CB, BOSS: BOSS, AR: AR, Hit: Hit, HUD: HUD, startBossFight: startBossFight, spawnTool: spawnTool, bossQuake: bossQuake, collectLost: collectLost, snapshot: snapshotProgress, persist: persist, pulsesFor: pulsesFor, nextAttack: nextAttack, bossStartAttack: bossStartAttack },
+  start: function (cont, id) { return startGame(cont, id || 'lab'); }, startStage: startGame, Hitch: Hitch, Talk: Talk, Tik: Tik, Cine: Cine, Pow: Pow, STAGES: STAGES, STR: STR,
+  W: { damageEnt: damageEnt, hurtPlayer: hurtPlayer, resetEncounters: resetEncounters, respawn: respawnAtCheckpoint, newWorld: function (f, id) { return newWorld(f, id || 'lab'); }, CB: CB, BOSS: BOSS, AR: AR, Hit: Hit, HUD: HUD, startBossFight: startBossFight, spawnTool: spawnTool, bossQuake: bossQuake, collectLost: collectLost, snapshot: snapshotProgress, persist: persist, pulsesFor: pulsesFor, nextAttack: nextAttack, bossStartAttack: bossStartAttack },
   dbg: function () { return { ctx: ctx, BG: BG, drawBackdrop: drawBackdrop, drawTiles: drawTiles, drawEntities: drawEntities, drawNader: drawNader, drawSigns: drawSigns, drawParticles: drawParticles, drawPrompt: drawPrompt, overlayFor: overlayFor, render: render, VIEW_H: VIEW_H }; },
   hold: function (v) { Game.testHold = !!v; },
   sim: function (sec, step) {
