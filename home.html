@@ -456,8 +456,35 @@ function loadSettings() {
   if (o.stress && typeof o.stress === 'object') d.stress = o.stress;
   return d;
 }
+/* ---------- hitch log (shown on the performance HUD only): what was going on around every late frame ---------- */
+const Hitch = {
+  on: false, ev: [], n: 0, parts: 0, s: {}, m: 0, prev: null, log: [],
+  begin() { if (this.on) this.m = performance.now(); },
+  mark(k) { if (!this.on) return; const t = performance.now(); this.s[k] = t - this.m; this.m = t; },
+  note(e) { if (this.n < 10) this.ev[this.n++] = e; },
+  frame(raw, upd, ren) {
+    if (!this.on) { this.prev = null; return; }
+    if (this.parts >= 5) this.ev[this.n < 10 ? this.n++ : 9] = 'p+' + this.parts;
+    const cur = { upd: upd, ren: ren, s: this.s, ev: this.ev.slice(0, this.n) }, pv = this.prev;
+    if (raw > 34 && pv && Game.state === 'play' && Game.time > 3 && !document.hidden) {
+      const seen = {}, out = [], all = pv.ev.concat(cur.ev);
+      for (let i = 0; i < all.length; i++) if (!seen[all[i]]) { seen[all[i]] = 1; out.push(all[i]); }
+      let top = '', topV = 0;
+      [pv.s, cur.s].forEach(function (o) { for (const k in o) if (o[k] > topV) { topV = o[k]; top = k; } });
+      this.log.push({ t: Game.time, raw: raw, a: pv.upd + pv.ren, b: cur.upd + cur.ren, top: top, topV: topV, ev: out.join(' ') });
+      if (this.log.length > 3) this.log.shift();
+    }
+    this.prev = cur; this.s = {}; this.ev = []; this.n = 0; this.parts = 0;
+  },
+  lines() {
+    if (!this.log.length) return 'late frames (>34 ms): none yet';
+    return 'late frames: time  gap  js(prev>now)  top-part | events\n' + this.log.map(function (e) {
+      return e.t.toFixed(1) + 's ' + e.raw.toFixed(0) + 'ms js ' + e.a.toFixed(1) + '>' + e.b.toFixed(1) + (e.top ? ' ' + e.top + ' ' + e.topV.toFixed(1) : '') + ' | ' + e.ev;
+    }).join('\n');
+  }
+};
 let S = loadSettings();
-function persist() { Store.set(SAVE_KEY, S); }
+function persist() { if (Hitch.on) Hitch.note('save'); Store.set(SAVE_KEY, S); }
 
 /* ---------- 4. language ---------- */
 const STR = {
@@ -832,6 +859,7 @@ const Snd = (function () {
   function play(name, a, wx) {                               // wx (optional): world x of the source → stereo pan + distance volume
     if (S.mute || S.sfxVol <= 0 || !ctx || ctx.state !== 'running' || active > 40) return;
     const f = fx[name]; if (!f) return;
+    if (Hitch.on) Hitch.note('snd:' + name);
     dest = master; cPan = 0; cVol = 1; cWet = WET[name] || 0;
     if (wx !== undefined) {
       const dx = wx - listenX;
@@ -963,6 +991,7 @@ const Snd = (function () {
     ['clunk', ambFx.clunk, undefined, 2, 0.5], ['debris', ambFx.debris, undefined, 3, 0.8]
   ];
   function bakeOne(job, next) {
+    if (Hitch.on) Hitch.note('bake');
     const real = ctx, rDest = dest, rPan = cPan, rVol = cVol, rWet = cWet, sr = real.sampleRate;
     let oc = null;
     try { oc = new bake.OAC(1, Math.ceil(sr * job.sec), sr); } catch (e) { next(); return; }
@@ -1183,9 +1212,10 @@ const Touch = (function () {
     el.addEventListener('pointerdown', function (e) {
       if (pid !== -1) return;
       e.preventDefault(); pid = e.pointerId; try { el.setPointerCapture(pid); } catch (_) { }
+      if (Hitch.on) Hitch.note('tap:' + a);
       Input.touch[a] = true; Input.press(a); Input.lastDevice = 'touch'; el.classList.add('p');
     });
-    function up(e) { if (e.pointerId !== pid) return; pid = -1; Input.touch[a] = false; el.classList.remove('p'); }
+    function up(e) { if (e.pointerId !== pid) return; pid = -1; if (Hitch.on) Hitch.note('rel:' + a); Input.touch[a] = false; el.classList.remove('p'); }
     el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up); el.addEventListener('lostpointercapture', up);
   });
   $('#btn-pause').addEventListener('click', function () { UI.onPauseKey(); });
@@ -1320,7 +1350,7 @@ const PCOL = ['#b9ad94', '#ffe9a8', '#2fd6c4', '#8a5a2b', '#d6a54a', '#ffffff', 
 const PT = { SQ: 0, SPARK: 1, CHIP: 2, RING: 3, GLOW: 4, MOTE: 5 };
 function emit(type, x, y, vx, vy, life, size, col, grav, rot, vr) {
   if (pFreeTop === 0 || pAliveN >= Game.particleCap) return;
-  const i = pFree[--pFreeTop];
+  const i = pFree[--pFreeTop]; Hitch.parts++;
   paT[i] = type; paX[i] = x; paY[i] = y; paVX[i] = vx; paVY[i] = vy; paL[i] = life; paM[i] = life; paS[i] = size; paC[i] = col;
   paG[i] = grav || 0; paR[i] = rot || 0; paVR[i] = vr || 0; pAlive[pAliveN++] = i;
 }
@@ -1358,6 +1388,7 @@ const Cam = {
   x: 0, y: 0, lookX: 0, refY: 0, lock: null, shakeT: 0, shakeDur: 0.01, shakeMag: 0, ox: 0, oy: 0,
   shake(mag, dur) {
     if (!S.shake) return;
+    if (Hitch.on) Hitch.note('shake');
     if (mag >= this.shakeMag * (this.shakeT / this.shakeDur)) { this.shakeMag = mag; this.shakeT = dur; this.shakeDur = dur; }
   },
   update(dt, snap) {
@@ -2114,7 +2145,7 @@ function depenetrate() {            // safety net: if the box still overlaps a s
 }
 
 /* --- state helpers --- */
-function setState(s) { P.state = s; P.st = 0; }
+function setState(s) { P.state = s; P.st = 0; if (Hitch.on) Hitch.note('st:' + s); }
 function hasSupport() {   // both sides at least half a unit over solid / one-way tiles: used for the "last safe platform"
   const ty = Math.floor((P.y + 2) / U), m = 0.5 * U;
   const a = tileAt(Math.floor((P.x - m) / U), ty), b = tileAt(Math.floor((P.x + m) / U), ty);
@@ -2790,7 +2821,7 @@ function drawBackdrop(c, cx, cy) {              // sky -> middle strip + wall ge
         for (let x = x0; x < cw; x += wp) {
           const gx = x + g.x * s; if (gx + gc.n < 0 || gx - gc.n > cw) continue;
           if (gc.rot !== rot) {                      // re-draw the rotated sprite only when its angle changes (the gears sit still between beats)
-            gc.rot = rot; const q = gc.cv.getContext('2d'); q.setTransform(1, 0, 0, 1, 0, 0); q.clearRect(0, 0, gc.n, gc.n);
+            if (Hitch.on) Hitch.note('gear'); gc.rot = rot; const q = gc.cv.getContext('2d'); q.setTransform(1, 0, 0, 1, 0, 0); q.clearRect(0, 0, gc.n, gc.n);
             q.translate(gc.n / 2, gc.n / 2); q.rotate(rot); q.scale(s, s); q.drawImage(g.cv, -g.half, -g.half);
           }
           c.drawImage(gc.cv, Math.round(gx - gc.n / 2), Math.round(g.y * s + vy - gc.n / 2));
@@ -2836,6 +2867,7 @@ function tileIdx(tx, ty) {                             // atlas cell for this ti
 function chunkAt(ci, cj) {
   const key = cj * 64 + ci, got = Chunks.map.get(key);
   if (got !== undefined) return got;
+  if (Hitch.on) Hitch.note('chunk');
   const k = Chunks.k, px = Math.ceil(CHK_PX * k) + 1, t0x = ci * CHK, t0y = cj * CHK;
   let cv = null, g = null;
   for (let ty = t0y; ty < t0y + CHK && ty < LH; ty++) for (let tx = t0x; tx < t0x + CHK && tx < LW; tx++) {
@@ -3206,24 +3238,26 @@ function render() {
   c.setTransform(1, 0, 0, 1, 0, 0);
   const s = cvs.width / Game.viewW;                         // the canvas is opaque and the backdrop covers it entirely, so there is nothing to clear
   const cx = Math.round(Cam.x + Cam.ox), cy = Math.round(Cam.y + Cam.oy);
-  drawBackdrop(c, cx, cy);
+  Hitch.begin();
+  drawBackdrop(c, cx, cy); Hitch.mark('bg');
   c.setTransform(s, 0, 0, s, 0, 0);
   if (DX.on.world) {
     c.save(); c.translate(-cx, -cy);
     if (Game.state !== 'menu' && Game.state !== 'pause') drawSigns(c, cx);
-    drawTiles(c, cx, cy);
+    drawTiles(c, cx, cy); Hitch.mark('tl');
     drawEntities(c, cx);
-    drawCombat(c, cx);
-    drawNader(c);
+    drawCombat(c, cx); Hitch.mark('en');
+    drawNader(c); Hitch.mark('nd');
     drawParticles(c);
     drawPopups(c);
-    drawPrompt(c);
+    drawPrompt(c); Hitch.mark('pt');
     if (Game.showBoxes) drawBoxes(c);
     c.restore();
   }
   if (Bots.n > 0) for (let i = 0; i < Bots.n; i++) c.drawImage(Bots.cv, Bots.x[i], Bots.y[i], 16, 16);
   const vig = !Game.lowFx && DX.on.vig && Game.fx.vig, grain = !Game.lowFx && DX.on.grain && Game.fx.grain;
   if (vig || grain) { const ov = overlayFor(vig, grain); if (ov) { c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(ov[grain && !Game.reduceMotion ? ((Game.time * 8) | 0) & 3 : 0], 0, 0); } }
+  Hitch.mark('ov');
   const fa = Game.fade.a > 0.001 ? Math.round(Game.fade.a * 200) / 200 : 0;      // the fade is a plain black layer above the canvas
   if (fa !== BG.fadeA) { BG.fadeA = fa; const f = $('#fade'); f.style.opacity = fa; f.style.visibility = fa ? 'visible' : 'hidden'; }
 }
@@ -3580,7 +3614,7 @@ function applyLangDOM() {
   $('#b-continue').style.display = S.progress ? '' : 'none';
   UI.renderSettings(); UI.renderControls(); UI.renderPerf();
 }
-function applyPerfHud() { $('#perf').classList.toggle('on', !!S.perfHud); }
+function applyPerfHud() { $('#perf').classList.toggle('on', !!S.perfHud); Hitch.on = !!S.perfHud; if (!Hitch.on) { Hitch.log.length = 0; Hitch.prev = null; } }
 
 /* Auto quality: when frames stay slow, lower the canvas resolution first (it scales every cost at once), and drop the cheapest-to-lose layers in between.
    The resolution only moves between fixed steps, because the backdrops and ground blocks are re-cut for each one. */
@@ -3646,7 +3680,7 @@ const Perf = {
       'update ' + this.upd.toFixed(2) + ' ms   draw ' + this.ren.toFixed(2) + ' ms\n' +
       'view ' + Game.viewW + 'x' + VIEW_H + '  canvas ' + Game.cw + 'x' + Game.ch + '  dpr ' + Game.dpr.toFixed(2) + '  res ' + Game.resScale.toFixed(2) + '  px/unit ' + (Game.cw / Game.viewW).toFixed(2) + '\n' +
       'entities ' + Level.ents.length + '  particles ' + pAliveN + '/' + Game.particleCap + '  sprites ' + Bots.n + '\n' +
-      'heap ' + heap + '   audio ' + Snd.state + '   quality ' + S.quality + (S.quality === 'auto' ? '  fx ' + Game.fxTier : '');
+      'heap ' + heap + '   audio ' + Snd.state + '   quality ' + S.quality + (S.quality === 'auto' ? '  fx ' + Game.fxTier : '') + '   bake ' + Snd.baked + '/' + Snd.bakeTotal + '   [b2]\n' + Hitch.lines();
   }
 };
 
@@ -3730,6 +3764,7 @@ const UI = {
     Snd.play('ui');
   },
   toast(msg, ms) {
+    if (Hitch.on) Hitch.note('toast');
     const el = $('#toast'); el.textContent = msg; el.classList.add('on');
     clearTimeout(this.toastT); this.toastT = setTimeout(function () { el.classList.remove('on'); }, ms || 2200);
   },
@@ -3990,6 +4025,7 @@ function frame(ts) {
   const t1 = performance.now();
   render();
   const t2 = performance.now();
+  Hitch.frame(raw, t1 - t0, t2 - t1);
   if (raw < 400) { Perf.record(raw, t1 - t0, t2 - t1); }
   Stress.frame(raw, t1 - t0, t2 - t1);
 }
