@@ -2739,7 +2739,8 @@ function buildBackgrounds() {
     c.fillStyle = 'rgba(18,28,50,0.95)'; gearPath(c, m, m, R, g[3], 14); c.fill();
     c.strokeStyle = 'rgba(214,165,74,0.24)'; c.lineWidth = 3; c.stroke();
     c.beginPath(); c.arc(m, m, R * 0.35, 0, 6.3); c.stroke();
-    for (let i = 0; i < 4; i++) { const a = i * 1.5708 + 0.4; c.beginPath(); c.moveTo(m + Math.cos(a) * R * 0.35, m + Math.sin(a) * R * 0.35); c.lineTo(m + Math.cos(a) * R * 0.78, m + Math.sin(a) * R * 0.78); c.stroke(); }
+    const sp = g[3] % 4 === 0 ? 4 : g[3] % 3 === 0 ? 3 : g[3] % 2 === 0 ? 2 : 0;       // spokes repeat every whole tooth, so the resting gear never changes its look
+    for (let i = 0; i < sp; i++) { const a = i * 6.2832 / sp + 0.4; c.beginPath(); c.moveTo(m + Math.cos(a) * R * 0.35, m + Math.sin(a) * R * 0.35); c.lineTo(m + Math.cos(a) * R * 0.78, m + Math.sin(a) * R * 0.78); c.stroke(); }
     c.fillStyle = 'rgba(8,12,24,0.9)'; c.beginPath(); c.arc(m, m, R * 0.12, 0, 6.3); c.fill();
     return { cv: cv, x: g[0], y: g[1], teeth: g[3], dir: g[4], half: m, sz: sz };
   });
@@ -2803,7 +2804,11 @@ function backdropAt(s) {
     const cv = mk(wp, hp), g = cv.getContext('2d'); g.imageSmoothingQuality = 'high'; g.drawImage(src, 0, 0, wp, hp); return cv;
   };
   BGS.key = key; BGS.s = s; BGS.wp = wp; BGS.hp = hp; BGS.sky = cut(BG.sky); BGS.mid = cut(BG.mid); BGS.near = cut(BG.near);
-  BGS.gears = BG.gears.map(function (g) { const n = Math.ceil(g.sz * s) + 2, cv = mk(n, n); return { cv: cv, n: n, rot: 1e9 }; });
+  BGS.gears = BG.gears.map(function (g) {
+    const n = Math.ceil(g.sz * s) + 2, cv = mk(n, n), q = cv.getContext('2d');
+    q.translate(n / 2, n / 2); q.scale(s, s); q.drawImage(g.cv, -g.half, -g.half);          // the resting picture, drawn once
+    return { cv: cv, n: n };
+  });
   return BGS;
 }
 function drawStrip(c, src, x0, vy, wp, cw) { for (let x = x0; x < cw; x += wp) c.drawImage(src, x, vy); }
@@ -2815,16 +2820,18 @@ function drawBackdrop(c, cx, cy) {              // sky -> middle strip + wall ge
     let x0 = -(Math.round(cx * BG_SPEED[0] * s) % wp); if (x0 > 0) x0 -= wp;
     drawStrip(c, B.mid, x0, vy, wp, cw);
     if (on.gears) {
-      const gp = Amb.gearPos();
+      const gp = Amb.gearPos(), rel = gp - (Amb.steps - 1), rest = Math.abs(rel - 1) < 1e-6;
       for (let k = 0; k < BG.gears.length; k++) {
-        const g = BG.gears[k], gc = B.gears[k], rot = g.dir * gp * 6.2832 / g.teeth;
+        const g = BG.gears[k], gc = B.gears[k];
         for (let x = x0; x < cw; x += wp) {
           const gx = x + g.x * s; if (gx + gc.n < 0 || gx - gc.n > cw) continue;
-          if (gc.rot !== rot) {                      // re-draw the rotated sprite only when its angle changes (the gears sit still between beats)
-            if (Hitch.on) Hitch.note('gear'); gc.rot = rot; const q = gc.cv.getContext('2d'); q.setTransform(1, 0, 0, 1, 0, 0); q.clearRect(0, 0, gc.n, gc.n);
-            q.translate(gc.n / 2, gc.n / 2); q.rotate(rot); q.scale(s, s); q.drawImage(g.cv, -g.half, -g.half);
+          const px = Math.round(gx - gc.n / 2), py = Math.round(g.y * s + vy - gc.n / 2);
+          if (rest) c.drawImage(gc.cv, px, py);                                  // at rest every gear looks exactly the same (whole-tooth turns are invisible): a plain 1:1 copy of one fixed picture
+          else {                                                                 // the click between two teeth (0.26 s after each beat): turn the source sprite directly; no canvas is ever edited per frame
+            c.setTransform(1, 0, 0, 1, px + gc.n / 2, py + gc.n / 2); c.rotate(g.dir * rel * 6.2832 / g.teeth);
+            c.drawImage(g.cv, -g.half * s, -g.half * s, g.sz * s, g.sz * s);
+            c.setTransform(1, 0, 0, 1, 0, 0);
           }
-          c.drawImage(gc.cv, Math.round(gx - gc.n / 2), Math.round(g.y * s + vy - gc.n / 2));
         }
       }
     }
@@ -2864,6 +2871,11 @@ function tileIdx(tx, ty) {                             // atlas cell for this ti
   if (v === 1) return (ty > 0 && Level.grid[(ty - 1) * LW + tx] === 1) ? h : 4 + (h & 1);
   return v === 2 ? 6 : 7;
 }
+function chunkHasTiles(ci, cj) {
+  const t0x = ci * CHK, t0y = cj * CHK;
+  for (let ty = t0y; ty < t0y + CHK && ty < LH; ty++) for (let tx = t0x; tx < t0x + CHK && tx < LW; tx++) if (tileIdx(tx, ty) >= 0) return true;
+  return false;
+}
 function chunkAt(ci, cj) {
   const key = cj * 64 + ci, got = Chunks.map.get(key);
   if (got !== undefined) return got;
@@ -2890,9 +2902,18 @@ function drawTiles(c, cx, cy) {
     if (ch) c.drawImage(ch, Math.round((i * span - cx) * k), Math.round((j * span - cy) * k));
   }
   c.restore();
-  // prepare the next block row/column a frame early so walking never builds anything on screen
-  const ia = Math.max(0, i0 - 1), ib = Math.min(Math.ceil(LW / CHK) - 1, i1 + 1);
-  for (let i = ia; i <= ib; i++) for (let j = j0; j <= j1; j++) if (!Chunks.map.has(j * 64 + i)) { chunkAt(i, j); i = 1e9; break; }
+  // prepare blocks ahead of the view (two columns each side, one row above and below), nearest first, at most ONE real block per frame:
+  // empty cells cost nothing, but a real block is a new canvas, which must never be built in the middle of a jump or a fight
+  const NI = Math.ceil(LW / CHK), NJ = Math.ceil(LH / CHK);
+  const ia = Math.max(0, i0 - 2), ib = Math.min(NI - 1, i1 + 2), ja = Math.max(0, j0 - 1), jb = Math.min(NJ - 1, j1 + 1);
+  let bi = -1, bj = -1, bd = 99;
+  for (let j = ja; j <= jb; j++) for (let i = ia; i <= ib; i++) {
+    if (Chunks.map.has(j * 64 + i)) continue;
+    if (!chunkHasTiles(i, j)) { Chunks.map.set(j * 64 + i, false); continue; }
+    const d = Math.max(i < i0 ? i0 - i : i > i1 ? i - i1 : 0, j < j0 ? j0 - j : j > j1 ? j - j1 : 0);
+    if (d < bd) { bd = d; bi = i; bj = j; }
+  }
+  if (bi >= 0) chunkAt(bi, bj);
   // sliding door
   const A = Atlas.cv, dx = Level.doorTx * U, dy = (G - 4) * U;
   if (dx + U > cx && dx < cx + Game.viewW) {
@@ -3634,7 +3655,7 @@ function unshedLoad() { Game.fxTier = 0; Game.fx.grain = 1; Game.fx.vig = 1; Gam
 /* ---------- 20. performance monitor, adaptive resolution, stress test ---------- */
 const Perf = {
   ft: new Float32Array(240), n: 0, i: 0, upd: 0, ren: 0, avg: 16.7, p95: 16.7, max: 16.7, fps: 60, calcT: 0, low: 0, hi: 0, hudT: 0, tmp: new Float32Array(120),
-  lvl: 0, ceil: 0, wT: 0, wN: 0, cool: 0, upAt: -99, upFrom: 0, restoredAt: -99, noRestore: false,
+  lateAt: 0, lvl: 0, ceil: 0, wT: 0, wN: 0, cool: 0, upAt: -99, upFrom: 0, restoredAt: -99, noRestore: false,
   record(raw, u, r) {
     this.ft[this.i] = raw; this.i = (this.i + 1) % 240; if (this.n < 240) this.n++;
     this.upd += (u - this.upd) * 0.08; this.ren += (r - this.ren) * 0.08;
@@ -3680,7 +3701,7 @@ const Perf = {
       'update ' + this.upd.toFixed(2) + ' ms   draw ' + this.ren.toFixed(2) + ' ms\n' +
       'view ' + Game.viewW + 'x' + VIEW_H + '  canvas ' + Game.cw + 'x' + Game.ch + '  dpr ' + Game.dpr.toFixed(2) + '  res ' + Game.resScale.toFixed(2) + '  px/unit ' + (Game.cw / Game.viewW).toFixed(2) + '\n' +
       'entities ' + Level.ents.length + '  particles ' + pAliveN + '/' + Game.particleCap + '  sprites ' + Bots.n + '\n' +
-      'heap ' + heap + '   audio ' + Snd.state + '   quality ' + S.quality + (S.quality === 'auto' ? '  fx ' + Game.fxTier : '') + '   bake ' + Snd.baked + '/' + Snd.bakeTotal + '   [b2]\n' + Hitch.lines();
+      'heap ' + heap + '   audio ' + Snd.state + '   quality ' + S.quality + (S.quality === 'auto' ? '  fx ' + Game.fxTier : '') + '   bake ' + Snd.baked + '/' + Snd.bakeTotal + '   [b3]\n' + Hitch.lines();
   }
 };
 
@@ -4026,6 +4047,7 @@ function frame(ts) {
   render();
   const t2 = performance.now();
   Hitch.frame(raw, t1 - t0, t2 - t1);
+  if (raw > 28) Perf.lateAt = t2;
   if (raw < 400) { Perf.record(raw, t1 - t0, t2 - t1); }
   Stress.frame(raw, t1 - t0, t2 - t1);
 }
@@ -4100,7 +4122,7 @@ requestAnimationFrame(frame);
 window.__KSM = {
   DX: DX, shed: shedLoad, unshed: unshedLoad, applyQuality: function () { applyQuality(); resize(); }, RES: RES,
   U: U, TUNE: TUNE, P: P, Game: Game, Level: Level, Input: Input, Art: Art, Snd: Snd, Amb: Amb, Cam: Cam, Perf: Perf, Stress: Stress, UI: UI, S: function () { return S; },
-  start: startGame,
+  start: startGame, Hitch: Hitch,
   W: { damageEnt: damageEnt, hurtPlayer: hurtPlayer, resetEncounters: resetEncounters, respawn: respawnAtCheckpoint, newWorld: newWorld, CB: CB, BOSS: BOSS, AR: AR, Hit: Hit, HUD: HUD, startBossFight: startBossFight, spawnTool: spawnTool, bossQuake: bossQuake, collectLost: collectLost, snapshot: snapshotProgress, persist: persist, pulsesFor: pulsesFor, nextAttack: nextAttack, bossStartAttack: bossStartAttack },
   dbg: function () { return { ctx: ctx, BG: BG, drawBackdrop: drawBackdrop, drawTiles: drawTiles, drawEntities: drawEntities, drawNader: drawNader, drawSigns: drawSigns, drawParticles: drawParticles, drawPrompt: drawPrompt, overlayFor: overlayFor, render: render, VIEW_H: VIEW_H }; },
   hold: function (v) { Game.testHold = !!v; },
