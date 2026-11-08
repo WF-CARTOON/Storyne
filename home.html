@@ -56,6 +56,14 @@ button{font:inherit;color:inherit}
 #lostc.pop b{animation:pop .3s}
 #boss{position:absolute;left:50%;top:14px;top:calc(env(safe-area-inset-top,0px) + 14px);width:34vw;max-width:440px;min-width:200px;transform:translateX(-50%);z-index:5;pointer-events:none;opacity:0;visibility:hidden;transition:opacity .5s,visibility .5s;text-align:center}
 #boss.on{opacity:1;visibility:visible}
+#ts{position:absolute;left:50%;top:10px;top:calc(env(safe-area-inset-top,0px) + 10px);transform:translateX(-50%);z-index:5;pointer-events:none;display:none;flex-direction:column;align-items:center;padding:4px 14px 5px;border-radius:12px;background:rgba(5,7,12,.55);border:1px solid rgba(214,165,74,.55)}
+#ts.on{display:flex}
+#ts.low{top:58px;top:calc(env(safe-area-inset-top,0px) + 58px)}
+#ts b{font-weight:400;font-size:20px;line-height:1.1;color:var(--ink);font-family:system-ui,sans-serif;direction:ltr;unicode-bidi:isolate;text-shadow:0 1px 3px #000}
+#ts.slow b{color:#7ff3e6}
+#ts.fast b{color:#ffb347}
+#ts span{font-size:12px;color:var(--dim);text-shadow:0 1px 3px #000;white-space:nowrap}
+#ts #ts-b{color:#ffb347}
 #cyc{position:absolute;left:50%;top:10px;top:calc(env(safe-area-inset-top,0px) + 10px);transform:translateX(-50%);z-index:5;pointer-events:none;display:none;flex-direction:column;align-items:center;transition:opacity .5s}
 #cyc.on{display:flex}
 #cyc svg{width:64px;height:64px;display:block;overflow:visible}
@@ -308,6 +316,7 @@ table.res th{color:var(--dim);font-weight:400;font-size:12px}
     </div>
     <button id="btn-pause" type="button" aria-label="pause"><svg viewBox="0 0 40 40" aria-hidden="true"><circle class="t" cx="20" cy="20" r="16" pathLength="60" stroke-dasharray="0.4 0.6" fill="none" stroke-width="3"/><rect class="b" x="14.8" y="13" width="2.6" height="14" rx="1.3"/><rect class="b" x="22.6" y="13" width="2.6" height="14" rx="1.3"/></svg></button>
   </div>
+  <div id="ts"><b id="ts-v">×1</b><span id="ts-l"></span><span id="ts-b"></span></div>
   <div id="cyc"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="rim" cx="32" cy="32" r="28"/><circle class="arc" id="cyc-arc" cx="32" cy="32" r="28" pathLength="120" stroke-dasharray="0 120" transform="rotate(-90 32 32)"/><g id="cyc-evs"></g><line class="hand" id="cyc-hand" x1="32" y1="32" x2="32" y2="10"/><circle cx="32" cy="32" r="2.4" fill="#e4ddcc"/></svg><b id="cyc-t">0:00</b><span id="cyc-n"></span></div>
   <div id="boss"><div id="boss-name"></div><div id="boss-bar"><i id="boss-fill"></i><u></u></div></div>
   <pre id="perf"></pre>
@@ -488,7 +497,7 @@ function defaults() {
   return {
     v: 1, lang: 'auto', sfxVol: 0.7, ambVol: 0.6, mute: false, touch: 'auto', touchScale: 1, touchAlpha: 0.75, touchLabels: true,
     quality: 'auto', perfHud: false, shake: true,
-    keys: JSON.parse(JSON.stringify(DEFAULT_KEYS)), progress: null, lab: null, sl_s2: null, done: {}, stress: null
+    keys: JSON.parse(JSON.stringify(DEFAULT_KEYS)), progress: null, lab: null, sl_s2: null, sl_s3: null, done: {}, ham: false, stress: null
   };
 }
 function loadSettings() {
@@ -531,8 +540,10 @@ function loadSettings() {
   const pm = cleanSlot(o.progress), lb = cleanSlot(o.lab);
   d.lab = lb; d.progress = null;
   const s2 = cleanSlot(o.sl_s2); d.sl_s2 = (s2 && s2.stage === 's2') ? s2 : null;
+  const s3 = cleanSlot(o.sl_s3); d.sl_s3 = (s3 && s3.stage === 's3') ? s3 : null;
   if (pm) { if (pm.stage === 'lab') { if (!d.lab) d.lab = pm; } else d.progress = pm; }
   if (o.done && typeof o.done === 'object') for (const k in o.done) if (/^s[0-9]$/.test(k) && o.done[k] === true) d.done[k] = true;
+  if (o.ham === true) d.ham = true;
   if (o.stress && typeof o.stress === 'object') d.stress = o.stress;
   return d;
 }
@@ -962,7 +973,22 @@ const Snd = (function () {
     gavelUp() { ratchet(8, 0.06, 0.9, 0.7, 1700, 70); tone('triangle', 200, 520, 0.5, 0.09, 0, 0.1); },
     gavelSlam() { tone('sine', 80, 30, 0.7, 0.6); noise(0.5, 0.55, 'lowpass', 1800, 150, 0.8); metal(150, 0.14, 0.9); metal(310, 0.07, 0.6, 0.04); },
     soldCry() { bell(784, 0.16, 1.3); bell(587, 0.14, 1.5, 0.12); tone('square', 200, 160, 0.3, 0.07, 0, 0.02); noise(0.3, 0.2, 'bandpass', 1200, 700, 2, 0, 0.02); },
-    collectorHum() { tone('sine', 98, 92, 1.2, 0.1, 0, 0.3); tone('sine', 147, 139, 1.2, 0.05, 0, 0.3); noise(1.2, 0.05, 'lowpass', 500, 300, 1, 0, 0.4); }
+    collectorHum() { tone('sine', 98, 92, 1.2, 0.1, 0, 0.3); tone('sine', 147, 139, 1.2, 0.05, 0, 0.3); noise(1.2, 0.05, 'lowpass', 500, 300, 1, 0, 0.4); },
+    /* ---- Phase 7c: the Seconds Train ---- */
+    railClack() { click(0, 0.34, 760); click(0.085, 0.28, 690); tone('sine', 96, 70, 0.1, 0.07, 0, 0.004); },
+    tik() { click(0, 0.9, 2700); tone('triangle', 1900, 1500, 0.05, 0.09, 0, 0.002); },
+    tak() { click(0, 0.9, 1750); tone('triangle', 1250, 950, 0.07, 0.1, 0, 0.002); },
+    punchUp() { ratchet(5, 0.05, 0.92, 0.7, 1500, 70); tone('triangle', 240, 560, 0.28, 0.07, 0, 0.06); },
+    scaleUp() { bell(262, 0.12, 0.9); ratchet(4, 0.07, 0.95, 0.6, 1300, 50); tone('sine', 180, 330, 0.3, 0.08, 0, 0.1); },
+    stamp() { tone('sine', 95, 34, 0.45, 0.55); noise(0.35, 0.5, 'lowpass', 1600, 200, 0.8, 0, 0.002); metal(rnd(170, 210), 0.12, 0.8); click(0, 0.9, 1200); },
+    stampMark() { bell(rnd(480, 520), 0.1, 0.5); click(0, 0.6, 2100); },
+    clampFire() { noise(0.22, 0.28, 'highpass', 3000, 6500, 0.8, 0, 0.004); ratchet(9, 0.022, 1, 0.6, 2000, 90); metal(rnd(900, 980), 0.1, 0.4); },
+    chestOpen() { ratchet(6, 0.04, 1.05, 0.6, 1600, 60); bell(1175, 0.1, 0.9, 0.1); tone('sine', 300, 650, 0.35, 0.07, 0, 0.1); },
+    lampWarn() { bell(1480, 0.07, 0.35); tone('square', 1480, 1480, 0.08, 0.025, 0, 0.004); },
+    shutter() { noise(0.35, 0.3, 'bandpass', 900, 2200, 1.2, 0, 0.01); ratchet(8, 0.03, 1, 0.5, 1700, -60); metal(rnd(260, 320), 0.08, 0.5, 0.2); },
+    knobTurn() { ratchet(7, 0.05, 1.04, 0.7, 1500, -40); metal(210, 0.14, 0.9); tone('sine', 140, 210, 0.3, 0.1, 0, 0.05); },
+    tunnelRumble() { noise(1.6, 0.35, 'lowpass', 500, 120, 0.8, 0, 0.5); tone('sine', 70, 48, 1.6, 0.3, 0, 0.5); wobble(brownBuf, 1.6, 0.4, 90, 70, 3, 11, 0.6, 0.4); },
+    blipC() { const f = rnd(95, 125); tone('sine', f, f * 0.97, 0.12, 0.16, 0, 0.01); tone('sine', f * 1.5, f * 1.45, 0.1, 0.06, 0, 0.01); }
   };
   const WET = { land: 0.06, hit: 0.2, hurt: 0.1, death: 0.35, interact: 0.08, save: 0.35, lever: 0.12, door: 0.3, pickup: 0.15, barrel: 0.15, special: 0.4, pit: 0.3,
     lost: 0.3, powGet: 0.25, jolt: 0.2, pulse: 0.4, wallBreak: 0.2, tankGlow: 0.35, bossLand: 0.2, bossBreak: 0.25, bossDie: 0.4, bossWake: 0.25, steamBlast: 0.15, puff: 0.15, toolLand: 0.15, rewind: 0.4, gavelSlam: 0.25, soldCry: 0.35, auctWake: 0.25, bidTone: 0.3, bidBurst: 0.15 };
@@ -1103,6 +1129,9 @@ const Snd = (function () {
     ['bidderGlow', fx.bidderGlow, undefined, 1, 0.7], ['bladeThrow', fx.bladeThrow, undefined, 2, 0.5], ['auctWake', fx.auctWake, undefined, 1, 1.9], ['bidTone', fx.bidTone, undefined, 2, 0.8],
     ['bidBurst', fx.bidBurst, undefined, 2, 0.6], ['gavelUp', fx.gavelUp, undefined, 1, 0.8], ['gavelSlam', fx.gavelSlam, undefined, 1, 1.0], ['soldCry', fx.soldCry, undefined, 1, 1.8],
     ['collectorHum', fx.collectorHum, undefined, 1, 1.7],
+    ['railClack', fx.railClack, undefined, 3, 0.25], ['tik', fx.tik, undefined, 2, 0.15], ['tak', fx.tak, undefined, 2, 0.15], ['punchUp', fx.punchUp, undefined, 1, 0.45], ['scaleUp', fx.scaleUp, undefined, 1, 1.0],
+    ['stamp', fx.stamp, undefined, 2, 0.6], ['stampMark', fx.stampMark, undefined, 2, 0.6], ['clampFire', fx.clampFire, undefined, 1, 0.45], ['chestOpen', fx.chestOpen, undefined, 1, 1.0], ['lampWarn', fx.lampWarn, undefined, 1, 0.4],
+    ['shutter', fx.shutter, undefined, 1, 0.6], ['knobTurn', fx.knobTurn, undefined, 1, 1.0], ['tunnelRumble', fx.tunnelRumble, undefined, 1, 1.8], ['blipC', fx.blipC, undefined, 3, 0.15],
     ['tick:0', ambFx.tick, false, 2, 0.12], ['tick:1', ambFx.tick, true, 2, 0.12], ['tickBig:0', ambFx.tickBig, false, 2, 0.35], ['tickBig:1', ambFx.tickBig, true, 2, 0.35],
     ['beat:0', ambFx.beat, false, 2, 0.1], ['beat:1', ambFx.beat, true, 2, 0.1], ['stutter', ambFx.stutter, undefined, 1, 0.3],
     ['ratchet', ambFx.ratchet, undefined, 4, 1.5], ['grind', ambFx.grind, undefined, 3, 2.5], ['groan', ambFx.groan, undefined, 3, 2.9],
@@ -1549,11 +1578,12 @@ function entBox(e) {
     case 'boss': return e.state === 'sleep' ? null : [e.x - BOSS.hw, e.y - e.jy - 3.4 * U, e.x + BOSS.hw, e.y - e.jy];
     case 'fwall': return [e.tx * U - 6, e.ty * U, (e.tx + 1) * U + 6, (e.ty + e.rows) * U];
   }
-  return s2EntBox(e);
+  return s2EntBox(e) || s3EntBox(e);
 }
 function damageEnt(e, dmg, dir, heavy, atkId) {
   if (e.t === 'boss') return damageBoss(e, dmg, dir, heavy, atkId);
   if (e.s2) return s2Damage(e, dmg, dir, heavy, atkId);
+  if (e.s3) return s3Damage(e, dmg, dir, heavy, atkId);
   if (e.dead || e.lastAtk === atkId) return false;
   e.lastAtk = atkId;
   e.shake = heavy ? 0.35 : 0.22; e.flash = 0.1;
@@ -1875,7 +1905,7 @@ function popShot(s) {
   s.on = false; Snd.play('bubblePop', 0, s.x); FX.chips(s.x, s.y + 20, 6, 3); FX.glow(s.x, s.y, 30, 1, 0.25);
 }
 function popBubbles(box, cx, cy, r) {                       // the player's swing (or the special) pops oil bubbles it touches
-  if (Level.S2) popBlades(box, cx, cy, r);
+  if (Level.S2 || Level.S3) popBlades(box, cx, cy, r);
   for (let i = 0; i < Level.shots.length; i++) {
     const s = Level.shots[i]; if (!s.on) continue;
     if (box) { if (rectsOverlap(box[0], box[1], box[2], box[3], s.x - s.r, s.y - s.r, s.x + s.r, s.y + s.r)) popShot(s); }
@@ -2149,7 +2179,7 @@ function startBossFight(b) {
 }
 function arenaTrigger() {
   const b = Level.boss;
-  if (!b || b.s2 || Level.bossDown || b.state !== 'sleep') return;                    // the Auctioneer wakes through the stage-2 code
+  if (!b || b.s2 || b.s3 || Level.bossDown || b.state !== 'sleep') return;                    // the Auctioneer wakes through the stage-2 code
   if (P.x > AR.trig * U && live()) startBossFight(b);
 }
 
@@ -2186,6 +2216,7 @@ function resetEncounters() {
   if (!Level.bossDown) { Level.gateShut = false; Level.gateAnim = 0; }
   Cam.lock = null; HUD.bossDirty = true; Pow.resetEncounter();
   if (Level.S2) s2ResetFoes(!Cyc.soft);
+  if (Level.S3) s3ResetFoes();
 }
 
 /* ---------- 14. player (Nader) ---------- */
@@ -2774,7 +2805,7 @@ function resetLevelState() {
   Level.ver++;                                                       // the cached ground blocks (see drawTiles) are rebuilt for the new layout
   Level.grid.fill(0); Level.hid.fill(0);
   Level.ents.length = 0; Level.signs.length = 0; Level.clocks.length = 0; Level.doors.length = 0; Level.deco.length = 0; Level.trig.length = 0; Level.flags = {};
-  Level.dOpen = [false, false, false, false]; Level.doorOpen = false; Level.doorAnim = 0; Level.S1 = null; Level.S2 = null;
+  Level.dOpen = [false, false, false, false]; Level.doorOpen = false; Level.doorAnim = 0; Level.S1 = null; Level.S2 = null; Level.S3 = null; if (typeof S3HUD !== 'undefined') S3HUD.hide();
   if (Level.blades) for (let i = 0; i < Level.blades.length; i++) Level.blades[i].on = false;
   Hook.reset(); const cy = $('#cyc'); if (cy) { cy.classList.remove('on'); cy.classList.remove('late'); }
   Level.movers.length = 0; Level.boss = null; Level.lostN = 0; Level.lostTotal = 0; Level.gateShut = false; Level.gateAnim = 0; Level.bossDown = false; Level.fwalls.length = 0; Level.cine = false;
@@ -3140,7 +3171,7 @@ function spawnKeyGear() {
 }
 
 /* ---------- interaction with the new pieces ---------- */
-const STAGE_INT = { chest: 1, scan: 1, machine: 1, lift: 1, satchel: 1 };            // entity types that show the interaction prompt (when stageInteractable says so)
+const STAGE_INT = { chest: 1, scan: 1, machine: 1, lift: 1, satchel: 1, bench: 1 };            // entity types that show the interaction prompt (when stageInteractable says so)
 function stageInteractable(e) {
   switch (e.t) {
     case 'chest': return !e.done;
@@ -3148,10 +3179,12 @@ function stageInteractable(e) {
     case 'machine': return !e.done;
     case 'lift': return Level.bossDown && e.state === 'idle';
     case 'satchel': return !e.done;
+    case 'bench': return true;
     case 'lever': return e.puz === undefined || (!Level.flags.pzok);
   }
   return false;
 }
+function clueHidden(e) { return e.after && !(e.gate ? Level.flags[e.gate] : Level.bossDown); }       // a late clue shows once the boss is down (or once its own flag is set)
 function activateStage(e) {
   const f = Level.flags;
   switch (e.t) {
@@ -3178,6 +3211,7 @@ function activateStage(e) {
       e.state = 'ride'; e.t0 = 0; Level.cine = true; Snd.play('door', 0, e.x); break;
     case 'lever': puzzleLever(e); break;
     case 'satchel': takeHook(e); break;
+    case 'bench': s3Bench(e); break;
   }
 }
 function finishScan(e) {
@@ -3240,7 +3274,7 @@ function stageUpdate(dt) {
         }
         break;
       case 'clue':
-        if (e.got || (e.after && !Level.bossDown)) break;
+        if (e.got || clueHidden(e)) break;
         if (Math.abs(e.x - p.x) < 0.9 * U && Math.abs(e.y - (p.y - 0.55 * U)) < 1.2 * U) {
           e.got = true; f[e.key] = true; Snd.play('pickup', 0, e.x); FX.sparks(e.x, e.y, 8, 4); FX.ring(e.x, e.y, 40, 2, 0.5); UI.toast(t('m_clue', t('clue_' + e.key)), 3200);
         }
@@ -3260,6 +3294,7 @@ function stageUpdate(dt) {
   }
   Tik.update(dt);
   if (Level.S2) s2Update(dt);
+  if (Level.S3) s3Update(dt);
   if (Level.bossDown && Level.doors[2] && !Level.dOpen[2]) openDoor(2);
 }
 function endStage1() {
@@ -3280,7 +3315,7 @@ function drawStageEnt(c, e) {
     case 'master': drawMaster(c, e); break;
     case 'pow': drawPow(c, e); break;
     case 'clue':
-      if (e.got || (e.after && !Level.bossDown)) break;
+      if (e.got || clueHidden(e)) break;
       { const bob = Math.sin(Game.time * 3 + e.x) * 4;
         c.fillStyle = 'rgba(47,214,196,0.2)'; c.beginPath(); c.arc(e.x, e.y + bob, 22, 0, 6.3); c.fill();
         c.save(); c.translate(e.x, e.y + bob); c.rotate(-0.08); c.fillStyle = '#d9cba6'; c.fillRect(-12, -15, 24, 30); c.strokeStyle = '#2b2433'; c.lineWidth = 2; c.strokeRect(-12, -15, 24, 30);
@@ -3380,7 +3415,7 @@ const Pow = {
     for (let i = 0; i < Level.ents.length; i++) if (Level.ents[i].t === 'pow') Level.ents[i].got = false;
   },
   eSlow() { return this.t.sand > 0 ? 0.4 : 1; },
-  rangeMul() { return this.t.blade > 0 ? 1.55 : 1; },
+  rangeMul() { return (this.t.blade > 0 ? 1.55 : 1) * ((Level.flags.ham || S.ham) ? 1.3 : 1); },
   dmgPlus() { return this.t.blade > 0 ? 1 : 0; },
   give(kind) {
     const d = POW[kind]; this.t[kind] = d.dur;
@@ -3481,7 +3516,7 @@ const HK = { range: 8.6 * U, fly: 46 * U, reel: 16 * U, minLen: 2.6 * U, cd: 0.3
 const Hook = {
   ph: 'none',                         // none | fly | swing | back
   gx: 0, gy: 0, hx: 0, hy: 0, tx: 0, ty: 0, ax: 0, ay: 0, len: 0, kind: '', tgt: null, t: 0, cd: 0, back: 0, slack: 0, carry: null, hitE: null,
-  has() { return !!(Level.flags.hook || (S.done && S.done.s2)); },
+  has() { return !!(Level.flags.hook || Level.stage === 's3' || (S.done && S.done.s2)); },
   reset() { this.ph = 'none'; this.tgt = null; this.carry = null; this.cd = 0; this.kind = ''; },
   calcGrab() { this.gx = P.x + P.dir * 7; this.gy = P.y - P.h * HK.grabUp; },
   tick(dt) { if (this.cd > 0) this.cd -= dt; if (this.ph === 'back') this.retract(dt); },
@@ -3489,6 +3524,7 @@ const Hook = {
     if (e.t === 'ring') return 1;
     if (e.t === 'pull') return e.done ? 0 : 1;
     if (e.t === 'auct') return e.gavelUp ? 1 : 0;
+    if (e.t === 'insp') return e.clampHook ? 1 : 0;
     return 0;
   },
   los(x0, y0, x1, y1) {
@@ -3501,12 +3537,12 @@ const Hook = {
     const gx = this.gx, gy = this.gy, dir = P.dir; let bs = 1e9;
     for (let i = 0; i < Level.ents.length; i++) {
       const e = Level.ents[i]; if (!this.pointOf(e)) continue;
-      const ex = e.t === 'auct' ? e.gx : e.x, ey = e.t === 'auct' ? e.gy : e.y;
+      const hg = e.t === 'auct' || e.t === 'insp', ex = hg ? e.gx : e.x, ey = hg ? e.gy : e.y;
       const dx = ex - gx, dy = ey - gy, d = Math.hypot(dx, dy);
       if (d > HK.range || d < 0.9 * U) continue;
       if (e.t === 'ring' && dy > 0.5 * U) continue;                      // a ring below the hand is useless
       let sc = d + (dx * dir < -0.4 * U ? 7 * U : 0) + (e.t === 'ring' && dy > -1.2 * U ? 2 * U : 0);
-      if (e.t === 'auct' || e.t === 'pull') sc -= 3 * U;                  // aim for the gavel / the handle when it is within reach
+      if (e.t === 'auct' || e.t === 'pull' || e.t === 'insp') sc -= 3 * U;                  // aim for the gavel / the handle when it is within reach
       if (sc >= bs || !this.los(gx, gy, ex, ey)) continue;
       bs = sc; this.tgt = e;
     }
@@ -3518,7 +3554,8 @@ const Hook = {
     const e = this.pick();
     this.hx = this.gx; this.hy = this.gy; this.t = 0; this.carry = null; this.hitE = null;
     if (e) {
-      this.kind = e.t; this.tx = e.t === 'auct' ? e.gx : e.x; this.ty = e.t === 'auct' ? e.gy : e.y;
+      const hg = e.t === 'auct' || e.t === 'insp';
+      this.kind = e.t; this.tx = hg ? e.gx : e.x; this.ty = hg ? e.gy : e.y;
       if (this.tx !== this.gx) P.dir = this.tx > this.gx ? 1 : -1;
     } else { this.kind = ''; this.tx = this.gx + P.dir * 6.2 * U; this.ty = this.gy - 0.9 * U; }
     this.ph = 'fly'; setState('hook'); Snd.play('hookThrow', 0, P.x);
@@ -3528,6 +3565,7 @@ const Hook = {
     const p = P; this.t += dt; this.calcGrab();
     if (this.ph === 'fly') {
       p.vx = approach(p.vx, 0, TUNE.decA * 0.3 * dt);
+      if (this.tgt && this.tgt.t === 'insp') { this.tx = this.tgt.gx; this.ty = this.tgt.gy; }          // the clamp is moving: the claw follows it
       const dx = this.tx - this.hx, dy = this.ty - this.hy, d = Math.hypot(dx, dy), st = HK.fly * dt;
       const nx = d <= st ? this.tx : this.hx + dx / d * st, ny = d <= st ? this.ty : this.hy + dy / d * st;
       if (!this.kind) {                                                  // a free throw: stagger whatever it meets, stop at a wall
@@ -3566,6 +3604,7 @@ const Hook = {
   },
   swing(dt, ax) {
     const p = P;
+    if (this.tgt && this.tgt.mv) { this.ax = this.tgt.x; this.ay = this.tgt.y; }                 // a ring that sways with the train carries the anchor with it
     if (this.len > HK.minLen) this.len = Math.max(HK.minLen, this.len - HK.reel * dt);
     p.vy += TUNE.grav * 0.82 * dt;
     p.vx += ax * HK.swingAcc * dt; p.vx *= 1 - 0.16 * dt;
@@ -4028,6 +4067,7 @@ function s2Damage(e, dmg, dir, heavy, atkId) {
 }
 function hookSweep(x0, y0, x1, y1) {                                        // the free-flying claw: whatever it meets is staggered (blades and paddles are knocked out of the air)
   const pad = 10;
+  if (Level.S3) { for (let i = 0; i < Level.blades.length; i++) { const s = Level.blades[i]; if (s.on && Math.hypot(s.x - x1, s.y - y1) < s.r + pad) { popBlade(s); return s; } } return s3HookSweep(x1, y1, pad); }
   for (let i = 0; i < Level.blades.length; i++) {
     const s = Level.blades[i]; if (!s.on) continue;
     if (Math.hypot(s.x - x1, s.y - y1) < s.r + pad) { popBlade(s); return s; }
@@ -4379,6 +4419,802 @@ function auctRewind(b) {                                                     // 
   b.bids.length = 0; b.tt = 0;
   for (let i = 0; i < Z.sway.length; i++) Z.sway[i].snap = true;
 }
+/* ---------- 13g. stage 3: «the Seconds Train» (قطار الثواني) ----------
+   One long horizontal run from the tail of a moving train to its locomotive. Six sections, each with its own speed of time:
+     1 the tail roofs (x1)   2 the passenger car (x0.25)   3 the cargo car (x3)   4 the dining car (x1, no fighting)   5 the clock car (beat of the seconds)   6 the locomotive roof (boss).
+   The speed of time works on the WORLD around Nader, never on Nader: enemies, sliding crates, shutters and the scenery behind the windows. Nobody here is a person or an
+   animal: the "collectors" are brass ticket-punching machines, the "second birds" are propeller clock-drones, the passengers are only their frozen things (cups, cases,
+   a newspaper), and the Collector of minutes is a tall brass hourglass wrapped in a violet scarf. The inspector is a ticket-booth robot on a bogie. ---------- */
+Object.assign(STR.ar, {
+  st_s3: 'المرحلة 3 · قطار الثواني', boss_insp: 'مفتش التذاكر', sp_insp: 'المفتش', sp_coll: 'جامع الدقائق',
+  ts_lbl: 'سرعة الزمن حولك', ts_boss: 'سرعة زمن المفتش',
+  open3_1: 'غادروا السوق وتبعوا البوصلة إلى «محطة الثواني»…', open3_2: 'قطار واقف على الرصيف منذ أربعين عامًا، ثم تحرّك فجأة بلا محطات.',
+  open3_3: 'لكل عربة ثانيتها: بطيئة، وسريعة، وأخرى تدقّ كالقلب.', open3_4: 'سرعة الزمن تؤثر في ما حولك لا فيك: مفتاح نادر يحميه.',
+  tk3_intro: 'القطار يسير ونحن على سطح ذيله. اتبع العربات إلى القاطرة، فشظية الثانية هناك.', tk3_gap: 'فجوة بين العربتين أوسع من أي قفزة! ارمِ الخطّاف على الحلقة النحاسية وتأرجح.',
+  tk3_tunnel: 'مصباح أحمر يومض: نفق قادم! اقفز فوق العارضة أو راوغ تحتها.', tk3_door: 'باب العربة الأولى. من هنا يتغيّر الزمن من عربة إلى عربة.',
+  tk3_slow: 'الزمن هنا بطيء حولنا: كل شيء يتحرك بربع سرعته. الهجمات تُرى من بعيد، لكن الجباة كثيرون.',
+  tk3_fast: 'الزمن هنا يركض ×3! الصناديق تنزلق بسرعة. اضرب الصندوق وهو أمام علامته فيستقرّ جسرًا.', tk3_ferry: 'رأيتَ؟ استقرّ الصندوق وصار جسرًا ثابتًا.',
+  tk3_food: 'عربة الطعام. لا قتال هنا… وكوب الشاي ذاك لا يمتلئ أبدًا.', tk3_beat: 'عربة الساعات: على «تك» تظهر الزرقاء، وعلى «تاك» تظهر الكهرمانية. اعبر في نبضتك!',
+  tk3_elite: 'هذا الجابي الكبير يحمل مفتاح الفرن. اضرب من خلفه حين يرفع ميزانه.', tk3_boss: 'سطح القاطرة والمفتش! راقب الأرقام قبل كل ختم، وحين تتوهج ساعة صدره اضربها!',
+  tk3_late: 'لا تتأخر…', tk3_late2: 'مَن قالها؟ لا أعرف من أين جاءت هذه الجملة.', tk3_end: 'محطة «الأصيل» مشطوبة بالحبر في الجدول… من شطبها؟',
+  m3_ug: 'ترس خاص %s/3', m3_ham_need: 'ميرا تحتاج ثلاثة تروس خاصة من عربتَي الركاب والبضائع (معك %s)', m3_ham_get: 'المطرقة المطوّرة: مدى ضربتها أطول',
+  m3_key_get: 'حصلت على مفتاح الفرن', m3_door_need: 'باب القاطرة مغلق: مفتاح الفرن مع الجابي الكبير', m3_lock: 'استقرّ الصندوق جسرًا', m3_tunnel: 'نفق!',
+  p_bench: 'طاولة ميرا',
+  sg3_start: 'سطح الذيل: اتبع العربات نحو القاطرة', sg3_gap1: 'فجوة بين السقفين: ارمِ الخطّاف على الحلقة', sg3_tunnel: 'مصباح أحمر = نفق: اقفز فوق العارضة أو راوغ',
+  sg3_gap2: 'حلقتان تهتزّان مع القطار: اقفز عند أقرب نقطة', sg3_gap3: 'حلقتان متتاليتان: لا تتوقف عندهما', sg3_slow: 'عربة الركاب: الزمن حولك ×0.25',
+  sg3_fast: 'عربة البضائع: الزمن حولك ×3', sg3_ferry: 'اضرب الصندوق وهو أمام علامته ليستقرّ جسرًا', sg3_shut: 'مصاريع تنغلق: اعبر والضوء أخضر',
+  sg3_food: 'عربة الطعام: لا قتال هنا', sg3_beat: 'تك (أزرق) وتاك (كهرماني): اعبر في نبضتك', sg3_key: 'باب القاطرة يفتحه مفتاح الفرن',
+  sg3_boss: 'سطح القاطرة: نفق كل 40 ثانية', sg3_hatch: 'خزانة سقف: تُرى بالخطّاف فقط', sg3_scale: 'جابي الميزان: درعه يلمع قبل ضربته. اضربه من الخلف أو اسحب درعه بالخطّاف',
+  sg3_punch: 'الجابي يرفع مشبكه ثم يضرب: راوغ ثم اضرب', sg3_drone: 'مروحة الثواني تهبط على الثانية بدقة: تحرّك قبل «تك»',
+  cl_1: 'على طاولة الزاوية كوب شاي لا يمتلئ، وبجانبه ساعة رملية نحاسية طويلة ملفوفة بوشاح بنفسجي.', cl_2: 'هل تسمح لي أن أستعير دقيقة من وقتك؟',
+  cl_3: 'توقّف يا فتى. كل شظية تجمعها تقرّب هذه المملكة من شيء أسوأ مما تتخيل.', cl_4: 'لا يرفع صوتًا ولا يمدّ يدًا، لكنّ عدسته تقف على تِك لحظة أطول مما ينبغي.',
+  cl_5: 'وأنت أيها الصغير… ما زلتَ تدقّ.', cl_6: 'ينقلب الكوب بلا صوت، وتختفي الساعة الرملية، وتبقى بطاقة على الطاولة. وفي صدر نادر فراغ: كأن دقيقة كاملة نقصت منه.',
+  mr_1: 'على الطاولة المجاورة دفتر ميرا مفتوحًا، وبجانبه سندان صغير ومنفاخ وثلاث فتحات على شكل تروس.', mr_2: 'في الدفتر بخطها: «ثلاثة تروس خاصة تكفي لتطوير المطرقة. ابحث عنها في عربتَي الركاب والبضائع».',
+  mr_3: 'تدور التروس الثلاثة في الفتحات، وتلتحم بمقبض المطرقة، وتتّسع ضربتها.', c_card: 'بطاقة الجامع', c_ticket: 'تذكرة قديمة إلى «الأصيل»', c_table: 'جدول القطار',
+  clue_c_card: 'بطاقة الجامع: «دفعة سداد»', clue_c_ticket: 'تذكرة قديمة إلى «الأصيل» مختومة قبل أربعين عامًا', clue_c_table: 'جدول القطار: محطة «الأصيل» مشطوبة بالحبر',
+  ins_1: 'تذاكركم! كل من على هذا القطار مخالف حتى يثبت العكس.', ins_2: 'مخالفة جديدة: التأخّر! والسرعة… سرعتي أنا.', ins_3: 'ملغاة.',
+  end3_1: 'يُفتح غلاف الغلاية، وتنبثق شظية الثانية بين البخار.', end3_2: 'ثم يتباطأ القطار، ويقف أخيرًا عند حدود غابة تجري فيها الأشياء إلى الوراء.',
+  end3_3: 'ويخرج الثلاثة إلى الغابة.', end3_4: 'وفي دفتر المواعيد، تحت الحبر، حروف لم تُمحَ تمامًا: «الأصيل».',
+  ev3_gap: 'فجوة', ev3_tunnel: 'نفق'
+});
+Object.assign(STR.en, {
+  st_s3: 'Stage 3 · The Seconds Train', boss_insp: 'The Ticket Inspector', sp_insp: 'The Inspector', sp_coll: 'The Collector of minutes',
+  ts_lbl: 'Time around you', ts_boss: 'The inspector\'s time',
+  open3_1: 'They left the market and followed the compass to "Seconds Station"…', open3_2: 'A train that stood at its platform for forty years, then suddenly pulled out with no stops.',
+  open3_3: 'Every car has its own second: slow, fast, and one that beats like a heart.', open3_4: 'The speed of time works on what is around you, not on you: Nader\'s key protects him.',
+  tk3_intro: 'The train is moving and we are on the roof of its tail. Follow the cars to the locomotive: the Second\'s shard is there.', tk3_gap: 'A gap between the cars wider than any jump! Throw the hook at the brass ring and swing.',
+  tk3_tunnel: 'A red lamp is flashing: a tunnel is coming! Jump over the beam or roll under it.', tk3_door: 'The first car\'s door. From here time changes from car to car.',
+  tk3_slow: 'Time is slow around us here: everything moves at a quarter of its speed. Attacks are easy to read, but there are many collectors.',
+  tk3_fast: 'Time runs ×3 here! The crates slide fast. Strike a crate when it is in front of its mark and it settles as a bridge.', tk3_ferry: 'See? The crate settled and is now a fixed bridge.',
+  tk3_food: 'The dining car. No fighting here… and that teacup never fills.', tk3_beat: 'The clock car: on "tik" the blue ones appear, on "tak" the amber ones. Cross in your beat!',
+  tk3_elite: 'This big collector carries the furnace key. Strike from behind when he raises his scale.', tk3_boss: 'The locomotive roof and the inspector! Watch the numbers before each stamp, and when his chest clock glows, hit it!',
+  tk3_late: 'Don\'t be late…', tk3_late2: 'Who said that? I don\'t know where that sentence came from.', tk3_end: 'The station "Al-Aseel" is struck out in ink in the timetable… who struck it out?',
+  m3_ug: 'Special gear %s/3', m3_ham_need: 'Mira needs three special gears from the passenger and cargo cars (you have %s)', m3_ham_get: 'The upgraded hammer: a longer swing',
+  m3_key_get: 'You got the furnace key', m3_door_need: 'The locomotive door is locked: the furnace key is with the big collector', m3_lock: 'The crate settled as a bridge', m3_tunnel: 'Tunnel!',
+  p_bench: 'Mira\'s workbench',
+  sg3_start: 'The tail roof: follow the cars toward the locomotive', sg3_gap1: 'A gap between the roofs: throw the hook at the ring', sg3_tunnel: 'Red lamp = tunnel: jump over the beam or roll',
+  sg3_gap2: 'Two rings swaying with the train: jump at their nearest point', sg3_gap3: 'Two rings in a row: do not stop at them', sg3_slow: 'Passenger car: time around you ×0.25',
+  sg3_fast: 'Cargo car: time around you ×3', sg3_ferry: 'Hit the crate in front of its mark and it settles as a bridge', sg3_shut: 'Shutters closing: cross on green',
+  sg3_food: 'The dining car: no fighting here', sg3_beat: 'Tik (blue) and tak (amber): cross in your beat', sg3_key: 'The locomotive door opens with the furnace key',
+  sg3_boss: 'The locomotive roof: a tunnel every 40 seconds', sg3_hatch: 'A roof locker: you only see it with the hook', sg3_scale: 'The scale collector: his shield glows before his strike. Hit him from behind or pull his shield with the hook',
+  sg3_punch: 'The collector raises his punch, then strikes: dodge, then hit', sg3_drone: 'A second-drone lands exactly on the second: move before "tik"',
+  cl_1: 'At the corner table stands a teacup that never fills, and beside it a tall brass hourglass wrapped in a violet scarf.', cl_2: 'May I borrow a minute of your time?',
+  cl_3: 'Stop, boy. Every shard you collect brings this kingdom closer to something worse than you imagine.', cl_4: 'It raises no voice and reaches out no hand, but its lens rests on Tik a moment longer than it should.',
+  cl_5: 'And you, little one… you still tick.', cl_6: 'The cup tips over without a sound, the hourglass vanishes, and a card is left on the table. Nader feels an emptiness: as if a whole minute were gone from him.',
+  mr_1: 'On the next table lies Mira\'s notebook, open, with a small anvil, a bellows and three gear-shaped slots.', mr_2: 'In her handwriting: "Three special gears are enough to upgrade the hammer. Look for them in the passenger and cargo cars."',
+  mr_3: 'The three gears turn in the slots, fuse to the hammer\'s handle, and its swing grows wider.', c_card: 'The Collector\'s card', c_ticket: 'An old ticket to "Al-Aseel"', c_table: 'The train timetable',
+  clue_c_card: 'The Collector\'s card: "settlement payment"', clue_c_ticket: 'An old ticket to "Al-Aseel", stamped forty years ago', clue_c_table: 'The timetable: the station "Al-Aseel" is struck out in ink',
+  ins_1: 'Tickets! Everyone on this train is a violator until proven otherwise.', ins_2: 'A new violation: lateness! And speeding… my speed.', ins_3: 'Cancelled.',
+  end3_1: 'The boiler cover opens and the Second\'s shard bursts out through the steam.', end3_2: 'Then the train slows, and at last stops at the edge of a forest where things run backwards.',
+  end3_3: 'And the three of them step out into the forest.', end3_4: 'In the timetable, under the ink, letters that were never fully erased: "Al-Aseel".',
+  ev3_gap: 'gap', ev3_tunnel: 'tunnel'
+});
+SPEAK.insp = { snd: 'blipM', cps: 26, every: 3 }; SPEAK.coll = { snd: 'blipC', cps: 24, every: 3 };
+
+/* ---------- layout (tiles) ---------- */
+const S3L = {
+  w: 484, gap1: [30, 40], gap2: [63, 75], gap3: [102, 114], carA: 131, carB: 207, carC: 283, carD: 333, carE: 413,
+  clock0: 124, clock1: 322, clock2: 416, pitA: 240, pitB: 258, shutA: 262, shutB: 281, beatA: [345, 364], beatB: [368, 392], beatC: [396, 404],
+  eliteX: 406, door: 409, gate: 420, arenaA: 421, arenaB: 481, trig: 432, exitX: 478, benchX: 297, tableX: 307, chimney: [448, 452], plat: [[425, 433, 3], [468, 476, 3]]
+};
+/* the speed of time of a car: what the world around Nader does at his position */
+const S3RATE = [[1, S3L.carA, 1], [S3L.carA, S3L.carB, 0.25], [S3L.carB, S3L.carC, 3], [S3L.carC, S3L.carD, 1], [S3L.carD, S3L.carE, 1], [S3L.carE, 9999, 1]];
+function s3RateAt(tx) { for (let i = 0; i < S3RATE.length; i++) if (tx < S3RATE[i][1]) return S3RATE[i][2]; return 1; }
+STAGES.s3 = { id: 's3', slot: 'sl_s3', theme: 'train', w: S3L.w, h: 26, build: function () { buildS3(); }, restore: function () { restoreS3(); } };
+
+const CB3 = {
+  punch: { hp: 3, hw: 0.62 * U, h: 1.75 * U, walk: 1.7 * U, chase: 4.6 * U, aggro: 8 * U, warn: 0.6, minWarn: 0.4, slam: 0.22, reach: 1.9 * U, recover: 1.0, gears: 2 },
+  scale: { hp: 4, hw: 0.7 * U, h: 1.8 * U, walk: 1.4 * U, aggro: 7.5 * U, warn: 0.9, minWarn: 0.45, reach: 2.1 * U, recover: 1.3, gears: 3 },
+  drone: { hp: 1, hw: 0.45 * U, h: 0.7 * U, period: 3, glow: 1.5, land: 2.0 },
+  elite: { hp: 9, mulHp: 1 }
+};
+
+function s3Ring(tx, ty, mv) { const r = { t: 'ring', x: tx * U, y: ty * U, ping: 0, ph: Math.random() * 6 }; if (mv) { r.mv = mv; r.bx = r.x; r.by = r.y; r.t0 = Math.random() * 6; } return r; }
+
+/* ---------- build ---------- */
+function buildS3() {
+  const Z = Level.S3 = { rate: 1, rv: 1, scroll: 0, gantries: [], ferries: [], shut: [], beat: 0, plat: [], bench: null, table: null, hourglass: null, knob: null, chim: null, wclocks: [],
+    bars: [], beatT: 0, shT: 0, fT: 0, toastT: 0, railT: 0, keyDoor: null, hatT: 0, lastBeat: -1, noteRead: false };
+  for (let i = 0; i < 14; i++) Z.bars.push({ on: false, x: 0, v: 0, xe: 0, hw: 0.4 * U, delay: 0, h: 1 });
+  const LWc = LW;
+  Level.flags.hook = true;                                                              // the hook from the market comes along
+  Level.spawn = { x: 5.5 * U, y: G * U };
+  Tik.on = true; Tik.mode = 'follow'; Tik.x = Level.spawn.x - 40; Tik.y = Level.spawn.y - 90;
+  fill(0, 0, 1, LH, 1); fill(LWc - 1, 0, LWc, LH, 1);
+  /* ===== 1. the tail roofs: four car roofs with three gaps between them ===== */
+  fill(1, G, S3L.gap1[0], LH, 1); fill(S3L.gap1[1], G, S3L.gap2[0], LH, 1); fill(S3L.gap2[1], G, S3L.gap3[0], LH, 1); fill(S3L.gap3[1], G, S3L.carA, LH, 1);
+  Level.ents.push(s3Ring(33.5, G - 7));
+  Level.ents.push(s3Ring(66.6, G - 7, { ax: 1.3, ay: 0.35, f: 2.6 })); Level.ents.push(s3Ring(71.8, G - 7.4, { ax: 1.3, ay: 0.35, f: 2.6 }));
+  Level.ents.push(s3Ring(105.4, G - 7)); Level.ents.push(s3Ring(110.6, G - 7.6));
+  Z.gantries.push(mkGantry(44, 62, 44, 2), mkGantry(78, 100, 78, 2), mkGantry(116, 130, 116, 2));
+  /* a roof locker that only the hook shows: a ring over a ledge holds the first lost minute */
+  fill(86, G - 6, 90, G - 5, 2); Level.ents.push(s3Ring(88, G - 11));
+  fill(22, G - 5, 26, G - 4, 2);                                                       // a ventilator top: a ledge with gears
+  /* ===== 2..5. the cars: floors, ceilings, ends ===== */
+  fill(S3L.carA, G, S3L.pitA, LH, 1); fill(S3L.pitB, G, S3L.beatA[0], LH, 1);
+  fill(S3L.beatA[1], G, S3L.beatB[0], LH, 1); fill(S3L.beatB[1], G, S3L.beatC[0], LH, 1); fill(S3L.beatC[1], G, LWc - 1, LH, 1);
+  fill(S3L.carA, G - 8, S3L.carE, G - 6, 1); for (let y = G - 8; y < G - 6; y++) for (let x = S3L.carA; x < S3L.carE; x++) Level.hid[y * LW + x] = 1;
+  fill(S3L.carA - 1, G - 9, S3L.carA, G - 4, 1);                                       // the entry wall of the first car above the doorway (the doorway is 3 high)
+  for (let y = G - 9; y < G - 4; y++) Level.hid[y * LW + S3L.carA - 1] = 1;
+  /* --- the passenger car (x0.25): benches (one-way), luggage racks, a fallen case, punchers and scale collectors --- */
+  [[139, 3], [149, 3], [159, 3], [169, 3], [184, 3], [194, 3]].forEach(function (b) { trainProp('bench', b[0], G - 1, b[1], 1); });
+  [[142, 6], [165, 7], [188, 6]].forEach(function (r) { trainProp('rack', r[0], G - 4, r[1], 1); });
+  trainProp('case', 176, G - 2, 2, 2); trainProp('case', 200, G - 1, 2, 1);           // a fallen case and a hatbox
+  Level.ents.push(s3Ring(152, G - 7.4)); trainProp('rack', 150, G - 6, 6, 1);           // the high rack: reached with the hook
+  /* --- the cargo car (x3): a pit of eighteen with three crate ferries, then shutters --- */
+  const dock = [[242, 0], [247, 1], [252, 0]];                                         // [tile x of the left edge, rows above the floor]
+  dock.forEach(function (d, i) {
+    const cx0 = (d[0] + 1.5) * U, f = { t: 'ferry', s3: 1, i: i, dy: d[1], cx: cx0, cur: cx0, amp: 2.2 * U, ph: i * 2.1, locked: false, m: null, flash: 0, x: cx0, y: (G - d[1]) * U, lastAtk: 0, dead: false, shake: 0, near: 0 };
+    f.m = mkMover(cx0 - 1.5 * U, cx0 + 1.5 * U, (G - d[1]) * U, 'crate'); f.m.on = true; f.m.ferry = f; Z.ferries.push(f); Level.ents.push(f);
+  });
+  [[226, 2], [232, 3]].forEach(function (b) { toolTiles('crate', b[0], G - b[1], 2, b[1]); });
+  for (let i = 0; i < 3; i++) {
+    const x = S3L.shutA + 5 + i * 6, cells = []; for (let y = G - 6; y < G; y++) cells.push([x, y]);
+    evTiles(x, G - 6, x + 1, G, 0); Z.shut.push({ x: x, ph: i * 0.9, open: true, warn: 0, a: 0, cells: cells });
+  }
+  fill(S3L.pitB + 1, G - 1, S3L.pitB + 3, G, 1);                                       // a step after the pit
+  /* --- the dining car: a safe room with tables (one-way), the Collector's table, Mira's bench, the second save clock --- */
+  [[285, 4], [313, 4]].forEach(function (b) { trainProp('table', b[0], G - 2, b[1], 1); });
+  Z.bench = { t: 'bench', x: (S3L.benchX + 0.5) * U, y: G * U, done: false, ph: 0 };
+  Z.table = { t: 'ctable', x: (S3L.tableX + 0.5) * U, y: G * U, done: false, ph: 0, vanish: 0, card: false };
+  Level.ents.push(Z.bench, Z.table);
+  Z.hourglass = Z.table;
+  /* --- the clock car: two long pits crossed on tik / tak platforms, a short third gap --- */
+  [[S3L.beatA, [[347, 3, G - 1, 0], [352, 3, G - 2, 1], [357, 3, G - 1, 0], [361, 3, G - 2, 1]]], [S3L.beatB, [[370, 3, G - 1, 0], [374.5, 3, G - 2, 1], [379, 3, G - 2.5, 0], [383.5, 3, G - 2, 1], [388, 3, G - 1, 0]]], [S3L.beatC, [[398, 3, G - 1, 1]]]].forEach(function (g) {
+    g[1].forEach(function (p) { const m = mkMover(p[0] * U, (p[0] + p[1]) * U, p[2] * U, 'beat'); m.on = false; m.beat = p[3]; Z.plat.push(m); });
+  });
+  addDoor(0, S3L.door, G - 6, 6);                                                      // the locomotive door: the furnace key opens it
+  Z.keyDoor = { t: 'fdoor', x: (S3L.door + 0.5) * U, y: G * U, lamp: 0 }; Level.ents.push(Z.keyDoor);
+  /* ===== 6. the locomotive roof: a floor, a chimney that blows hot air, two coal ledges, the boss ===== */
+  fill(S3L.chimney[0], G - 4, S3L.chimney[1], G, 1);
+  S3L.plat.forEach(function (p) { fill(p[0], G - p[2], p[1], G - p[2] + 1, 2); });
+  Z.chim = { t: 'chimney', x: (S3L.chimney[0] + S3L.chimney[1]) / 2 * U, y: (G - 4) * U, ph: 0 }; Level.ents.push(Z.chim);
+  fill(S3L.gate, 0, S3L.gate + 1, G - 6, 1); fill(S3L.gate, G - 6, S3L.gate + 1, G, 5);
+  fill(S3L.exitX - 1, G - 4, S3L.exitX, G, 1);
+  Z.knob = { t: 'knob', x: 477 * U, y: (G - 2) * U, rot: 0, spin: 0 }; Level.ents.push(Z.knob);
+  /* ===== signs ===== */
+  [[5, 'sg3_start', 4.0], [27, 'sg3_gap1', 6.2], [46, 'sg3_tunnel', 4.4], [64, 'sg3_gap2', 8.7], [100, 'sg3_gap3', 6.6], [86, 'sg3_hatch', 8.4],
+   [134, 'sg3_slow', 5.4], [140, 'sg3_punch', 4.4], [212, 'sg3_fast', 5.6], [236, 'sg3_ferry', 5.6], [268, 'sg3_shut', 5.0],
+   [292, 'sg3_food', 5.0], [340, 'sg3_beat', 5.4], [404, 'sg3_key', 5.4], [426, 'sg3_boss', 5.0], [168, 'sg3_scale', 5.4], [372, 'sg3_drone', 7.0]]
+    .forEach(function (s) { Level.signs.push({ x: s[0] * U + U / 2, h: s[2] * U, key: s[1] }); });
+  /* ===== save clocks: after the tail roofs, in the dining car, before the locomotive ===== */
+  [[S3L.clock0, 0], [S3L.clock1, 1], [S3L.clock2, 2]].forEach(function (q) { const c = { t: 'clock', id: q[1], x: q[0] * U + U / 2, y: G * U, wind: 0 }; Level.ents.push(c); Level.clocks.push(c); });
+  /* ===== the wall clocks of the cars (each shows its car's speed of time) ===== */
+  [[S3L.carA + 4, 0.25], [S3L.carB + 4, 3], [S3L.carC + 4, 1], [S3L.carD + 4, 1]].forEach(function (q) { const w = { t: 'wclock', x: q[0] * U, y: (G - 6.7) * U, r: q[1], a: 0 }; Z.wclocks.push(w); Level.ents.push(w); });
+  /* ===== clues, lost minutes, special gears, gears ===== */
+  Level.ents.push(mkClue('c_ticket', 91, (G - 5) * U - 0.9 * U, false)); Level.ents.push(mkClue('c_table', 300, (G - 1.2) * U, false));
+  { const cc = mkClue('c_card', 308, (G - 1.3) * U, true); cc.gate = 'collector'; Level.ents.push(cc); }       // the card lies on the table once the Collector has been
+  const lm = [mkLost(88 * U, (G - 5) * U - 0.95 * U, 'far'), mkLost(154 * U, (G - 6) * U - 0.95 * U, 'far'), mkLost(268 * U, (G - 3.3) * U, 'far'), mkLost(316 * U, G * U - 0.9 * U, 'far'), mkLost(406 * U, (G - 2.5) * U, 'far')];
+  lm.forEach(function (m) { Level.ents.push(m); }); Level.lostTotal = lm.length;
+  [[166, 4.6], [196, 0.9], [253, 2.7]].forEach(function (g, i) { const e = mkGear(g[0], g[1]); e.t = 'ugear'; e.n = i; e.s3 = 1; Level.ents.push(e); });      // the three special gears: two in the passenger car (a rack, the far bench), one over the ferry pit
+  [[9, 0.6], [14, 0.6], [20, 0.6], [24, 5.6], [38, 0.6], [47, 0.6], [52, 0.6], [57, 0.6], [70, 0.6], [79, 0.6], [84, 0.6], [92, 0.6], [97, 0.6], [117, 0.6], [121, 0.6], [127, 0.6],
+   [137, 0.6], [145, 1.6], [155, 0.6], [162, 0.6], [172, 0.6], [180, 0.6], [186, 0.6], [196, 0.6], [203, 0.6], [215, 0.6], [221, 0.6], [229, 0.6], [263, 0.6], [270, 0.6], [276, 0.6],
+   [291, 0.6], [295, 0.6], [304, 0.6], [311, 0.6], [330, 0.6], [339, 0.6], [350, 3.2], [356, 3.2], [373, 3.2], [380, 3.2], [386, 3.2], [394, 0.6], [400, 0.6], [424, 0.6], [440, 0.6], [463, 0.6]]
+    .forEach(function (g) { Level.ents.push(mkGear(g[0], g[1])); });
+  /* ===== enemies ===== */
+  [[141, 136, 146], [155, 148, 160], [172, 164, 180], [191, 182, 199]].forEach(function (q) { Level.ents.push(mkPunch(q[0], q[1], q[2])); });
+  [[168, 162, 174], [197, 190, 204]].forEach(function (q) { Level.ents.push(mkScale(q[0], q[1], q[2])); });
+  [[216, 210, 222], [270, 263, 275], [236, 232, 239]].forEach(function (q) { Level.ents.push(mkPunch(q[0], q[1], q[2])); });
+  [[222, 218, 228]].forEach(function (q) { Level.ents.push(mkScale(q[0], q[1], q[2])); });
+  [[352, G - 4], [375, G - 5], [388, G - 4], [400, G - 5]].forEach(function (q) { Level.ents.push(mkDrone(q[0], q[1])); });
+  [[336, 330, 340]].forEach(function (q) { Level.ents.push(mkPunch(q[0], q[1], q[2])); });
+  const el = mkScale(S3L.eliteX, S3L.eliteX - 1, S3L.eliteX + 2); el.elite = true; el.hp = CB3.elite.hp; Level.ents.push(el);
+  Level.ents.push(mkPow('sand', 150, 0)); Level.ents.push(mkPow('blade', 246, 3)); Level.ents.push(mkPow('bell', 340, 0));
+  /* ===== the boss ===== */
+  AR.gate = S3L.gate; AR.x0 = S3L.arenaA; AR.trig = S3L.trig; AR.end = S3L.arenaB;
+  const ib = mkInsp(); Level.ents.push(ib); Level.boss = ib;
+  /* ===== scripted beats ===== */
+  const T = function (flag, x0, x1, fn, tik) { Level.trig.push({ flag: flag, x0: x0 * U, x1: x1 * U, fn: fn, tik: !!tik }); };
+  T('opening3', -1, 1e6, function () { Cine.run([['card', [{ k: 'open3_1' }, { k: 'open3_2' }, { k: 'open3_3' }, { k: 'open3_4' }]], ['say', [{ w: 'tik', k: 'tk3_intro' }]]], null, { bars: false }); });
+  T('h_gap', 24, 29, function () { Tik.say('tk3_gap'); }, true);
+  T('h_tunnel', 40, 44, function () { Tik.say('tk3_tunnel'); }, true);
+  T('h_door', 124, 130, function () { Tik.say('tk3_door'); }, true);
+  T('h_slow', S3L.carA + 2, S3L.carA + 6, function () { Tik.say('tk3_slow'); }, true);
+  T('h_fast', S3L.carB + 2, S3L.carB + 6, function () { Tik.say('tk3_fast'); }, true);
+  T('h_food', S3L.carC + 2, S3L.carC + 6, function () { Tik.say('tk3_food'); }, true);
+  T('h_beat', S3L.carD + 2, S3L.carD + 8, function () { Tik.say('tk3_beat'); }, true);
+  T('h_elite', 394, 399, function () { Tik.say('tk3_elite'); }, true);
+  T('h_boss', S3L.gate - 3, S3L.gate, function () { Tik.say('tk3_boss'); }, true);
+  T('collector', S3L.tableX - 3.5, S3L.tableX + 2.5, function () { s3CollectorScene(); });
+  T('end3', S3L.exitX, S3L.exitX + 3, function () {
+    if (!Level.bossDown) return;
+    Cine.run([['card', [{ k: 'end3_1' }, { k: 'end3_2' }, { k: 'end3_3' }, { k: 'end3_4' }]], ['say', [{ w: 'tik', k: 'tk3_end' }]]], function () { snapshotProgress(); setTimeout(persist, 200); endStage3(); }, { bars: false });
+  });
+  s3Interior();
+}
+
+function restoreS3() {
+  const f = Level.flags, Z = Level.S3;
+  Level.ents.forEach(function (e) { if ((e.t === 'clue') && f[e.key]) e.got = true; else if (e.t === 'ugear' && f['ug' + e.n]) e.got = true; });
+  Z.ferries.forEach(function (fe) { if (f['fe' + fe.i]) s3LockFerry(fe, true); });
+  if (f.ham) Z.bench.done = true;
+  if (f.collector) { Z.table.vanish = 1; Z.table.card = true; }
+  if (f.fkey && f.fdoor) { Level.dOpen[0] = true; }
+  Level.doors.forEach(function (d) { d.a = Level.dOpen[d.id] ? 1 : 0; });
+  Tik.on = true; Tik.x = P.x - 40; Tik.y = P.y - 90;
+}
+function endStage3() {
+  Game.fade.a = 1; S.done = S.done || {}; S.done.s3 = true; persist();
+  Cine.run([['card', [{ k: 'end3_4' }]]], function () { toMenu(); }, { bars: false, skip: false });
+}
+
+/* ---------- 13h. stage 3: the machines of the train, the puzzles, the boss «مفتش التذاكر» ----------
+   Collectors are brass ticket-punching and weighing machines on rails; "second birds" are propeller clock-drones; the Inspector is a ticket booth on a bogie.
+   The speed of time changes what happens AROUND Nader (enemies, crates, shutters, the scenery), never Nader himself. ---------- */
+
+/* ---------- props of a car (benches, racks, tables, cases): tiles that are drawn by a picture of their own ---------- */
+function trainProp(kind, tx, ty, wT, hT) {
+  const solid = kind === 'case';
+  for (let y = ty; y < ty + hT; y++) for (let x = tx; x < tx + wT; x++) { Level.grid[y * LW + x] = solid ? 1 : 2; Level.hid[y * LW + x] = 1; }
+  addDeco(tx * U - 10, ty * U - 70, (tx + wT) * U + 10, (ty + hT) * U + 12, function (c) { pTrainProp(c, kind, tx * U, ty * U, wT * U, hT * U); });
+}
+function s3Interior() {                                                          // the shells of the cars: ceilings, back walls with windows, end frames, couplings and bogies
+  const A = S3L.carA, E = S3L.carE;
+  [[A, S3L.carB, 0], [S3L.carB, S3L.carC, 1], [S3L.carC, S3L.carD, 2], [S3L.carD, E, 3]].forEach(function (q) {
+    const x0 = q[0], x1 = q[1], pal = q[2];
+    addDeco(x0 * U, (G - 8) * U, x1 * U, G * U, function (c) { pCarShell(c, x0 * U, x1 * U, pal); });
+    addDeco(x0 * U, (G - 6) * U - 6, x1 * U, (G - 5) * U, function (c) { pCarLamps(c, x0 * U, x1 * U, pal); });
+  });
+  [S3L.carB, S3L.carC, S3L.carD].forEach(function (x) { addDeco((x - 1) * U, (G - 8) * U, (x + 1) * U, G * U, function (c) { pCarDivider(c, x * U); }); });
+  addDeco((A - 3) * U, (G - 9) * U, (A + 1) * U, G * U, function (c) { pCarEnd(c, (A - 1) * U, true); });
+  addDeco((E - 1) * U, (G - 9) * U, (E + 6) * U, G * U, function (c) { pCarEnd(c, E * U, false); });
+  /* the outside of the tail: roof furniture and the couplings between the roofs */
+  [[1, S3L.gap1[0]], [S3L.gap1[1], S3L.gap2[0]], [S3L.gap2[1], S3L.gap3[0]], [S3L.gap3[1], A - 3]].forEach(function (r, i) {
+    addDeco(r[0] * U, (G - 3) * U, r[1] * U, (G + 0.2) * U, function (c) { pRoofFurniture(c, r[0] * U, r[1] * U, i); });
+  });
+  [S3L.gap1, S3L.gap2, S3L.gap3].forEach(function (g) { addDeco(g[0] * U, (G + 0.5) * U, g[1] * U, (G + 5) * U, function (c) { pCoupling(c, g[0] * U, g[1] * U, (G + 0.5) * U); }); });
+  addDeco(S3L.arenaA * U, (G - 8) * U, S3L.arenaB * U, G * U, function (c) { pLocoDeck(c, S3L.arenaA * U, S3L.arenaB * U); });
+  /* the undercarriage: skirt shadow and a bogie with two wheels, one per stretch of 26 tiles of solid floor */
+  [[1, S3L.gap1[0]], [S3L.gap1[1], S3L.gap2[0]], [S3L.gap2[1], S3L.gap3[0]], [S3L.gap3[1], S3L.pitA], [S3L.pitB, S3L.beatA[0]], [S3L.beatC[1], S3L.w - 1]].forEach(function (r) {
+    for (let x = r[0]; r[1] - x > 8; x += 26) { const x1 = Math.min(x + 26, r[1]), xx = x; addDeco(xx * U, (G + 1) * U, x1 * U, (G + 6.2) * U, function (c) { pUnder(c, xx * U, (x1 - xx) * U); }); }
+  });
+}
+function ugCount() { let n = 0; for (let i = 0; i < Level.ents.length; i++) if (Level.ents[i].t === 'ugear' && Level.ents[i].got) n++; return n; }
+
+/* ---------- moving sweeps: the low signal beams of the roofs and the tunnel of the locomotive ---------- */
+function mkGantry(x0, x1) { return { x0: x0 * U, x1: x1 * U, per: 6.4, t: 1.2 + (x0 % 7) * 0.35, warn: 0 }; }
+function s3Bar(x, v, xe, delay) {
+  const B = Level.S3.bars;
+  for (let i = 0; i < B.length; i++) if (!B[i].on) { const b = B[i]; b.on = true; b.x = x; b.v = v; b.xe = xe; b.delay = delay || 0; return b; }
+  return null;
+}
+function s3UpdBars(dt) {
+  const Z = Level.S3, lv = live();
+  for (let i = 0; i < Z.gantries.length; i++) {                                   // a trolley on the roof rail carries a low beam along the roof, again and again
+    const g = Z.gantries[i], near = P.x > g.x0 - 20 * U && P.x < g.x1 + 4 * U;
+    if (!near) { g.warn = 0; continue; }
+    g.t -= dt; g.warn = g.t < 1.5 ? 1 - g.t / 1.5 : 0;
+    if (g.t <= 0) { g.t = g.per; s3Bar(g.x1, -5.6 * U, g.x0 - U, 0); Snd.play('railClack', 0, g.x1); }
+    else if (g.t < 1.5 && ((g.t * 4) | 0) !== (((g.t + dt) * 4) | 0)) Snd.play('lampWarn', 0, g.x1);
+  }
+  for (let i = 0; i < Z.bars.length; i++) {
+    const b = Z.bars[i]; if (!b.on) continue;
+    if (b.delay > 0) { b.delay -= dt; continue; }
+    b.x += b.v * dt;
+    if (b.x < b.xe) { b.on = false; continue; }
+    if (((Game.time * 20) | 0) !== (((Game.time - dt) * 20) | 0)) emit(PT.SPARK, b.x, G * U - 0.2 * U, rnd(-30, 30), -rnd(30, 120), 0.25, rnd(3, 6), 4, 400);
+    if (lv && Math.abs(b.x - P.x) < 2 * U) hitP(b.x - b.hw, G * U - 1.0 * U, b.x + b.hw, G * U - 0.15 * U, b.x, 1);
+  }
+}
+
+/* ---------- the machines ---------- */
+function mkPunch(tx, a, b) {
+  const x = tx * U + U / 2, y = G * U;
+  return { t: 'tpunch', s3: 1, x: x, y: y, hw: CB3.punch.hw, h: CB3.punch.h, hp: CB3.punch.hp, dir: -1, state: 'patrol', st: 0, kb: 0, flash: 0, shake: 0, dead: false, lastAtk: 0,
+    homeX: x, homeY: y, pMin: a * U, pMax: (b + 1) * U, ph: Math.random() * 6, cool: 0, rw: 0 };
+}
+function mkScale(tx, a, b) {
+  const x = tx * U + U / 2, y = G * U;
+  return { t: 'tscale', s3: 1, x: x, y: y, hw: CB3.scale.hw, h: CB3.scale.h, hp: CB3.scale.hp, dir: -1, state: 'patrol', st: 0, kb: 0, flash: 0, shake: 0, dead: false, lastAtk: 0,
+    homeX: x, homeY: y, pMin: a * U, pMax: (b + 1) * U, ph: Math.random() * 6, cool: 0, rw: 0, elite: false };
+}
+function mkDrone(tx, ty) {
+  const x = tx * U + U / 2, y = ty * U;
+  return { t: 'tdrone', s3: 1, x: x, y: y, hw: CB3.drone.hw, h: CB3.drone.h, hp: 1, state: 'hover', st: 0, flash: 0, shake: 0, dead: false, lastAtk: 0, homeX: x, homeY: y, ph: Math.random() * 6, glow: 0, ax: x, tk: 0 };
+}
+function s3EntBox(e) {
+  if (e.dead) return null;
+  switch (e.t) {
+    case 'tpunch': case 'tscale': case 'tdrone': return [e.x - e.hw, e.y - e.h, e.x + e.hw, e.y];
+    case 'ferry': return e.locked ? null : [e.m.x0, e.m.y - 6, e.m.x1, e.m.y + U];
+    case 'insp': return (e.state === 'sleep' || e.state === 'dead') ? null : [e.x - IN3.hw, e.y - IN3.h, e.x + IN3.hw, e.y];
+  }
+  return null;
+}
+function s3Rate(e) { return s3RateAt(e.homeX / U); }
+function s3Kill(e) {
+  e.dead = true;
+  Snd.play('enemyDie', 0, e.x); FX.sparks(e.x, e.y - e.h * 0.5, 12, 4); FX.chips(e.x, e.y - 8, 8, 3); FX.dust(e.x, e.y, 6, 0);
+  const n = e.t === 'tpunch' ? CB3.punch.gears : e.t === 'tscale' ? (e.elite ? 6 : CB3.scale.gears) : 1;
+  for (let i = 0; i < n; i++) spawnDrop(e.x, e.y - 20);
+  if (e.elite && !Level.flags.fkey) { Level.flags.fkey = true; FX.ring(e.x, e.y - 40, 90, 4, 0.5); Snd.play('save'); UI.toast(t('m3_key_get'), 3200); }
+}
+function s3Damage(e, dmg, dir, heavy, atkId) {
+  if (e.dead || e.lastAtk === atkId) return false;
+  switch (e.t) {
+    case 'tscale':
+      e.lastAtk = atkId;
+      if (e.state !== 'recover' && e.state !== 'stagger' && e.state !== 'swing' && dir === -e.dir && !(heavy && dmg >= 3)) {          // the shield plate faces forward
+        Snd.play('toolLand', 0, e.x); FX.sparks(e.x + e.dir * e.hw, e.y - e.h * 0.55, 6, 1); e.shake = 0.15; return false;
+      }
+    /* falls through */
+    case 'tpunch':
+      e.lastAtk = atkId; e.shake = heavy ? 0.35 : 0.22; e.flash = 0.1; e.hp -= dmg; e.kb = dir * (heavy ? 7 : 4) * U;
+      popup(e.x, e.y - e.h - 14, '-' + dmg, heavy ? '#ffb347' : '#ffffff'); FX.sparks(e.x - dir * 10, e.y - e.h * 0.5, heavy ? 9 : 5, 1);
+      if (e.hp <= 0) s3Kill(e); else setE(e, 'stagger');
+      return true;
+    case 'tdrone':
+      e.lastAtk = atkId; e.hp -= dmg; popup(e.x, e.y - e.h - 14, '-' + dmg, '#ffffff');
+      Snd.play('enemyDie', 0, e.x); FX.sparks(e.x, e.y - 10, 10, 4); FX.chips(e.x, e.y, 5, 3); e.dead = true; spawnDrop(e.x, e.y - 10);
+      return true;
+    case 'ferry':
+      e.lastAtk = atkId;
+      if (e.locked) return false;
+      if (Math.abs(e.cur - e.cx) < 1.15 * U) { s3LockFerry(e, false); return true; }
+      e.shake = 0.2; Snd.play('deny', 0, e.cur); FX.sparks(e.cur, e.m.y, 4, 1);
+      if (!Level.flags.ferryHint) { Level.flags.ferryHint = true; Tik.say('tk3_fast', 3.2); }
+      return false;
+    case 'insp': return inspDamage(e, dmg, dir, heavy, atkId);
+  }
+  return false;
+}
+function s3LockFerry(f, silent) {
+  f.locked = true; f.cur = f.cx; f.m.dx = 0; f.m.x0 = f.cx - 1.5 * U; f.m.x1 = f.cx + 1.5 * U; f.x = f.cx; f.flash = 1;
+  if (silent) return;
+  Level.flags['fe' + f.i] = true; Snd.play('toolLand', 0, f.cx); Snd.play('hookLatch', 0, f.cx); FX.sparks(f.cx, f.m.y, 10, 4); FX.ring(f.cx, f.m.y, 60, 4, 0.4); Cam.shake(3, 0.12);
+  UI.toast(t('m3_lock'), 2200);
+  if (!Level.flags.ferryOk) { Level.flags.ferryOk = true; Tik.say('tk3_ferry', 3.2); }
+}
+function s3HookSweep(x1, y1, pad) {                                              // the free-flying claw staggers the machines it meets
+  for (let i = 0; i < Level.ents.length; i++) {
+    const e = Level.ents[i]; if (!e.s3 || e.dead) continue;
+    if (e.t !== 'tpunch' && e.t !== 'tscale' && e.t !== 'tdrone') continue;
+    const b = s3EntBox(e); if (!b) continue;
+    if (x1 > b[0] - pad && x1 < b[2] + pad && y1 > b[1] - pad && y1 < b[3] + pad) {
+      Snd.play('hookLatch', 0, x1); FX.sparks(x1, y1, 8, 4); e.flash = 0.12; e.shake = 0.2;
+      if (e.t === 'tdrone') { e.state = 'hover'; e.st = -0.4; e.glow = 0; } else { e.kb = 0; setE(e, 'stagger'); e.st = -0.3; }
+      popup(e.x, e.y - e.h - 14, '!', '#7ff3e6');
+      return e;
+    }
+  }
+  return null;
+}
+
+/* ---- a ticket-punch machine: rolls along its rail → raises its punch (a warning that cannot be shortened below 0.4 s) → slams → a gap to strike in ---- */
+function updPunch(e, d, dt) {
+  if (e.dead) return;
+  const C = CB3.punch, p = P; e.st += d; e.ph += d;
+  if (e.flash > 0) e.flash -= dt; if (e.shake > 0) e.shake -= dt; if (e.cool > 0) e.cool -= d;
+  const lv = live(), adx = Math.abs(p.x - e.x), ady = Math.abs((p.y - 20) - (e.y - 10));
+  if (e.kb) { eStep(e, e.kb * d); e.kb = approach(e.kb, 0, 40 * U * d); }
+  switch (e.state) {
+    case 'patrol':
+      if (e.x <= e.pMin) e.dir = 1; else if (e.x >= e.pMax) e.dir = -1;
+      if (eStep(e, e.dir * C.walk * d)) e.dir = -e.dir;
+      if (lv && e.cool <= 0 && adx < C.aggro && ady < 2.6 * U && p.x > e.pMin - 2 * U && p.x < e.pMax + 2 * U) { setE(e, 'chase'); }
+      break;
+    case 'chase':
+      faceP(e); eStep(e, e.dir * C.chase * d);
+      if (adx < C.reach * 0.82) { setE(e, 'warn'); e.rw = 0; Snd.play('punchUp', 0, e.x); }
+      else if (!lv || adx > C.aggro * 1.4 || e.st > 4) { e.cool = 1; setE(e, 'patrol'); }
+      break;
+    case 'warn': e.rw += dt; if (e.st >= C.warn && e.rw >= C.minWarn) { setE(e, 'slam'); Snd.play('stamp', 0, e.x); Cam.shake(2, 0.08); FX.dust(e.x + e.dir * C.reach * 0.6, e.y, 4, e.dir); } break;
+    case 'slam': if (e.st >= C.slam) setE(e, 'recover'); break;
+    case 'recover': if (e.st >= C.recover) { e.cool = 0.9; setE(e, 'patrol'); } break;
+    case 'stagger': if (e.st >= 0.35) { e.cool = 0.6; setE(e, 'recover'); } break;
+  }
+  if (lv) {
+    if (e.state === 'slam') hitP(e.dir > 0 ? e.x : e.x - C.reach, e.y - e.h * 0.85, e.dir > 0 ? e.x + C.reach : e.x, e.y - 0.15 * U, e.x, 1);
+    else if (e.state === 'patrol' || e.state === 'chase' || e.state === 'warn') hitP(e.x - e.hw * 0.8, e.y - e.h, e.x + e.hw * 0.8, e.y, e.x, 1);
+  }
+}
+/* ---- a scale collector: its shield plate faces forward; the scale beam swings after a glowing warning ---- */
+function updScale(e, d, dt) {
+  if (e.dead) return;
+  const C = CB3.scale, p = P; e.st += d; e.ph += d;
+  if (e.flash > 0) e.flash -= dt; if (e.shake > 0) e.shake -= dt; if (e.cool > 0) e.cool -= d;
+  const lv = live(), adx = Math.abs(p.x - e.x), ady = Math.abs((p.y - 20) - (e.y - 10)), reach = C.reach * (e.elite ? 1.2 : 1);
+  if (e.kb) { eStep(e, e.kb * d); e.kb = approach(e.kb, 0, 40 * U * d); }
+  switch (e.state) {
+    case 'patrol':
+      if (e.x <= e.pMin) e.dir = 1; else if (e.x >= e.pMax) e.dir = -1;
+      if (eStep(e, e.dir * C.walk * d)) e.dir = -e.dir;
+      if (lv && e.cool <= 0 && adx < C.aggro && ady < 2.6 * U && p.x > e.pMin - 2 * U && p.x < e.pMax + 2 * U) {
+        if (adx < reach * 0.9) { faceP(e); setE(e, 'warn'); e.rw = 0; Snd.play('scaleUp', 0, e.x); }
+        else { faceP(e); eStep(e, e.dir * C.walk * 1.4 * d); }
+      }
+      break;
+    case 'warn': e.rw += dt; if (e.st >= C.warn && e.rw >= C.minWarn) { setE(e, 'swing'); Snd.play('stamp', 0, e.x); Cam.shake(2, 0.08); } break;
+    case 'swing': if (e.st >= 0.3) setE(e, 'recover'); break;
+    case 'recover': if (e.st >= C.recover) { e.cool = 1.0; setE(e, 'patrol'); } break;
+    case 'stagger': if (e.st >= 0.4) { e.cool = 0.6; setE(e, 'recover'); } break;
+  }
+  if (lv) {
+    if (e.state === 'swing') hitP(e.dir > 0 ? e.x : e.x - reach, e.y - e.h * 0.95, e.dir > 0 ? e.x + reach : e.x, e.y - 0.1 * U, e.x, 1);
+    else if (e.state === 'patrol' || e.state === 'warn') hitP(e.x - e.hw * 0.8, e.y - e.h, e.x + e.hw * 0.8, e.y, e.x, 1);
+  }
+}
+/* ---- a second-drone: hovers → glows → drops exactly on the next "tik" (a column below it) → sits for a moment (strike it) → rises ---- */
+function updDrone(e, dt) {
+  if (e.dead) return;
+  const Z = Level.S3, C = CB3.drone, lv = live(), toTik = 2.4 - (Z.beatT % 2.4);
+  e.st += dt; e.ph += dt; if (e.flash > 0) e.flash -= dt;
+  switch (e.state) {
+    case 'hover':
+      e.y = e.homeY + Math.sin(e.ph * 2) * 5; e.glow = approach(e.glow, 0, dt * 4); e.x = approach(e.x, e.homeX + Math.sin(e.ph * 0.9) * 0.6 * U, 2 * U * dt);
+      if (lv && e.st > 0 && toTik < C.glow && Math.abs(P.x - e.x) < 9 * U && Math.abs(P.y - e.homeY) < 8 * U) { e.state = 'glow'; e.st = 0; e.ax = e.x; Snd.play('lampWarn', 0, e.x); }
+      break;
+    case 'glow':
+      e.glow = Math.min(1, e.glow + dt * 3);
+      if (toTik > 0.4) e.ax = approach(e.ax, clamp(P.x, e.homeX - 3 * U, e.homeX + 3 * U), 5 * U * dt);
+      e.x = approach(e.x, e.ax, 9 * U * dt);
+      if (toTik < 0.06 || toTik > 2.3) { e.state = 'dive'; e.st = 0; Snd.play('stamp', 0, e.x); }
+      break;
+    case 'dive': {
+      const k = Math.min(1, e.st / 0.16); e.y = e.homeY + k * 2.7 * U;
+      if (lv) hitP(e.x - 0.55 * U, e.y - 1.0 * U, e.x + 0.55 * U, e.y + 0.1 * U, e.x, 1);
+      if (e.st >= 0.16) { e.state = 'land'; e.st = 0; Cam.shake(2, 0.08); FX.dust(e.x, e.y + 8, 4, 0); FX.sparks(e.x, e.y, 5, 4); }
+      break;
+    }
+    case 'land': e.glow = approach(e.glow, 0, dt * 2); if (e.st >= C.land) { e.state = 'rise'; e.st = 0; } break;
+    case 'rise': e.y -= 3.2 * U * dt; if (e.y <= e.homeY) { e.y = e.homeY; e.state = 'hover'; e.st = -0.8; } break;
+  }
+  if (lv && e.state !== 'dive') hitP(e.x - e.hw * 0.75, e.y - e.h, e.x + e.hw * 0.75, e.y, e.x, 1);
+}
+
+/* ---------- the pieces that move with the train ---------- */
+function s3Pieces(dt) {
+  const Z = Level.S3, f = Level.flags;
+  /* the speed of time around Nader, and the scenery that rushes by the windows at that pace */
+  Z.rate = s3RateAt(P.x / U); Z.rv = approach(Z.rv, Z.rate, dt * 5);
+  Z.scroll += dt * 260 * Z.rv;
+  Z.railT -= dt; if (Z.railT <= 0) { Z.railT = 0.5 / clamp(Z.rv, 0.5, 2.5); if (Game.state === 'play') Snd.play('railClack'); }
+  /* the moving rings sway with the train */
+  for (let i = 0; i < Level.ents.length; i++) { const e = Level.ents[i]; if (e.t === 'ring' && e.mv) { const q = Game.time * e.mv.f + e.t0; e.x = e.bx + Math.sin(q) * e.mv.ax * U; e.y = e.by + Math.sin(q * 0.8 + 1.2) * e.mv.ay * U; } }
+  /* crate ferries (the cargo car: time x3): they slide until a strike settles them in front of their mark */
+  Z.fT += dt * 3;
+  for (let i = 0; i < Z.ferries.length; i++) {
+    const fe = Z.ferries[i], m = fe.m;
+    if (fe.shake > 0) fe.shake -= dt; if (fe.flash > 0) fe.flash = Math.max(0, fe.flash - dt * 2);
+    if (fe.locked) { m.dx = 0; m.dy = 0; continue; }
+    const nx = fe.cx + fe.amp * Math.sin(Z.fT * 0.95 + fe.ph), d = nx - fe.cur;
+    fe.cur = nx; fe.x = nx; m.dx = d; m.dy = 0; m.x0 += d; m.x1 += d; fe.near = Math.abs(nx - fe.cx) < 1.15 * U ? 1 : 0;
+  }
+  /* shutters: closed three units of cargo time, open three; they never close on Nader */
+  Z.shT += dt * 3;
+  for (let i = 0; i < Z.shut.length; i++) {
+    const s = Z.shut[i], u = (Z.shT + s.ph * 3) % 6, wantOpen = u < 3;
+    s.warn = (wantOpen && u > 2.55) ? 1 : 0;
+    if (wantOpen !== s.open) {
+      if (!wantOpen && Math.abs(P.x - (s.x + 0.5) * U) < 1.0 * U && P.y > (G - 7) * U) continue;          // do not shut on someone standing in the doorway
+      s.open = wantOpen; setCells(s.cells, wantOpen ? 0 : 1);
+      if (Math.abs(P.x - s.x * U) < 14 * U) Snd.play('shutter', 0, s.x * U);
+    }
+    s.a = approach(s.a, s.open ? 0 : 1, dt * 7);
+  }
+  /* the clock car: "tik" (blue platforms) and "tak" (amber ones) */
+  Z.beatT += dt;
+  const ph = Z.beatT % 2.4, cur = ph < 1.2 ? 0 : 1, left = cur ? 2.4 - ph : 1.2 - ph;
+  for (let i = 0; i < Z.plat.length; i++) { const m = Z.plat[i]; m.on = m.beat === cur; m.warn = m.on && left < 0.4 ? 1 : 0; m.dx = 0; m.dy = 0; }
+  if (cur !== Z.lastBeat) { Z.lastBeat = cur; if (P.x > S3L.carD * U - 12 * U && P.x < S3L.carE * U + 6 * U && Game.state === 'play') Snd.play(cur ? 'tak' : 'tik', 0, P.x); }
+  Z.beat = cur;
+  for (let i = 0; i < Z.wclocks.length; i++) Z.wclocks[i].a += dt * (Z.wclocks[i].r > 2 ? 9 : Z.wclocks[i].r < 0.5 ? 0.9 : 3.6) * (Z.wclocks[i].r < 0.5 ? 1 : 1);
+  /* chimney plume: hot air lifts whoever stands in it */
+  const ch = Z.chim;
+  if (ch) {
+    ch.ph += dt;
+    if (live() && P.x > S3L.chimney[0] * U + 6 && P.x < S3L.chimney[1] * U - 6 && P.y < (G - 3.6) * U && P.y > (G - 12) * U && P.state !== 'hook') { P.vy = Math.max(-6.5 * U, P.vy - 46 * U * dt); P.onGround = false; P.jumped = false; }
+  }
+  if (Z.table.vanish > 0 && f.collector && Z.table.vanish < 1) Z.table.vanish = Math.min(1, Z.table.vanish + dt * 0.8);
+  /* the locomotive door: the furnace key opens it */
+  if (Z.toastT > 0) Z.toastT -= dt;
+  const dn = Math.abs(P.x - (S3L.door + 0.5) * U);
+  if (f.fkey && dn < 3.2 * U && P.x < S3L.door * U && !Level.dOpen[0]) { openDoor(0); f.fdoor = true; Snd.play('door', 0, S3L.door * U); }
+  else if (!f.fkey && dn < 3.4 * U && P.x < S3L.door * U && Z.toastT <= 0 && live()) { Z.toastT = 5; UI.toast(t('m3_door_need'), 3000); Snd.play('deny'); }
+  Z.keyDoor.lamp = Level.dOpen[0] ? 1 : (f.fkey ? 0.5 : 0);
+  /* special gears */
+  for (let i = 0; i < Level.ents.length; i++) {
+    const e = Level.ents[i];
+    if (e.t !== 'ugear' || e.got) continue;
+    e.ph += dt * 3;
+    if (Math.abs(e.x - P.x) < 0.8 * U && Math.abs(e.y - (P.y - 0.55 * U)) < 1.0 * U) {
+      e.got = true; f['ug' + e.n] = true; Snd.play('powGet', 0, e.x); FX.sparks(e.x, e.y, 12, 4); FX.ring(e.x, e.y, 50, 4, 0.5); UI.toast(t('m3_ug', ugCount()), 3200);
+    }
+  }
+  const b = Z.bench; if (b) b.ph += dt;
+}
+
+/* ---------- the Collector (a tall brass hourglass in a violet scarf) at the dining car's table ---------- */
+function s3CollectorScene() {
+  const T = Level.S3.table;
+  Cine.run([['cam', T.x, T.y - 1.5 * U], ['wait', 0.6],
+    ['say', [{ w: 'narr', k: 'cl_1' }, { w: 'coll', k: 'cl_2' }, { w: 'coll', k: 'cl_3' }, { w: 'narr', k: 'cl_4' }, { w: 'coll', k: 'cl_5' }]],
+    ['do', function () { Snd.play('collectorHum', 0, T.x); T.vanishGo = true; }], ['wait', 1.4],
+    ['do', function () { Snd.play('rewind'); FX.ring(P.x, P.y - 40, 110, 2, 0.6); }],
+    ['say', [{ w: 'narr', k: 'cl_6' }]], ['uncam']],
+    function () { T.card = true; snapshotProgress(); setTimeout(persist, 200); });
+}
+function s3Bench(e) {
+  const f = Level.flags, n = ugCount();
+  if (e.done) { UI.toast(t('m3_ham_get'), 2200); return; }
+  if (n < 3) {
+    Snd.play('interact', 0, e.x);
+    if (!Level.flags.noteRead) { Level.flags.noteRead = true; Cine.run([['say', [{ w: 'narr', k: 'mr_1' }, { w: 'narr', k: 'mr_2' }]], ['do', function () { UI.toast(t('m3_ham_need', ugCount()), 3600); }]], null, { bars: false }); }
+    else { UI.toast(t('m3_ham_need', n), 3600); Snd.play('deny'); }
+    return;
+  }
+  Cine.run([['cam', e.x, e.y - 1.2 * U], ['wait', 0.4], ['do', function () { Snd.play('save', 0, e.x); FX.sparks(e.x, e.y - 40, 16, 4); }],
+    ['say', [{ w: 'narr', k: 'mr_3' }]],
+    ['do', function () { f.ham = true; S.ham = true; e.done = true; UI.toast(t('m3_ham_get'), 4200); FX.ring(P.x, P.y - 40, 90, 4, 0.6); Snd.play('powGet'); }], ['uncam']],
+    function () { snapshotProgress(); setTimeout(persist, 200); }, { bars: false });
+}
+
+/* ---------- the boss: the Ticket Inspector (a ticket-booth robot on a bogie, riding the rail of the locomotive roof) ----------
+   Stamps «١ - ٢ - ٣» - numbered ink marks light up on the deck, then stamps fall in number order. After the last stamp the clock in his chest opens: that is the window to strike (x2).
+   The clamp - a chained claw that flies at Nader along a line: dodge it, or catch it with the hook and the Inspector is yanked off balance (x2 for four seconds).
+   Fine cards - a fan of aimed cards, breakable with the hammer. Every 40 seconds a tunnel rushes over the deck (low beams).
+   Second phase - the knob on the wall flips the Inspector's own time every 15 seconds: slow x0.65 or fast x1.5 (his attacks follow), the stamp rows get longer. */
+const IN3 = { hp: 34, hw: 1.05 * U, h: 3.0 * U, wake: 1.8, xMin: (421 + 6) * U, xMax: (481 - 5) * U, move: 6.5 * U, markGap: 0.55, fallGap: 0.5, stampLead: 0.9, colHalf: 0.8 * U, colT: 0.4,
+  clampWarn: 0.95, clampV: 15 * U, clampMax: 15 * U, stagT: 4.0, cardV: 9 * U, cardGap: 0.3, weakT: 1.8, rec: 0.7, idleMin: 0.7, idleMax: 1.2, breakT: 1.6, dieT: 2.8, tunnelEvery: 40, tunnelWarn: 3 };
+function mkInsp() {
+  return { t: 'insp', s3: 1, nameKey: 'boss_insp', x: 470 * U, y: G * U, homeX: 470 * U, hp: IN3.hp, hpMax: IN3.hp, phase: 1, state: 'sleep', st: 0, tt: 0, dir: -1, glow: 0, flash: 0, shake: 0, lastAtk: 0, dead: false,
+    last: '', idleT: 1, marks: [], stag: 0, weak: 0, rate: 1, fast: false, rtT: 0, tunT: 0, tunWarn: 0, clamp: null, clampHook: false, gx: 0, gy: 0, dieFx: 0, mx: 470 * U, cardN: 0, cardFired: 0, rotor: 0, arm: 0,
+    onHooked: function () { inspHooked(this); } };
+}
+function inspReset(b) {
+  b.dead = false; b.hp = b.hpMax; b.phase = 1; b.state = 'sleep'; b.st = 0; b.tt = 0; b.glow = 0; b.flash = 0; b.marks.length = 0; b.stag = 0; b.weak = 0; b.rate = 1; b.fast = false; b.rtT = 0;
+  b.tunT = 0; b.tunWarn = 0; b.clamp = null; b.clampHook = false; b.last = ''; b.lastAtk = 0; b.idleT = 1; b.x = b.homeX; b.arm = 0; b.cardFired = 0;
+}
+function startInspFight(b) {
+  Level.gateShut = true; Snd.play('door', 0, AR.gate * U + U / 2);
+  b.state = 'wake'; b.st = 0; b.tt = 0; Snd.play('auctWake', 0, b.x); Cam.shake(4, 0.6);
+  Cam.lock = { x0: AR.x0 * U, x1: AR.end * U }; HUD.bossDirty = true;
+  Cine.run([['cam', b.x, b.y - 2.6 * U], ['wait', 1.6], ['say', [{ w: 'insp', k: 'ins_1' }]], ['say', [{ w: 'tik', k: 'tk3_boss' }]], ['uncam']], null, { skip: false });
+}
+function inspDamage(b, dmg, dir, heavy, atkId) {
+  if (b.dead || b.lastAtk === atkId) return false;
+  const s = b.state;
+  if (s === 'sleep' || s === 'wake' || s === 'break' || s === 'dying' || s === 'dead') return false;
+  b.lastAtk = atkId;
+  const reel = b.stag > 0 || b.weak > 0, d = reel ? dmg * 2 : dmg;
+  b.hp = Math.max(0, b.hp - d); b.flash = 0.12; b.shake = heavy ? 0.3 : 0.2; HUD.bossDirty = true;
+  popup(b.x, b.y - IN3.h - 14, '-' + d + (reel ? '!' : ''), reel ? '#ffb347' : '#ffffff');
+  FX.sparks(b.x - dir * 30, b.y - 1.8 * U, reel ? 14 : 7, reel ? 4 : 1); Snd.play('bossHurt', 0, b.x);
+  if (reel) { Snd.play('pickup'); FX.ring(b.x, b.y - 1.9 * U, 60, 4, 0.35); }
+  if (b.hp <= 0) { inspDying(b); return true; }
+  if (b.phase === 1 && b.hp <= b.hpMax / 2) inspBreak(b);
+  return true;
+}
+function inspBreak(b) {
+  b.phase = 2; b.state = 'break'; b.st = 0; b.stag = 0; b.weak = 0; b.marks.length = 0; b.clamp = null; b.clampHook = false; b.glow = 0; b.rate = 0.65; b.fast = false; b.rtT = 0;
+  Snd.play('bossBreak', 0, b.x); Cam.shake(9, 0.5); Game.hitStop = Math.max(Game.hitStop, 0.12);
+  FX.chips(b.x, b.y - IN3.h * 0.8, 16, 6); FX.sparks(b.x, b.y - IN3.h * 0.8, 14, 4); FX.dust(b.x, b.y, 10, 0);
+  Pow.drop('bell', 452 * U, (G - 7) * U);
+  HUD.bossDirty = true; UI.toast(t('ts_boss') + ' ×0.65', 3000);
+}
+function inspDying(b) {
+  b.state = 'dying'; b.st = 0; b.marks.length = 0; b.stag = 0; b.weak = 0; b.clamp = null; b.clampHook = false; b.rate = 1;
+  for (let i = 0; i < Level.blades.length; i++) Level.blades[i].on = false;
+  for (let i = 0; i < Level.S3.bars.length; i++) Level.S3.bars[i].on = false;
+  Snd.play('bossDie', 0, b.x); Cam.shake(8, 0.6); HUD.bossDirty = true;
+}
+function finishInsp(b) {
+  b.dead = true; b.state = 'dead'; Level.bossDown = true; Level.gateShut = false; Cam.lock = null;
+  Snd.play('door', 0, AR.gate * U); Cam.shake(10, 0.5);
+  FX.ring(b.x, b.y - 100, 150, 4, 0.8); FX.glow(b.x, b.y - 100, 160, 1, 0.9); FX.sparks(b.x, b.y - 100, 18, 4); FX.dust(b.x, b.y, 14, 0);
+  for (let i = 0; i < 14; i++) spawnDrop(b.x + rnd(-70, 70), b.y - 140);
+  UI.toast(t('m3_insp_down'), 5000); HUD.bossDirty = true;
+  snapshotProgress(); persist();
+}
+function inspHooked(b) {                                                          // the hook closed on the clamp
+  if (!b.clampHook || b.state === 'dying' || b.state === 'dead') return;
+  b.clamp = null; b.clampHook = false; b.state = 'stag'; b.st = 0; b.stag = IN3.stagT; b.weak = 0;
+  Snd.play('bossHurt', 0, b.x); Snd.play('pickup'); Cam.shake(6, 0.3); Game.hitStop = Math.max(Game.hitStop, 0.1);
+  FX.ring(b.gx, b.gy, 80, 4, 0.5); FX.sparks(b.gx, b.gy, 12, 4); popup(b.x, b.y - IN3.h - 30, '!', '#7ff3e6'); Tik.say('tk3_stag', 3);
+}
+function inspToIdle(b, t0) { b.state = 'idle'; b.st = 0; b.idleT = (t0 === undefined ? rnd(IN3.idleMin, IN3.idleMax) : t0) * (b.phase === 2 ? 0.8 : 1); b.arm = 0; }
+function inspNext(b) {
+  const far = Math.abs(P.x - b.x);
+  if (far < 2.6 * U || far > 15 * U) {                                          // too close, or too far to be read: slide to a better place first
+    const side = (P.x > (IN3.xMin + IN3.xMax) / 2) ? -1 : 1;
+    b.mx = clamp(P.x + side * 7 * U, IN3.xMin, IN3.xMax); b.state = 'move'; b.st = 0; return;
+  }
+  const list = b.phase === 2 ? ['stamp', 'clamp', 'card', 'stamp'] : ['stamp', 'clamp', 'card'];
+  let k = list[(Math.random() * list.length) | 0];
+  if (k === b.last) k = list[(list.indexOf(k) + 1) % list.length];
+  b.last = k; b.dir = P.x >= b.x ? 1 : -1;
+  switch (k) {
+    case 'stamp': inspStamps(b); break;
+    case 'clamp': b.state = 'clampT'; b.st = 0; b.gx = b.x + b.dir * IN3.hw; b.gy = b.y - 2.1 * U; b.aimX = P.x; b.aimY = P.y - 0.8 * U; Snd.play('bossWarn', 0, b.x); break;
+    case 'card': b.state = 'cardT'; b.st = 0; b.cardFired = 0; b.cardN = b.phase === 2 ? 5 : 3; Snd.play('bossWarn', 0, b.x); break;
+  }
+}
+function inspStamps(b) {
+  const n = b.phase === 2 ? 4 : 3, xs = [];
+  b.state = 'stampT'; b.st = 0; b.marks.length = 0;
+  for (let i = 0; i < n; i++) {
+    let x = i === 0 ? P.x : P.x + (Math.random() < 0.5 ? -1 : 1) * rnd(2.8, 8) * U;
+    for (let tries = 0; tries < 8; tries++) {
+      x = clamp(x, AR.x0 * U + 2 * U, AR.end * U - 2 * U);
+      let ok = true; for (let j = 0; j < xs.length; j++) if (Math.abs(xs[j] - x) < 2.8 * U) ok = false;
+      if (ok) break;
+      x = P.x + (Math.random() < 0.5 ? -1 : 1) * rnd(2.8, 9) * U;
+    }
+    xs.push(clamp(x, AR.x0 * U + 2 * U, AR.end * U - 2 * U));
+  }
+  const order = []; for (let i = 0; i < n; i++) order.push(i);
+  for (let i = n - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0, q = order[i]; order[i] = order[j]; order[j] = q; }
+  for (let i = 0; i < n; i++) b.marks.push({ x: xs[order[i]], n: i + 1, lit: IN3.markGap * i + 0.25, fall: IN3.markGap * n + IN3.stampLead + IN3.fallGap * i, state: 0, t: 0 });
+}
+function s3Tunnel(b) {                                                            // a tunnel rushes over the deck: four low beams, one after another
+  const x1 = AR.end * U + U, x0 = AR.x0 * U - U;
+  for (let i = 0; i < 4; i++) s3Bar(x1, -9.5 * U, x0, i * 0.85);
+  Snd.play('tunnelRumble'); Cam.shake(2, 1.2);
+}
+function updInsp(b, dt) {
+  if (b.dead) return;
+  if (b.flash > 0) b.flash -= dt; if (b.shake > 0) b.shake -= dt;
+  if (b.state === 'sleep') return;
+  const lv = live();
+  if (Level.cine && b.state !== 'wake') return;
+  const d = dt * b.rate;
+  b.st += d; b.tt += dt; b.rotor += d * 8;
+  b.glow = approach(b.glow, (b.state === 'clampT' || b.state === 'cardT' || b.weak > 0) ? 1 : 0, dt * 4);
+  if (b.stag > 0) b.stag -= dt;
+  if (b.weak > 0) b.weak -= dt;
+  /* the tunnel clock and the time knob run on the fight's own clock */
+  if (b.state !== 'wake' && b.state !== 'dying' && b.state !== 'break') {
+    b.tunT += dt;
+    if (b.tunT >= IN3.tunnelEvery - IN3.tunnelWarn && !b.tunWarn) { b.tunWarn = 1; UI.toast(t('m3_tunnel'), 2600); Snd.play('lampWarn', 0, b.x); }
+    if (b.tunWarn && ((b.tunT * 3) | 0) !== (((b.tunT - dt) * 3) | 0)) Snd.play('lampWarn');
+    if (b.tunT >= IN3.tunnelEvery) { b.tunT = 0; b.tunWarn = 0; s3Tunnel(b); }
+    if (b.phase === 2) {
+      b.rtT += dt;
+      if (b.rtT >= 15) { b.rtT = 0; b.fast = !b.fast; b.rate = b.fast ? 1.5 : 0.65; Snd.play('knobTurn', 0, 477 * U); Cam.shake(2, 0.2); UI.toast(t('ts_boss') + ' ×' + b.rate, 2400); Level.S3.knob.spin = 1; }
+      else if (b.rtT > 13.5 && ((b.rtT * 5) | 0) !== (((b.rtT - dt) * 5) | 0)) Snd.play('lampWarn', 0, 477 * U);
+    }
+  }
+  switch (b.state) {
+    case 'wake': b.arm = Math.min(1, b.st / IN3.wake); if (b.st >= IN3.wake && !Level.cine) inspToIdle(b, 0.8); break;
+    case 'idle':
+      b.dir = P.x >= b.x ? 1 : -1; b.arm = approach(b.arm, 0, dt * 3);
+      b.idleT -= d; if (b.idleT <= 0) inspNext(b);
+      break;
+    case 'move': {
+      const dx = b.mx - b.x, st = IN3.move * d;
+      b.dir = P.x >= b.x ? 1 : -1;
+      if (Math.abs(dx) <= st) { b.x = b.mx; inspToIdle(b, 0.35); } else b.x += sgn(dx) * st;
+      if (b.st > 3) inspToIdle(b, 0.2);
+      break;
+    }
+    case 'stampT': {
+      let done = true;
+      for (let i = 0; i < b.marks.length; i++) {
+        const c = b.marks[i];
+        if (c.state === 0 && b.st >= c.lit) { c.state = 1; Snd.play('stampMark', 0, c.x); }
+        if (c.state === 1 && b.st >= c.fall) { c.state = 2; c.t = 0; Snd.play('stamp', 0, c.x); Cam.shake(4, 0.14); FX.dust(c.x, G * U, 8, 0); FX.sparks(c.x, G * U - 20, 8, 4); }
+        if (c.state === 2) {
+          c.t += d;
+          if (lv) hitP(c.x - IN3.colHalf, 0, c.x + IN3.colHalf, G * U, c.x, 1);
+          if (c.t >= IN3.colT) c.state = 3;
+        }
+        if (c.state < 3) done = false;
+      }
+      if (done) { b.marks.length = 0; b.state = 'weakT'; b.st = 0; b.weak = IN3.weakT; Snd.play('chestOpen', 0, b.x); Tik.say('tk3_weak', 2.2); }
+      break;
+    }
+    case 'weakT': if (b.weak <= 0 || b.st >= IN3.weakT * 1.3) { b.weak = 0; inspToIdle(b, 0.5); } break;
+    case 'clampT':
+      b.arm = Math.min(1, b.st / IN3.clampWarn); b.gx = b.x + b.dir * IN3.hw; b.gy = b.y - 2.1 * U;
+      if (b.st < IN3.clampWarn - 0.3) { b.aimX = P.x; b.aimY = P.y - 0.8 * U; }
+      if (b.st >= IN3.clampWarn) {
+        const dx = b.aimX - b.gx, dy = b.aimY - b.gy, dd = Math.max(1, Math.hypot(dx, dy));
+        b.clamp = { x: b.gx, y: b.gy, vx: dx / dd * IN3.clampV, vy: dy / dd * IN3.clampV, dist: 0, back: false };
+        b.clampHook = true; b.state = 'clampR'; b.st = 0; Snd.play('clampFire', 0, b.x);
+      }
+      break;
+    case 'clampR': {
+      const q = b.clamp; if (!q) { inspToIdle(b, 0.8); break; }
+      if (!q.back) {
+        q.x += q.vx * d; q.y += q.vy * d; q.dist += IN3.clampV * d;
+        if (lv && circleHitsP(q.x, q.y, 0.45 * U) && hurtPlayer(q.x - sgn(q.vx || 1) * 10, 1)) { q.back = true; }
+        if (q.dist >= IN3.clampMax || solidT(tileAt(Math.floor(q.x / U), Math.floor(q.y / U)))) { q.back = true; Snd.play('hookLatch', 0, q.x); FX.sparks(q.x, q.y, 6, 4); }
+      } else {
+        const dx = b.x + b.dir * IN3.hw - q.x, dy = b.y - 2.1 * U - q.y, dd = Math.hypot(dx, dy), s = 20 * U * d;
+        if (dd <= s + 8) { b.clamp = null; b.clampHook = false; inspToIdle(b, 0.7); }
+        else { q.x += dx / dd * s; q.y += dy / dd * s; }
+      }
+      if (b.clamp) { b.gx = b.clamp.x; b.gy = b.clamp.y; }
+      if (b.st > 4) { b.clamp = null; b.clampHook = false; inspToIdle(b, 0.7); }
+      break;
+    }
+    case 'cardT': {
+      b.dir = P.x >= b.x ? 1 : -1; b.arm = Math.min(1, b.st / 0.5);
+      const due = 0.55 + b.cardFired * IN3.cardGap;
+      if (b.cardFired < b.cardN && b.st >= due) {
+        b.cardFired++;
+        const sx = b.x + b.dir * 0.9 * U, sy = b.y - 2.3 * U, dx = P.x - sx, dy = (P.y - 0.9 * U) - sy, spread = (b.cardFired - (b.cardN + 1) / 2) * 0.13, a = Math.atan2(dy, dx) + spread;
+        fireBlade(sx, sy, Math.cos(a) * IN3.cardV * b.rate, Math.sin(a) * IN3.cardV * b.rate, 'card');
+      }
+      if (b.cardFired >= b.cardN && b.st >= due + 0.5) inspToIdle(b);
+      break;
+    }
+    case 'stag': if (b.stag <= 0 || b.st >= IN3.stagT) { inspToIdle(b, 1.0); b.stag = 0; } break;
+    case 'break': if (b.st >= IN3.breakT) inspToIdle(b, 0.6); break;
+    case 'dying': {
+      b.dieFx -= dt;
+      if (b.dieFx <= 0) {
+        b.dieFx = 0.16;
+        const x = b.x + rnd(-1.0, 1.0) * U, y = b.y - rnd(0.4, 2.8) * U;
+        FX.sparks(x, y, 7, 4); FX.chips(x, y + 20, 3, 6); emit(PT.SQ, x, y, rnd(-30, 30), -rnd(40, 120), 0.7, rnd(8, 16), 5, 0);
+        if (Math.random() < 0.4) Snd.play('toolLand', 0, b.x);
+      }
+      Cam.shake(3, 0.1);
+      if (b.st >= IN3.dieT) finishInsp(b);
+      break;
+    }
+  }
+  if (lv && b.state === 'move') hitP(b.x - IN3.hw * 0.85, b.y - IN3.h * 0.9, b.x + IN3.hw * 0.85, b.y, b.x, 1);                // only the sliding bogie hurts by touch
+}
+
+/* ---------- the stage's per-step update (called from stageUpdate) ---------- */
+function s3Update(dt) {
+  const Z = Level.S3; if (!Z) return;
+  s3Pieces(dt); s3UpdBars(dt); S3HUD.paint();
+  const on = Game.state === 'play';
+  if (on) {
+    const ents = Level.ents, b = Level.boss;
+    for (let i = 0; i < ents.length; i++) {
+      const e = ents[i]; if (!e.s3 || e.dead) continue;
+      if (e.t === 'insp') { updInsp(e, dt * Pow.eSlow()); continue; }
+      if (Math.abs(e.x - P.x) > 34 * U) continue;
+      const rt = e.t === 'tdrone' ? 1 : s3Rate(e), d = dt * rt * Pow.eSlow();
+      if (e.t === 'tpunch') updPunch(e, d, dt);
+      else if (e.t === 'tscale') updScale(e, d, dt);
+      else if (e.t === 'tdrone') updDrone(e, dt * Pow.eSlow());
+    }
+    updBlades(dt * Pow.eSlow() * ((b && b.state !== 'sleep' && !b.dead) ? b.rate : 1));
+    if (b && b.t === 'insp' && !Level.bossDown && b.state === 'sleep' && P.x > AR.trig * U && live()) startInspFight(b);
+  }
+  for (let i = 0; i < Level.ents.length; i++) { const e = Level.ents[i]; if (e.t === 'ring' && e.ping > 0) e.ping = Math.max(0, e.ping - dt * 3); }
+  const k = Z.knob; if (k) { k.spin = approach(k.spin, 0, dt * 0.6); const b = Level.boss; k.rot = approach(k.rot, b && b.phase === 2 && !b.dead ? (b.fast ? 1 : -1) : 0, dt * 3); }
+  if (Z.table && Z.table.vanishGo) { Z.table.vanish = Math.min(1, Z.table.vanish + dt * 0.9); if (Z.table.vanish >= 1) Z.table.vanishGo = false; }
+}
+function s3ResetFoes() {
+  const Z = Level.S3; if (!Z) return;
+  for (let i = 0; i < Level.ents.length; i++) {
+    const e = Level.ents[i];
+    if (e.t === 'tpunch' || e.t === 'tscale' || e.t === 'tdrone') {
+      if (e.elite && Level.flags.fkey) continue;
+      e.dead = false; e.hp = e.t === 'tpunch' ? CB3.punch.hp : e.t === 'tdrone' ? 1 : (e.elite ? CB3.elite.hp : CB3.scale.hp);
+      e.x = e.homeX; e.y = e.homeY; e.state = e.t === 'tdrone' ? 'hover' : 'patrol'; e.st = 0; e.kb = 0; e.flash = 0; e.cool = 0; e.glow = 0; e.lastAtk = 0;
+    } else if (e.t === 'insp' && !Level.bossDown) inspReset(e);
+  }
+  for (let i = 0; i < Level.blades.length; i++) Level.blades[i].on = false;
+  for (let i = 0; i < Z.bars.length; i++) Z.bars[i].on = false;
+  for (let i = 0; i < Z.gantries.length; i++) Z.gantries[i].t = 1.2;
+}
+
+/* ---------- the speed-of-time chip ---------- */
+const S3HUD = {
+  el: null, v: null, l: null, b: null, sig: '',
+  paint() {
+    if (!this.el) { this.el = $('#ts'); this.v = $('#ts-v'); this.l = $('#ts-l'); this.b = $('#ts-b'); if (!this.el) return; }
+    const Z = Level.S3, show = !!Z && Game.state !== 'menu';
+    const r = Z ? Z.rv : 1, bb = Level.boss, bs = (Z && bb && bb.t === 'insp' && bb.phase === 2 && !bb.dead) ? bb.rate : 0;
+    const low = !!(Z && bb && bb.t === 'insp' && bb.state !== 'sleep' && !bb.dead) ? 1 : 0, rr = Math.round(r * 100) / 100, sig = (show ? 1 : 0) + ':' + rr + ':' + bs + ':' + low + ':' + LANG;
+    if (sig === this.sig) return;
+    this.sig = sig;
+    this.el.classList.toggle('on', show && !(low && !bs)); this.el.classList.toggle('low', !!low);
+    this.el.classList.toggle('slow', rr < 0.9); this.el.classList.toggle('fast', rr > 1.1);
+    this.v.textContent = '×' + (rr >= 1 ? Math.round(rr * 10) / 10 : rr);
+    this.l.textContent = t('ts_lbl');
+    this.b.textContent = bs ? t('ts_boss') + ' ×' + bs : '';
+  },
+  hide() { if (this.el) { this.el.classList.remove('on'); this.sig = ''; } }
+};
+Object.assign(STR.ar, { m3_insp_down: 'سقط المفتش · انفتح الطريق إلى نهاية القطار', tk3_stag: 'ترنّح المفتش! اضرب بكل ما معك!', tk3_weak: 'ساعة صدره انفتحت! اضربها الآن!' });
+Object.assign(STR.en, { m3_insp_down: 'The Inspector is down · the way to the end of the train opens', tk3_stag: 'The Inspector is reeling! Hit him with everything!', tk3_weak: 'His chest clock opened! Hit it now!' });
 
 /* ---------- 15. art registry (sprite sheets plug in here; placeholders are used otherwise) ---------- */
 const FONT = '"Noto Sans Arabic","Noto Kufi Arabic","Noto Naskh Arabic","Segoe UI",Tahoma,"DejaVu Sans",system-ui,sans-serif';
@@ -4431,6 +5267,7 @@ function gearPath(c, cx, cy, r, teeth, depth) {
 function buildAtlas() {
   if (BG.theme === 'workshop') { buildAtlasWorkshop(); return; }
   if (BG.theme === 'market') { buildAtlasMarket(); return; }
+  if (BG.theme === 'train') { buildAtlasTrain(); return; }
   const cv = mk(TS * Atlas.n, TS), c = cv.getContext('2d');
   const r = rng32(11);
   function brick(ox, variant) {
@@ -4527,9 +5364,9 @@ function buildBackgrounds() {
     const hz = c.createLinearGradient(0, 480, 0, H); hz.addColorStop(0, 'rgba(120,150,150,0)'); hz.addColorStop(1, 'rgba(120,150,140,0.28)');
     c.fillStyle = hz; c.fillRect(0, 480, W, H - 480);
   };
-  const mt = BG.theme === 'market', ws = BG.theme === 'workshop' || mt;
-  BG.sky = mk(W, H); if (mt) paintMarketFar(BG.sky.getContext('2d'), W, H); else if (ws) paintWorkshopFar(BG.sky.getContext('2d'), W, H); else farDraw(BG.sky.getContext('2d'));
-  BG.mid = ws ? layer(function (c) { if (mt) paintMarketMid(c, W, H); else paintWorkshopMid(c, W, H); }) : layer(function (c) {
+  const mt = BG.theme === 'market', tr = BG.theme === 'train', ws = BG.theme === 'workshop' || mt || tr;
+  BG.sky = mk(W, H); if (tr) paintTrainFar(BG.sky.getContext('2d'), W, H); else if (mt) paintMarketFar(BG.sky.getContext('2d'), W, H); else if (ws) paintWorkshopFar(BG.sky.getContext('2d'), W, H); else farDraw(BG.sky.getContext('2d'));
+  BG.mid = ws ? layer(function (c) { if (tr) paintTrainMid(c, W, H); else if (mt) paintMarketMid(c, W, H); else paintWorkshopMid(c, W, H); }) : layer(function (c) {
     for (let i = 0; i < 6; i++) {          // arched aqueduct
       const x = i * 280 - 40; c.fillStyle = 'rgba(14,22,40,0.94)';
       wrapDraw(W, x, 280, function (xx) { c.fillRect(xx, 560, 280, 260); c.globalCompositeOperation = 'destination-out'; c.beginPath(); c.arc(xx + 140, 690, 80, Math.PI, 0); c.lineTo(xx + 220, 820); c.lineTo(xx + 60, 820); c.fill(); c.globalCompositeOperation = 'source-over'; });
@@ -4537,7 +5374,7 @@ function buildBackgrounds() {
     c.strokeStyle = 'rgba(214,165,74,0.18)'; c.lineWidth = 3;
     for (let i = 0; i < 8; i++) { const x = r() * W; c.beginPath(); c.moveTo(x, 0); c.lineTo(x, 120 + r() * 200); c.stroke(); }
   });
-  BG.near = ws ? layer(function (c) { if (mt) paintMarketNear(c, W, H); else paintWorkshopNear(c, W, H); }) : layer(function (c) {
+  BG.near = ws ? layer(function (c) { if (tr) paintTrainNear(c, W, H); else if (mt) paintMarketNear(c, W, H); else paintWorkshopNear(c, W, H); }) : layer(function (c) {
     for (let i = 0; i < 5; i++) {
       const x = i * (W / 5) + r() * 60, w = 62 + r() * 30;
       wrapDraw(W, x, w, function (xx) {
@@ -4631,13 +5468,13 @@ function backdropAt(s) {
 }
 function drawStrip(c, src, x0, vy, wp, cw) { for (let x = x0; x < cw; x += wp) c.drawImage(src, x, vy); }
 function drawBackdrop(c, cx, cy) {              // sky -> middle strip + wall gears -> near pillars (c has an identity transform here)
-  const on = DX.on, cw = c.canvas.width, ch = c.canvas.height, B = backdropAt(cw / Game.viewW), s = B.s, wp = B.wp;
+  const on = DX.on, cw = c.canvas.width, ch = c.canvas.height, B = backdropAt(cw / Game.viewW), s = B.s, wp = B.wp, sc = Level.S3 ? Level.S3.scroll : 0;
   const vy = Math.max(ch - B.hp, -Math.round(Math.min(cy * 0.14, 78) * s));
   if (on.far) c.drawImage(B.sky, 0, Math.max(ch - B.hp, Math.round(-40 * s))); else { c.fillStyle = '#05070c'; c.fillRect(0, 0, cw, ch); }
   if (on.mid) {
-    let x0 = -(Math.round(cx * BG_SPEED[0] * s) % wp); if (x0 > 0) x0 -= wp;
+    let x0 = -(Math.round((cx * BG_SPEED[0] + sc * 0.55) * s) % wp); if (x0 > 0) x0 -= wp;
     drawStrip(c, B.mid, x0, vy, wp, cw);
-    if (on.gears) {
+    if (on.gears && !Level.S3) {
       const gp = Amb.gearPos(), rel = gp - (Amb.steps - 1), rest = Math.abs(rel - 1) < 1e-6;
       for (let k = 0; k < BG.gears.length; k++) {
         const g = BG.gears[k], gc = B.gears[k];
@@ -4654,7 +5491,7 @@ function drawBackdrop(c, cx, cy) {              // sky -> middle strip + wall ge
       }
     }
   }
-  if (on.near && !Game.lowFx && Game.fx.near) { let x0 = -(Math.round(cx * BG_SPEED[1] * s) % wp); if (x0 > 0) x0 -= wp; drawStrip(c, B.near, x0, vy, wp, cw); }
+  if (on.near && !Game.lowFx && Game.fx.near) { let x0 = -(Math.round((cx * BG_SPEED[1] + sc * 1.9) * s) % wp); if (x0 > 0) x0 -= wp; drawStrip(c, B.near, x0, vy, wp, cw); }
 }
 let signCache = {};
 function rrect(c, x, y, w, h, r) {
@@ -5048,8 +5885,8 @@ function drawPopups(c) {
   }
   c.globalAlpha = 1;
 }
-const PROMPT_KEY = { clock: 'p_wind', lever: 'p_lever', chest: 'p_open', scan: 'p_scan', machine: 'p_insert', lift: 'p_lift', satchel: 'p_take' };
-const PROMPT_UP = { clock: 158, lever: 96, chest: 78, scan: 80, machine: 150, lift: 150, satchel: 100 };
+const PROMPT_KEY = { clock: 'p_wind', lever: 'p_lever', chest: 'p_open', scan: 'p_scan', machine: 'p_insert', lift: 'p_lift', satchel: 'p_take', bench: 'p_bench' };
+const PROMPT_UP = { clock: 158, lever: 96, chest: 78, scan: 80, machine: 150, lift: 150, satchel: 100, bench: 110 };
 function drawPrompt(c) {
   const tg = P.target;
   if (!tg || Game.state !== 'play') return;
@@ -5107,7 +5944,7 @@ function render() {
     drawTiles(c, cx, cy); Hitch.mark('tl');
     if (sgOn && sgAbove) drawSigns(c, cx);
     drawEntities(c, cx);
-    drawCombat(c, cx); if (Level.S2) drawS2Fx(c, cx); Hitch.mark('en');
+    drawCombat(c, cx); if (Level.S2) drawS2Fx(c, cx); if (Level.S3) drawS3Fx(c, cx); Hitch.mark('en');
     drawNader(c); drawHook(c); if (Tik.on) drawTik(c); Pow.draw(c); drawTalkFx(c); Hitch.mark('nd');
     drawParticles(c);
     drawPopups(c);
@@ -5287,7 +6124,7 @@ function drawBubble(c, s) {
 
 /* ---- arena furniture: table legs, shelf brackets, tool racks, the gate ---- */
 function drawArenaDeco(c, cx) {
-  if (Level.stage === 's2') return;
+  if (Level.stage === 's2' || Level.stage === 's3') return;
   const vw = Game.viewW, x0 = AR.x0 * U;
   if (cx + vw < x0 - 100) return;
   const ty = (G - 2) * U;
@@ -6136,6 +6973,7 @@ function drawS2Ent(c, e) {
     case 'thief': if (e.vis && !e.dead) drawThief(c, e); break;
     case 'coll': if (e.on) drawColl(c, e); break;
     case 'auct': if (!e.dead || e.state === 'dying') drawAuct(c, e); break;
+    default: drawS3Ent(c, e); break;
   }
 }
 function drawRing(c, e) {                                         // a brass ring on a short chain from a bracket: the hook's anchor
@@ -6398,6 +7236,526 @@ function drawS2Fx(c, cx) {
       c.fillStyle = g; c.fillRect(w.x - w.half, (G - 14) * U, w.half * 2, 14 * U);
       c.fillStyle = 'rgba(255,240,200,0.85)'; c.beginPath(); c.ellipse(w.x, G * U - 6, w.half, 10, 0, 0, 6.3); c.fill();
     }
+  }
+}
+
+/* ---------- 17d. stage 3 art (all drawn in code): the train's tile atlas, three backdrops that rush by, the car shells and their props, the machines and the Inspector.
+   Nobody here is a person or an animal: the collectors are brass punching / weighing machines, the "second birds" are propeller clock-drones, the passengers are only their
+   frozen things (a cup, cases, a newspaper) and the Collector is a tall brass hourglass in a violet scarf. ---------- */
+const TR = { steel: '#3b4658', steelD: '#262e3c', steelL: '#56637a', rivet: '#8b97ab', brass: '#c9923f', brassD: '#8f5d26', brassL: '#e6c06a', wine: '#6b2a35', wineD: '#45171f', wood: '#7a5233', woodD: '#4b2f1b',
+  cream: '#e9dfc4', teal: '#2fd6c4', amber: '#ffb347', violet: '#7a4aa8', olive: '#4d5a45', oliveD: '#2e3829', night: '#12192a' };
+/* one palette per car: wall, wall dark, trim, ceiling */
+const CARPAL = [{ w: '#5a2a33', wd: '#3b1a22', tr: '#d9c28a', ce: '#2d2430' }, { w: '#444d44', wd: '#2c332c', tr: '#e6a53a', ce: '#262c28' }, { w: '#6a4a2c', wd: '#46301b', tr: '#e6c06a', ce: '#33261a' }, { w: '#1f4a50', wd: '#122e33', tr: '#8fe3d6', ce: '#16262c' }];
+
+/* ---- tile atlas of the train: riveted steel hull, deck plating, grated one-way planks, steel shutter slats ---- */
+function buildAtlasTrain() {
+  const cv = mk(TS * Atlas.n, TS), c = cv.getContext('2d'), r = rng32(81);
+  function plate(ox, v) {
+    c.fillStyle = v === 3 ? '#2c3444' : '#364052'; c.fillRect(ox, 0, TS, TS);
+    c.fillStyle = '#242c3b'; c.fillRect(ox, 0, TS, 3); c.fillRect(ox, TS - 3, TS, 3); c.fillRect(ox, 0, 3, TS); c.fillRect(ox + TS - 3, 0, 3, TS);
+    c.fillStyle = 'rgba(255,255,255,.05)'; c.fillRect(ox + 4, 4, TS - 8, 5);
+    c.fillStyle = TR.rivet; for (const q of [[10, 10], [TS - 10, 10], [10, TS - 10], [TS - 10, TS - 10]]) { c.beginPath(); c.arc(ox + q[0], q[1], 3, 0, 6.3); c.fill(); }
+    c.fillStyle = 'rgba(0,0,0,.2)'; for (let i = 0; i < 8; i++) c.fillRect(ox + 8 + r() * (TS - 22), 8 + r() * (TS - 18), 3 + r() * 9, 2);
+    if (v === 1) { c.fillStyle = 'rgba(122,74,50,.28)'; for (let i = 0; i < 4; i++) c.fillRect(ox + 8 + r() * (TS - 30), 12 + r() * (TS - 30), 10 + r() * 16, 5); }
+    if (v === 2) { c.strokeStyle = 'rgba(0,0,0,.35)'; c.lineWidth = 2; c.beginPath(); c.moveTo(ox + 4, TS / 2); c.lineTo(ox + TS - 4, TS / 2); c.stroke(); }
+  }
+  for (let v = 0; v < 4; v++) plate(v * TS, v);
+  for (let v = 0; v < 2; v++) {                                  // deck: a steel plate with a brass-edged top and a diamond tread
+    const ox = (4 + v) * TS; plate(ox, v);
+    c.fillStyle = '#2a3140'; c.fillRect(ox, 0, TS, 26);
+    c.fillStyle = '#4b566b'; c.fillRect(ox, 0, TS, 20);
+    c.fillStyle = TR.brass; c.fillRect(ox, 0, TS, 4); c.fillStyle = TR.brassL; c.fillRect(ox, 0, TS, 2);
+    c.fillStyle = '#39445a'; c.fillRect(ox, 20, TS, 3);
+    c.fillStyle = 'rgba(0,0,0,.28)'; for (let x = 6 + v * 8; x < TS; x += 16) { c.beginPath(); c.moveTo(ox + x, 8); c.lineTo(ox + x + 5, 14); c.lineTo(ox + x, 19); c.lineTo(ox + x - 5, 14); c.closePath(); c.fill(); }
+  }
+  { // one-way: a grated brass plank
+    const ox = 6 * TS;
+    c.fillStyle = '#2b3140'; c.fillRect(ox, 8, TS, 18);
+    c.fillStyle = '#7d6a3e'; c.fillRect(ox, 0, TS, 17);
+    c.fillStyle = TR.brassL; c.fillRect(ox, 0, TS, 4);
+    c.fillStyle = '#4a3a1f'; for (let x = 6; x < TS; x += 12) c.fillRect(ox + x, 5, 6, 10);
+    c.fillStyle = '#c9a85c'; c.fillRect(ox, 17, TS, 3);
+  }
+  { // spikes (not used on the train, kept so the atlas is complete)
+    const ox = 7 * TS; c.fillStyle = '#2b3140'; c.fillRect(ox, TS - 16, TS, 16);
+    for (let i = 0; i < 3; i++) { const x0 = ox + 4 + i * 30; c.fillStyle = '#b8bfcc'; c.beginPath(); c.moveTo(x0, TS - 14); c.lineTo(x0 + 13, 20); c.lineTo(x0 + 26, TS - 14); c.closePath(); c.fill(); }
+  }
+  { // door segment: steel shutter slats with a brass edge
+    const ox = 8 * TS; c.fillStyle = '#1c2230'; c.fillRect(ox, 0, TS, TS);
+    for (let y = 0; y < TS; y += 16) { c.fillStyle = '#566178'; c.fillRect(ox + 6, y, TS - 12, 13); c.fillStyle = '#7b87a0'; c.fillRect(ox + 6, y, TS - 12, 3); c.fillStyle = '#2a3142'; c.fillRect(ox + 6, y + 13, TS - 12, 3); }
+    c.fillStyle = TR.brass; c.fillRect(ox, 0, 6, TS); c.fillRect(ox + TS - 6, 0, 6, TS);
+  }
+  Atlas.cv = cv;
+}
+
+/* ---- backdrops that rush by: far = a dusk sky with the thirteenth-chime disc and distant hills, mid = hills and pylons, near = telegraph poles and fence posts ---- */
+function paintTrainFar(c, W, H) {
+  const r = rng32(91), g = c.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#0d1226'); g.addColorStop(0.45, '#2a2547'); g.addColorStop(0.75, '#6b4457'); g.addColorStop(1, '#c47a4a');
+  c.fillStyle = g; c.fillRect(0, 0, W, H);
+  c.fillStyle = 'rgba(255,240,210,0.85)'; for (let i = 0; i < 120; i++) { const y = r() * H * 0.55; c.globalAlpha = 0.25 + r() * 0.6; c.fillRect(r() * W, y, 2, 2); } c.globalAlpha = 1;
+  const mx = W * 0.62, my = H * 0.3;                              // the great disc of the hour that never came: a clock face low over the hills
+  c.fillStyle = 'rgba(255,214,150,0.12)'; c.beginPath(); c.arc(mx, my, 190, 0, 6.3); c.fill();
+  c.fillStyle = 'rgba(240,222,190,0.9)'; c.beginPath(); c.arc(mx, my, 110, 0, 6.3); c.fill();
+  c.strokeStyle = 'rgba(60,40,50,0.55)'; c.lineWidth = 4; for (let i = 0; i < 12; i++) { const a = i / 12 * 6.2832; c.beginPath(); c.moveTo(mx + Math.sin(a) * 90, my - Math.cos(a) * 90); c.lineTo(mx + Math.sin(a) * 102, my - Math.cos(a) * 102); c.stroke(); }
+  c.lineWidth = 6; c.lineCap = 'round'; c.beginPath(); c.moveTo(mx, my); c.lineTo(mx + 4, my - 62); c.moveTo(mx, my); c.lineTo(mx - 46, my + 20); c.stroke();
+  for (let k = 0; k < 3; k++) {
+    c.fillStyle = ['rgba(60,40,70,0.7)', 'rgba(42,30,58,0.85)', 'rgba(26,20,40,0.95)'][k]; c.beginPath(); c.moveTo(0, H);
+    const base = H - 150 - k * 70;
+    for (let x = 0; x <= W; x += 40) c.lineTo(x, base - Math.sin(x / W * 6.2832 * (1 + k) + k) * (46 + k * 18) - r() * 8);
+    c.lineTo(W, H); c.closePath(); c.fill();
+  }
+}
+function paintTrainMid(c, W, H) {
+  const r = rng32(93);
+  c.fillStyle = 'rgba(16,14,30,0.96)'; c.beginPath(); c.moveTo(0, H);
+  for (let x = 0; x <= W; x += 30) c.lineTo(x, H - 190 - Math.abs(Math.sin(x / 210)) * 70 - r() * 6);
+  c.lineTo(W, H); c.closePath(); c.fill();
+  for (let i = 0; i < 6; i++) {                                    // pylons with sagging wires
+    const x = 90 + i * (W / 6), h = 220 + r() * 70;
+    wrapDraw(W, x, 120, function (xx) {
+      c.strokeStyle = 'rgba(10,8,20,0.97)'; c.lineWidth = 7; c.beginPath(); c.moveTo(xx, H); c.lineTo(xx + 28, H - h); c.lineTo(xx + 56, H); c.moveTo(xx + 8, H - h * 0.55); c.lineTo(xx + 48, H - h * 0.55); c.stroke();
+      c.lineWidth = 5; c.beginPath(); c.moveTo(xx - 24, H - h + 12); c.lineTo(xx + 80, H - h + 12); c.stroke();
+      c.strokeStyle = 'rgba(10,8,20,0.7)'; c.lineWidth = 2; c.beginPath(); c.moveTo(xx - 24, H - h + 12); c.quadraticCurveTo(xx - 24 - W / 12, H - h + 60, xx - W / 6 - 24, H - h + 12); c.stroke();
+    });
+  }
+  c.fillStyle = 'rgba(255,196,110,0.8)'; for (let i = 0; i < 18; i++) c.fillRect(r() * W, H - 90 - r() * 80, 4, 6);      // far windows of a village
+}
+function paintTrainNear(c, W, H) {
+  const r = rng32(97);
+  for (let i = 0; i < 7; i++) {                                    // telegraph poles
+    const x = i * (W / 7) + r() * 80, h = 360 + r() * 70;
+    wrapDraw(W, x, 70, function (xx) {
+      c.fillStyle = 'rgba(8,6,14,0.97)'; c.fillRect(xx, H - h, 12, h); c.fillRect(xx - 24, H - h + 16, 60, 8); c.fillRect(xx - 16, H - h + 44, 44, 6);
+      c.fillStyle = 'rgba(214,165,74,0.5)'; for (const q of [-20, 30]) c.fillRect(xx + q, H - h + 6, 5, 10);
+    });
+  }
+  c.strokeStyle = 'rgba(8,6,14,0.9)'; c.lineWidth = 3; c.beginPath(); c.moveTo(0, H - 60); for (let x = 0; x <= W; x += 24) c.lineTo(x, H - 60 + (x / 24 & 1) * 10); c.stroke();
+  const fg = c.createLinearGradient(0, H - 240, 0, H); fg.addColorStop(0, 'rgba(110,60,50,0)'); fg.addColorStop(1, 'rgba(110,60,50,0.4)'); c.fillStyle = fg; c.fillRect(0, H - 240, W, 240);
+}
+
+/* ---- baked props of the cars ---- */
+function pCarShell(c, x0, x1, pal) {
+  const P_ = CARPAL[pal], w = x1 - x0, yc = (G - 8) * U, yi = (G - 6) * U, yf = G * U;
+  /* the roof: outer plate on top, ribs underneath */
+  c.fillStyle = TR.steelD; c.fillRect(x0, yc, w, 2 * U); c.fillStyle = TR.steel; c.fillRect(x0, yc, w, 7); c.fillStyle = TR.steelL; c.fillRect(x0, yc, w, 3);
+  c.fillStyle = TR.rivet; for (let x = x0 + 14; x < x1; x += 40) { c.beginPath(); c.arc(x, yc + 18, 2.4, 0, 6.3); c.fill(); }
+  c.fillStyle = P_.ce; c.fillRect(x0, yc + 28, w, yi - yc - 28);
+  c.fillStyle = 'rgba(255,255,255,.06)'; for (let x = x0; x < x1; x += 120) c.fillRect(x, yc + 28, 6, yi - yc - 28);
+  c.fillStyle = P_.tr; c.fillRect(x0, yi - 6, w, 6); c.fillStyle = 'rgba(0,0,0,.35)'; c.fillRect(x0, yi, w, 5);
+  /* the back wall with windows: even-odd fill so the rushing scenery shows through */
+  c.beginPath(); c.rect(x0, yi, w, yf - yi);
+  const wins = [];
+  for (let x = x0 + 2.6 * U; x + 3 * U < x1 - 1.6 * U; x += 6.8 * U) { wins.push(x); c.rect(x, (G - 5.2) * U, 3 * U, 2.9 * U); }
+  c.fillStyle = P_.w; c.fill('evenodd');
+  c.fillStyle = P_.wd; c.fillRect(x0, (G - 1.9) * U, w, 1.9 * U); c.fillStyle = P_.tr; c.fillRect(x0, (G - 1.9) * U, w, 4);
+  c.fillStyle = 'rgba(0,0,0,.2)'; for (let x = x0 + 20; x < x1; x += 60) c.fillRect(x, (G - 1.9) * U + 8, 3, 1.9 * U - 14);
+  for (let i = 0; i < wins.length; i++) {
+    const x = wins[i], y = (G - 5.2) * U, ww = 3 * U, hh = 2.9 * U;
+    c.strokeStyle = INK; c.lineWidth = 6; c.strokeRect(x, y, ww, hh); c.strokeStyle = P_.tr; c.lineWidth = 3; c.strokeRect(x, y, ww, hh);
+    c.fillStyle = 'rgba(255,255,255,.09)'; c.beginPath(); c.moveTo(x + 8, y + hh - 8); c.lineTo(x + 8 + 34, y + 8); c.lineTo(x + 8 + 54, y + 8); c.lineTo(x + 8 + 20, y + hh - 8); c.closePath(); c.fill();
+    if (pal === 0) { c.fillStyle = TR.wine; c.beginPath(); c.moveTo(x, y); c.lineTo(x + 22, y); c.quadraticCurveTo(x + 30, y + hh * 0.5, x + 16, y + hh); c.lineTo(x, y + hh); c.closePath(); c.fill(); c.beginPath(); c.moveTo(x + ww, y); c.lineTo(x + ww - 22, y); c.quadraticCurveTo(x + ww - 30, y + hh * 0.5, x + ww - 16, y + hh); c.lineTo(x + ww, y + hh); c.closePath(); c.fill(); }
+    if (pal === 1) { c.fillStyle = 'rgba(230,165,58,.9)'; for (let k = 0; k < 6; k++) { c.beginPath(); c.moveTo(x + k * ww / 6, y + hh); c.lineTo(x + k * ww / 6 + ww / 12, y + hh); c.lineTo(x + (k + 1) * ww / 6, y + hh - 10); c.lineTo(x + (k + 0.5) * ww / 6, y + hh - 10); c.closePath(); c.fill(); } }
+  }
+  if (pal === 1) { c.fillStyle = 'rgba(230,165,58,.85)'; for (let x = x0 + 10; x < x1; x += 40) { c.beginPath(); c.moveTo(x, yf - 12); c.lineTo(x + 20, yf - 12); c.lineTo(x + 10, yf); c.lineTo(x - 10, yf); c.closePath(); c.fill(); } }
+  if (pal === 3) { c.strokeStyle = 'rgba(143,227,214,.28)'; c.lineWidth = 2; for (let x = x0 + 3.4 * U; x < x1 - U; x += 6.8 * U) { c.beginPath(); c.arc(x + 0.6 * U, (G - 2.6) * U, 0.9 * U, 0, 6.3); c.stroke(); } }
+}
+function pCarLamps(c, x0, x1, pal) {
+  const P_ = CARPAL[pal];
+  for (let x = x0 + 3 * U; x < x1 - U; x += 6.8 * U) {
+    const g = c.createRadialGradient(x, (G - 5) * U, 6, x, (G - 5) * U, 4.2 * U); g.addColorStop(0, 'rgba(255,214,150,0.28)'); g.addColorStop(1, 'rgba(255,214,150,0)');
+    c.fillStyle = g; c.fillRect(x - 4.2 * U, (G - 6) * U, 8.4 * U, 3.4 * U);
+    c.strokeStyle = INK; c.lineWidth = 3; c.beginPath(); c.moveTo(x, (G - 6) * U); c.lineTo(x, (G - 5.55) * U); c.stroke();
+    c.fillStyle = INK; c.beginPath(); c.arc(x, (G - 5.3) * U, 13, 0, 6.3); c.fill(); c.fillStyle = pal === 3 ? '#8fe3d6' : '#ffd696'; c.beginPath(); c.arc(x, (G - 5.3) * U, 9, 0, 6.3); c.fill();
+    c.fillStyle = P_.tr; c.fillRect(x - 7, (G - 5.62) * U, 14, 5);
+  }
+}
+function pCarDivider(c, x) {                                      // the gangway door between two cars: frame and a slid-open leaf
+  const yc = (G - 6) * U, yf = G * U;
+  c.fillStyle = TR.steelD; c.fillRect(x - 12, yc - 4, 24, yf - yc + 4); c.fillStyle = TR.steel; c.fillRect(x - 12, yc - 4, 7, yf - yc + 4);
+  c.fillStyle = TR.brass; c.fillRect(x - 12, yc - 4, 24, 8); c.fillStyle = TR.brassL; c.fillRect(x - 12, yc - 4, 24, 3);
+  c.fillStyle = 'rgba(0,0,0,.45)'; c.fillRect(x + 12, yc + 4, 8, yf - yc - 4);
+  c.fillStyle = TR.steelD; c.fillRect(x + 12, yc + 4, 30, 6);
+}
+function pCarEnd(c, x, entry) {                                   // the end of a car: the wall piece above the doorway with a lamp, and a ladder on the outside
+  const yt = (G - 9) * U, yd = (G - 4) * U;
+  if (entry) {
+    c.fillStyle = TR.steelD; c.fillRect(x - 6, yt, U + 12, yd - yt); c.fillStyle = TR.steel; c.fillRect(x - 6, yt, 8, yd - yt);
+    c.fillStyle = TR.brass; c.fillRect(x - 10, yd - 8, U + 20, 8); c.fillStyle = TR.brassL; c.fillRect(x - 10, yd - 8, U + 20, 3);
+    c.fillStyle = INK; c.beginPath(); c.arc(x + U / 2, yd - 36, 15, 0, 6.3); c.fill(); c.fillStyle = '#ffd696'; c.beginPath(); c.arc(x + U / 2, yd - 36, 10, 0, 6.3); c.fill();
+    const g = c.createRadialGradient(x + U / 2, yd - 36, 4, x + U / 2, yd - 36, 3 * U); g.addColorStop(0, 'rgba(255,214,150,0.3)'); g.addColorStop(1, 'rgba(255,214,150,0)'); c.fillStyle = g; c.fillRect(x - 2.5 * U, yd - 3.5 * U, 6 * U, 5 * U);
+    c.fillStyle = TR.rivet; for (let y = yt + 20; y < yd - 20; y += 36) { c.beginPath(); c.arc(x + 6, y, 3, 0, 6.3); c.fill(); c.beginPath(); c.arc(x + U - 2, y, 3, 0, 6.3); c.fill(); }
+  } else {
+    c.fillStyle = TR.steelD; c.fillRect(x, (G - 8) * U, 14, 8 * U); c.fillStyle = TR.brass; c.fillRect(x, (G - 8) * U, 14, 6);
+    c.strokeStyle = TR.rivet; c.lineWidth = 3; c.beginPath(); c.moveTo(x + 22, (G - 7.6) * U); c.lineTo(x + 22, (G - 0.2) * U); c.moveTo(x + 44, (G - 7.6) * U); c.lineTo(x + 44, (G - 0.2) * U); c.stroke();
+    for (let y = (G - 7.4) * U; y < (G - 0.4) * U; y += 22) { c.beginPath(); c.moveTo(x + 22, y); c.lineTo(x + 44, y); c.stroke(); }
+  }
+}
+function pRoofFurniture(c, x0, x1, i) {                           // ventilator domes, a pipe run and a seam, standing on the roof
+  const y = G * U, r = rng32(120 + i * 7);
+  c.strokeStyle = 'rgba(0,0,0,.35)'; c.lineWidth = 2; for (let x = x0 + 3 * U; x < x1; x += 7 * U) { c.beginPath(); c.moveTo(x, y + 4); c.lineTo(x, y + 18); c.stroke(); }
+  for (let x = x0 + 2 * U + r() * 2 * U; x < x1 - 2 * U; x += 6.5 * U + r() * 3 * U) {
+    const k = r();
+    if (k < 0.5) {                                                // a ventilator dome
+      c.fillStyle = INK; c.fillRect(x - 22, y - 12, 44, 14); c.fillStyle = TR.steel; c.fillRect(x - 19, y - 10, 38, 11);
+      c.fillStyle = INK; c.beginPath(); c.arc(x, y - 12, 24, 3.14, 6.3); c.fill(); c.fillStyle = TR.steelL; c.beginPath(); c.arc(x, y - 12, 20, 3.14, 6.3); c.fill();
+      c.fillStyle = 'rgba(0,0,0,.4)'; for (let s = -12; s <= 12; s += 8) c.fillRect(x + s - 1, y - 28, 2, 16);
+    } else if (k < 0.8) {                                         // a stovepipe
+      c.fillStyle = INK; c.fillRect(x - 11, y - 54, 22, 56); c.fillStyle = TR.rust; c.fillRect(x - 8, y - 52, 16, 52); c.fillStyle = TR.brassD; c.fillRect(x - 14, y - 58, 28, 8);
+    } else {                                                      // a hatch with a wheel
+      c.fillStyle = INK; c.fillRect(x - 28, y - 14, 56, 16); c.fillStyle = TR.steelL; c.fillRect(x - 25, y - 12, 50, 12);
+      c.strokeStyle = TR.brass; c.lineWidth = 3; c.beginPath(); c.arc(x, y - 12, 9, 3.14, 6.3); c.stroke();
+    }
+  }
+}
+function pCoupling(c, x0, x1, y) {                                // between two roofs: buffers, a drawbar and a chain over the dark gap
+  c.fillStyle = 'rgba(8,6,14,0.82)'; c.fillRect(x0, y, x1 - x0, 4.6 * U);
+  const my = y + 1.7 * U;
+  c.fillStyle = INK; c.fillRect(x0, my - 14, 34, 28); c.fillRect(x1 - 34, my - 14, 34, 28);
+  c.fillStyle = TR.brass; c.beginPath(); c.arc(x0 + 34, my, 15, -1.57, 1.57); c.fill(); c.beginPath(); c.arc(x1 - 34, my, 15, 1.57, 4.71); c.fill();
+  c.strokeStyle = INK; c.lineWidth = 7; c.beginPath(); c.moveTo(x0 + 40, my + 18); c.quadraticCurveTo((x0 + x1) / 2, my + 70, x1 - 40, my + 18); c.stroke();
+  c.strokeStyle = TR.rivet; c.lineWidth = 3; c.setLineDash([9, 6]); c.stroke(); c.setLineDash([]);
+  c.strokeStyle = 'rgba(255,255,255,.12)'; c.lineWidth = 2; c.beginPath(); c.moveTo(x0, y + 4.4 * U); c.lineTo(x1, y + 4.4 * U); c.stroke();
+}
+function pLocoDeck(c, x0, x1) {                                   // the locomotive roof: a boiler wall behind, rivet bands, a red warning stripe along the ceiling line
+  const w = x1 - x0, yf = G * U, yt = (G - 8) * U;
+  c.fillStyle = 'rgba(12,16,28,0.55)'; c.fillRect(x0, yt, w, yf - yt);
+  c.fillStyle = 'rgba(214,165,74,0.12)'; for (let x = x0; x < x1; x += 2.5 * U) c.fillRect(x, yt, 6, yf - yt);
+  c.fillStyle = TR.brassD; for (const y of [(G - 6) * U, (G - 2.4) * U]) c.fillRect(x0, y, w, 10);
+  c.fillStyle = TR.brass; for (const y of [(G - 6) * U, (G - 2.4) * U]) c.fillRect(x0, y, w, 3);
+  c.fillStyle = 'rgba(224,86,74,.5)'; for (let x = x0; x < x1; x += 60) { c.beginPath(); c.moveTo(x, yt); c.lineTo(x + 26, yt); c.lineTo(x + 8, yt + 14); c.lineTo(x - 18, yt + 14); c.closePath(); c.fill(); }
+  c.fillStyle = TR.steelD; c.fillRect(x0, yf - 14, w, 14);
+}
+function pUnder(c, x, w) {                                        // an undercarriage under the deck: skirt panels, a bogie with two wheels
+  const y = (G + 1) * U;
+  c.fillStyle = 'rgba(0,0,0,.28)'; c.fillRect(x, y, w, 0.5 * U);
+  const wy = (G + 4.4) * U, R = 1.1 * U;
+  for (const wx of [x + 0.25 * w - R, x + 0.75 * w - R]) {
+    const cx = wx + R; c.fillStyle = INK; c.beginPath(); c.arc(cx, wy, R + 6, 0, 6.3); c.fill(); c.fillStyle = '#4a5368'; c.beginPath(); c.arc(cx, wy, R, 0, 6.3); c.fill();
+    c.strokeStyle = TR.rivet; c.lineWidth = 3; c.beginPath(); c.arc(cx, wy, R * 0.72, 0, 6.3); c.stroke();
+    c.strokeStyle = '#2a3140'; c.lineWidth = 5; for (let k = 0; k < 6; k++) { const a = k / 6 * 6.2832; c.beginPath(); c.moveTo(cx, wy); c.lineTo(cx + Math.cos(a) * R * 0.72, wy + Math.sin(a) * R * 0.72); c.stroke(); }
+    c.fillStyle = TR.brass; c.beginPath(); c.arc(cx, wy, 9, 0, 6.3); c.fill();
+  }
+  c.fillStyle = INK; c.fillRect(x + 0.25 * w, wy - 10, 0.5 * w, 14); c.fillStyle = TR.brassD; c.fillRect(x + 0.25 * w, wy - 8, 0.5 * w, 5);
+}
+function pTrainProp(c, kind, x, y, w, h) {
+  switch (kind) {
+    case 'bench': {                                               // a passenger bench: a seat with a high back
+      c.fillStyle = INK; c.fillRect(x, y + 6, w, 0.52 * U); c.fillStyle = TR.wine; c.fillRect(x + 3, y + 8, w - 6, 0.38 * U); c.fillStyle = '#8f3d4a'; c.fillRect(x + 3, y + 8, w - 6, 5);
+      c.fillStyle = INK; c.fillRect(x + 5, y - 0.95 * U, 0.3 * U, 1 * U + 8); c.fillStyle = TR.wineD; c.fillRect(x + 5, y - 0.9 * U, 0.3 * U - 3, 0.95 * U);
+      c.fillStyle = INK; c.fillRect(x + 6, y + 0.5 * U, 7, 0.5 * U); c.fillRect(x + w - 13, y + 0.5 * U, 7, 0.5 * U);
+      break;
+    }
+    case 'rack': {                                                // a luggage rack: a brass rail on brackets, with cases on it
+      c.fillStyle = INK; c.fillRect(x, y + 2, w, 12); c.fillStyle = TR.brass; c.fillRect(x, y + 4, w, 6); c.fillStyle = TR.brassL; c.fillRect(x, y + 4, w, 2);
+      for (let b = x + 6; b < x + w; b += 2.6 * U) { c.fillStyle = INK; c.fillRect(b, y + 12, 6, 20); }
+      let cx = x + 10; const r = rng32((x | 0) % 97 + 5);
+      while (cx < x + w - 30) { const cw = 22 + r() * 26, ch = 18 + r() * 14; c.fillStyle = INK; c.fillRect(cx - 2, y - ch - 2, cw + 4, ch + 3); c.fillStyle = ['#7a5233', '#4d5a45', '#5a2a33', '#3b4658'][(r() * 4) | 0]; c.fillRect(cx, y - ch, cw, ch + 1); c.fillStyle = TR.brass; c.fillRect(cx, y - ch + 5, cw, 3); cx += cw + 8; }
+      break;
+    }
+    case 'table': {                                               // a dining table with a lamp, plates and a teapot
+      c.fillStyle = INK; c.fillRect(x, y + 3, w, 14); c.fillStyle = '#e9dfc4'; c.fillRect(x + 2, y + 5, w - 4, 8); c.fillStyle = TR.wood; c.fillRect(x + 2, y + 13, w - 4, 4);
+      c.fillStyle = INK; c.fillRect(x + w / 2 - 6, y + 16, 12, 0.75 * U);
+      for (let q = x + 0.6 * U; q < x + w - 0.5 * U; q += 1.2 * U) { c.fillStyle = INK; c.beginPath(); c.ellipse(q, y + 4, 14, 5, 0, 0, 6.3); c.fill(); c.fillStyle = '#f2ecd6'; c.beginPath(); c.ellipse(q, y + 3, 11, 3.6, 0, 0, 6.3); c.fill(); }
+      c.fillStyle = INK; c.beginPath(); c.arc(x + w / 2, y - 12, 16, 0, 6.3); c.fill(); c.fillStyle = TR.brass; c.fillRect(x + w / 2 - 6, y - 12, 12, 16);
+      break;
+    }
+    case 'case': {                                                // a fallen suitcase (solid)
+      c.fillStyle = INK; c.fillRect(x - 2, y - 2, w + 4, h + 4); c.fillStyle = '#7a5233'; c.fillRect(x + 2, y + 2, w - 4, h - 4); c.fillStyle = 'rgba(255,255,255,.1)'; c.fillRect(x + 2, y + 2, w - 4, 7);
+      c.fillStyle = TR.brass; c.fillRect(x + 2, y + h * 0.4, w - 4, 6); c.fillRect(x + w * 0.25, y + 2, 6, h - 4); c.fillRect(x + w * 0.7, y + 2, 6, h - 4);
+      c.fillStyle = INK; c.fillRect(x + w / 2 - 10, y - 8, 20, 8); break;
+    }
+  }
+}
+
+/* ---------- animated pieces ---------- */
+function drawS3Ent(c, e) {
+  switch (e.t) {
+    case 'tpunch': if (!e.dead) drawPunch(c, e); break;
+    case 'tscale': if (!e.dead) drawScale(c, e); break;
+    case 'tdrone': if (!e.dead) drawDrone(c, e); break;
+    case 'ugear': if (!e.got) drawUGear(c, e); break;
+    case 'bench': drawBench(c, e); break;
+    case 'ctable': drawCTable(c, e); break;
+    case 'fdoor': drawHDoor(c, e); break;
+    case 'chimney': drawChimney(c, e); break;
+    case 'knob': drawKnob(c, e); break;
+    case 'wclock': drawWClock(c, e); break;
+    case 'insp': if (!e.dead || e.state === 'dying') drawInsp(c, e); break;
+  }
+}
+function drawPunch(c, e) {                                        // a ticket-punch machine: a brass body on two rail wheels, a lamp, a lever arm with a punch head
+  const warn = e.state === 'warn', slam = e.state === 'slam', sh = e.shake > 0 ? Math.sin(Game.time * 90) * 3 : 0;
+  c.save(); c.translate(e.x + sh, e.y); c.scale(e.dir, 1);
+  c.fillStyle = 'rgba(0,0,0,0.3)'; c.beginPath(); c.ellipse(0, 0, 38, 7, 0, 0, 6.3); c.fill();
+  const rot = e.ph * (e.state === 'chase' ? 7 : 2.2);
+  for (const wx of [-22, 22]) { c.fillStyle = INK; c.beginPath(); c.arc(wx, -16, 17, 0, 6.3); c.fill(); c.fillStyle = '#566178'; c.beginPath(); c.arc(wx, -16, 12, 0, 6.3); c.fill(); c.strokeStyle = INK; c.lineWidth = 3; c.beginPath(); c.moveTo(wx, -16); c.lineTo(wx + Math.cos(rot) * 11, -16 + Math.sin(rot) * 11); c.stroke(); }
+  c.fillStyle = INK; rrect(c, -34, -88, 68, 66, 8); c.fill();
+  c.fillStyle = e.flash > 0 ? '#ffffff' : TR.brass; rrect(c, -30, -84, 60, 58, 6); c.fill(); c.fillStyle = 'rgba(255,255,255,.22)'; c.fillRect(-26, -82, 52, 7);
+  c.fillStyle = INK; c.fillRect(-18, -66, 36, 22); c.fillStyle = '#26324a'; c.fillRect(-15, -63, 30, 16); c.fillStyle = TR.cream; c.fillRect(-12, -60, 24, 10); c.fillStyle = TR.wine; c.fillRect(-9, -57, 18, 4);       // the ticket slot
+  c.fillStyle = INK; c.fillRect(-4, -126, 8, 40); c.beginPath(); c.arc(0, -128, 14, 0, 6.3); c.fill();
+  const lamp = warn ? (Math.sin(Game.time * 30) > 0 ? '#ff5b4d' : '#7a2018') : slam ? '#ff5b4d' : '#ffd696';
+  c.fillStyle = lamp; c.beginPath(); c.arc(0, -128, 9, 0, 6.3); c.fill();
+  if (warn) { c.fillStyle = 'rgba(255,91,77,.2)'; c.beginPath(); c.arc(0, -128, 34, 0, 6.3); c.fill(); }
+  /* the lever arm: rests low at the back, goes up while warning, slams forward */
+  const ang = slam ? 0.9 : warn ? -1.1 - 0.25 * Math.sin(Game.time * 20) : -0.25;
+  c.save(); c.translate(26, -62); c.rotate(ang); c.fillStyle = INK; c.fillRect(-4, -6, 76, 12); c.fillStyle = '#9aa5b8'; c.fillRect(-2, -4, 72, 8);
+  c.fillStyle = INK; c.fillRect(60, -2, 22, 34); c.fillStyle = TR.brassL; c.fillRect(63, 0, 16, 28); c.fillStyle = INK; for (let k = 0; k < 3; k++) c.fillRect(65 + k * 5, 24, 3, 6);
+  c.restore();
+  c.restore();
+}
+function drawScale(c, e) {                                        // a weighing machine: a heavy body, a brass shield plate in front, a balance beam with two pans on top
+  const el = e.elite, S = el ? 1.22 : 1, warn = e.state === 'warn', swing = e.state === 'swing', sh = e.shake > 0 ? Math.sin(Game.time * 90) * 3 : 0;
+  c.save(); c.translate(e.x + sh, e.y); c.scale(e.dir * S, S);
+  c.fillStyle = 'rgba(0,0,0,0.3)'; c.beginPath(); c.ellipse(0, 0, 42, 7, 0, 0, 6.3); c.fill();
+  const rot = e.ph * 2.2;
+  for (const wx of [-24, 24]) { c.fillStyle = INK; c.beginPath(); c.arc(wx, -17, 18, 0, 6.3); c.fill(); c.fillStyle = '#566178'; c.beginPath(); c.arc(wx, -17, 13, 0, 6.3); c.fill(); c.strokeStyle = INK; c.lineWidth = 3; c.beginPath(); c.moveTo(wx, -17); c.lineTo(wx + Math.cos(rot) * 12, -17 + Math.sin(rot) * 12); c.stroke(); }
+  c.fillStyle = INK; rrect(c, -36, -94, 72, 72, 8); c.fill();
+  c.fillStyle = e.flash > 0 ? '#ffffff' : (el ? '#5b4a8c' : TR.steelL); rrect(c, -32, -90, 64, 64, 6); c.fill(); c.fillStyle = 'rgba(255,255,255,.18)'; c.fillRect(-28, -88, 56, 6);
+  c.fillStyle = INK; c.beginPath(); c.arc(-6, -56, 17, 0, 6.3); c.fill(); c.fillStyle = TR.cream; c.beginPath(); c.arc(-6, -56, 13, 0, 6.3); c.fill();       // the dial
+  const needle = swing ? 1.3 : warn ? 0.9 + 0.4 * Math.sin(Game.time * 18) : -0.5 + 0.2 * Math.sin(e.ph); c.strokeStyle = TR.wine; c.lineWidth = 3; c.beginPath(); c.moveTo(-6, -56); c.lineTo(-6 + Math.sin(needle) * 11, -56 - Math.cos(needle) * 11); c.stroke();
+  /* the front shield plate */
+  const gl = warn ? 0.5 + 0.5 * Math.sin(Game.time * 24) : 0;
+  c.fillStyle = INK; rrect(c, 28, -92, 16, 74, 4); c.fill(); c.fillStyle = gl > 0.5 ? '#ffe9a8' : TR.brass; rrect(c, 31, -89, 10, 68, 3); c.fill();
+  if (gl > 0) { c.fillStyle = 'rgba(255,214,150,' + (0.3 * gl) + ')'; c.beginPath(); c.arc(36, -56, 46, 0, 6.3); c.fill(); }
+  /* the balance beam: tips forward when it swings */
+  const tilt = swing ? 0.7 : warn ? -0.45 : 0.06 * Math.sin(e.ph * 1.5);
+  c.save(); c.translate(0, -108); c.fillStyle = INK; c.fillRect(-4, 0, 8, 16); c.rotate(tilt);
+  c.fillStyle = INK; c.fillRect(-52, -5, 104, 10); c.fillStyle = TR.brassL; c.fillRect(-50, -3, 100, 6);
+  for (const px of [-48, 48]) { c.strokeStyle = INK; c.lineWidth = 2; c.beginPath(); c.moveTo(px, 3); c.lineTo(px - 10, 26); c.moveTo(px, 3); c.lineTo(px + 10, 26); c.stroke(); c.fillStyle = INK; c.beginPath(); c.ellipse(px, 28, 16, 6, 0, 0, 6.3); c.fill(); c.fillStyle = TR.brass; c.beginPath(); c.ellipse(px, 27, 13, 4, 0, 0, 6.3); c.fill(); }
+  c.restore();
+  if (el && !Level.flags.fkey) { c.save(); c.translate(-10, -40); c.rotate(Math.sin(e.ph * 2) * 0.1); c.strokeStyle = INK; c.lineWidth = 6; c.beginPath(); c.arc(0, 0, 9, 0, 6.3); c.moveTo(9, 0); c.lineTo(34, 0); c.moveTo(26, 0); c.lineTo(26, 9); c.moveTo(33, 0); c.lineTo(33, 8); c.stroke(); c.strokeStyle = TR.brassL; c.lineWidth = 3; c.stroke(); c.restore(); }      // the furnace key hangs on its chest
+  c.restore();
+}
+function drawDrone(c, e) {                                        // a propeller clock-drone: a round clock face under a spinning rotor, two little landing legs
+  const land = e.state === 'land', gl = e.glow || 0;
+  c.save(); c.translate(e.x, e.y - 0.35 * U);
+  if (e.state === 'hover' || e.state === 'glow' || e.state === 'rise') { c.fillStyle = 'rgba(0,0,0,0.2)'; c.beginPath(); c.ellipse(0, G * U - (e.y - 0.35 * U) - 2, 20, 4, 0, 0, 6.3); c.fill(); }
+  if (gl > 0.01) { c.fillStyle = 'rgba(255,91,77,' + (0.18 * gl) + ')'; c.beginPath(); c.arc(0, 0, 44 + 8 * Math.sin(Game.time * 20), 0, 6.3); c.fill(); }
+  c.strokeStyle = INK; c.lineWidth = 5; c.beginPath(); c.moveTo(-12, 14); c.lineTo(-18, 26); c.moveTo(12, 14); c.lineTo(18, 26); c.stroke();
+  c.fillStyle = INK; c.beginPath(); c.arc(0, 0, 21, 0, 6.3); c.fill(); c.fillStyle = e.flash > 0 ? '#ffffff' : TR.cream; c.beginPath(); c.arc(0, 0, 17, 0, 6.3); c.fill();
+  c.strokeStyle = INK; c.lineWidth = 2; for (let i = 0; i < 12; i++) { const a = i / 12 * 6.2832; c.beginPath(); c.moveTo(Math.sin(a) * 13, -Math.cos(a) * 13); c.lineTo(Math.sin(a) * 16, -Math.cos(a) * 16); c.stroke(); }
+  const ha = land ? 0 : Game.time * 5; c.lineWidth = 3; c.lineCap = 'round'; c.beginPath(); c.moveTo(0, 0); c.lineTo(Math.sin(ha) * 11, -Math.cos(ha) * 11); c.moveTo(0, 0); c.lineTo(Math.sin(ha * 12) * 8, -Math.cos(ha * 12) * 8); c.stroke();
+  c.fillStyle = gl > 0.3 ? '#ff5b4d' : TR.brass; c.beginPath(); c.arc(0, -22, 5, 0, 6.3); c.fill();
+  c.strokeStyle = INK; c.lineWidth = 4; c.beginPath(); c.moveTo(0, -22); c.lineTo(0, -32); c.stroke();
+  const spin = land ? 0.2 : 1, ph = Game.time * 40 * spin;
+  c.fillStyle = 'rgba(23,18,28,' + (land ? 0.9 : 0.55) + ')'; c.beginPath(); c.ellipse(0, -34, 40 * Math.abs(Math.cos(ph)) + 4, 4, 0, 0, 6.3); c.fill();
+  c.restore();
+}
+function drawUGear(c, e) {                                        // a special gear: bigger, violet-edged, with a ring that pulses
+  const bob = Math.sin(e.ph) * 5;
+  c.fillStyle = 'rgba(160,110,230,' + (0.2 + 0.1 * Math.sin(e.ph * 2)) + ')'; c.beginPath(); c.arc(e.x, e.y + bob, 30, 0, 6.3); c.fill();
+  c.strokeStyle = 'rgba(190,150,255,0.75)'; c.lineWidth = 2; c.beginPath(); c.arc(e.x, e.y + bob, 24 + 3 * Math.sin(e.ph * 3), 0, 6.3); c.stroke();
+  drawGearSprite(c, e.x, e.y + bob, e.ph * 0.7, 36);
+  c.fillStyle = '#c9a8ff'; c.beginPath(); c.arc(e.x, e.y + bob, 6, 0, 6.3); c.fill();
+}
+function drawBench(c, e) {                                        // Mira's small bench: an anvil, a bellows, her open notebook and three gear slots (lit by the special gears you hold)
+  const n = ugCount(), done = e.done;
+  c.save(); c.translate(e.x, e.y);
+  c.fillStyle = 'rgba(0,0,0,0.3)'; c.beginPath(); c.ellipse(0, 0, 80, 8, 0, 0, 6.3); c.fill();
+  c.fillStyle = INK; c.fillRect(-72, -62, 144, 12); c.fillRect(-64, -52, 10, 52); c.fillRect(54, -52, 10, 52);
+  c.fillStyle = TR.wood; c.fillRect(-70, -60, 140, 8); c.fillStyle = '#a9774a'; c.fillRect(-70, -60, 140, 3);
+  c.fillStyle = INK; c.beginPath(); c.moveTo(-40, -62); c.lineTo(-10, -62); c.lineTo(-16, -78); c.lineTo(-50, -78); c.lineTo(-58, -70); c.closePath(); c.fill(); c.fillStyle = '#9aa5b8'; c.beginPath(); c.moveTo(-40, -64); c.lineTo(-13, -64); c.lineTo(-18, -75); c.lineTo(-48, -75); c.lineTo(-54, -69); c.closePath(); c.fill();   // anvil
+  c.fillStyle = INK; c.beginPath(); c.moveTo(18, -62); c.lineTo(46, -62); c.lineTo(40, -92); c.lineTo(24, -92); c.closePath(); c.fill(); c.fillStyle = TR.wine; c.beginPath(); c.moveTo(21, -64); c.lineTo(43, -64); c.lineTo(38, -88); c.lineTo(26, -88); c.closePath(); c.fill(); // bellows
+  c.fillStyle = INK; c.fillRect(-22, -112, 44, 38); c.fillStyle = TR.cream; c.fillRect(-19, -109, 38, 32);                  // the notebook, propped open
+  c.fillStyle = '#7a1f1a'; for (let k = 0; k < 4; k++) c.fillRect(-14, -102 + k * 6, 22 - (k & 1) * 6, 2);
+  for (let i = 0; i < 3; i++) {                                    // three gear-shaped slots on the board behind
+    const gx = -34 + i * 34, gy = -134;
+    c.fillStyle = INK; c.beginPath(); c.arc(gx, gy, 16, 0, 6.3); c.fill(); c.fillStyle = '#2b2433'; c.beginPath(); c.arc(gx, gy, 12, 0, 6.3); c.fill();
+    if (i < n || done) { c.save(); c.translate(gx, gy); c.rotate(Game.time * (done ? 1.2 : 0.4) * (i & 1 ? -1 : 1)); c.fillStyle = '#c9a8ff'; for (let k = 0; k < 8; k++) { c.save(); c.rotate(k / 8 * 6.2832); c.fillRect(-2.5, -15, 5, 6); c.restore(); } c.beginPath(); c.arc(0, 0, 10, 0, 6.3); c.fill(); c.fillStyle = '#2b2433'; c.beginPath(); c.arc(0, 0, 3.5, 0, 6.3); c.fill(); c.restore(); }
+  }
+  c.fillStyle = INK; c.fillRect(-52, -156, 104, 6); c.strokeStyle = INK; c.lineWidth = 3; c.beginPath(); c.moveTo(-50, -150); c.lineTo(-50, -118); c.moveTo(50, -150); c.lineTo(50, -118); c.stroke();
+  if (done) { c.save(); c.translate(54, -66); c.rotate(-0.35); c.fillStyle = INK; c.fillRect(-4, -4, 66, 8); c.fillStyle = '#c9a8ff'; c.fillRect(-2, -2, 62, 4); c.fillStyle = INK; c.fillRect(52, -16, 24, 32); c.fillStyle = '#9aa5b8'; c.fillRect(55, -13, 18, 26); c.restore(); }      // the upgraded hammer lies on the bench
+  c.restore();
+}
+function drawCTable(c, e) {                                       // the corner table: a teacup that never fills, and the Collector - a tall brass hourglass in a violet scarf
+  const v = e.vanish || 0;
+  c.save(); c.translate(e.x, e.y);
+  c.fillStyle = 'rgba(0,0,0,0.3)'; c.beginPath(); c.ellipse(0, 0, 80, 8, 0, 0, 6.3); c.fill();
+  c.fillStyle = INK; c.fillRect(-60, -76, 120, 12); c.fillRect(-8, -64, 16, 64); c.fillRect(-44, -8, 88, 8); c.fillStyle = '#f2ecd6'; c.fillRect(-58, -74, 116, 8); c.fillStyle = TR.wood; c.fillRect(-58, -66, 116, 3);
+  /* the cup: full to the brim, and the surface never moves */
+  c.fillStyle = INK; c.fillRect(-40, -104, 30, 30); c.fillStyle = '#f2ecd6'; c.fillRect(-37, -101, 24, 25); c.fillStyle = '#7a4a2c'; c.fillRect(-37, -101, 24, 5);
+  c.strokeStyle = INK; c.lineWidth = 4; c.beginPath(); c.arc(-9, -90, 7, -1.5, 1.5); c.stroke();
+  if (v < 1) {
+    c.globalAlpha = 1 - v; c.translate(30, 0);
+    const R = 1 + v * 0.05; c.scale(R, R);
+    c.fillStyle = INK; c.fillRect(-26, -214, 52, 10); c.fillRect(-26, -78, 52, 10);                 // two brass plates and the glass between them
+    c.fillStyle = TR.brass; c.fillRect(-24, -212, 48, 6); c.fillRect(-24, -76, 48, 6);
+    c.strokeStyle = INK; c.lineWidth = 12; c.beginPath(); c.moveTo(-22, -206); c.quadraticCurveTo(-22, -158, -4, -146); c.quadraticCurveTo(-22, -134, -22, -82); c.moveTo(22, -206); c.quadraticCurveTo(22, -158, 4, -146); c.quadraticCurveTo(22, -134, 22, -82); c.stroke();
+    c.strokeStyle = 'rgba(190,230,240,0.55)'; c.lineWidth = 5; c.stroke();
+    c.fillStyle = 'rgba(230,192,106,0.9)'; c.beginPath(); c.moveTo(-18, -200); c.lineTo(18, -200); c.lineTo(3, -150); c.lineTo(-3, -150); c.closePath(); c.fill();
+    c.beginPath(); c.moveTo(-3, -146); c.lineTo(3, -146); c.lineTo(19, -90); c.lineTo(-19, -90); c.closePath(); c.fill();
+    c.fillRect(-1, -150, 2, 56);
+    c.fillStyle = TR.violet; c.beginPath(); c.moveTo(-30, -150); c.quadraticCurveTo(0, -128, 30, -150); c.lineTo(34, -138); c.quadraticCurveTo(0, -112, -34, -138); c.closePath(); c.fill();      // the violet scarf
+    c.beginPath(); c.moveTo(18, -134); c.quadraticCurveTo(46 + Math.sin(Game.time * 2) * 5, -120, 40, -86); c.lineTo(30, -90); c.quadraticCurveTo(34, -114, 14, -128); c.closePath(); c.fill();
+    c.fillStyle = INK; c.beginPath(); c.arc(-9, -176, 5, 0, 6.3); c.arc(9, -176, 5, 0, 6.3); c.fill(); c.fillStyle = '#ffe9a8'; c.beginPath(); c.arc(-9, -176, 2.5, 0, 6.3); c.arc(9, -176, 2.5, 0, 6.3); c.fill();   // two small lamps for eyes
+    c.globalAlpha = 1;
+  }
+  c.restore();
+}
+function drawChimney(c, e) {                                      // the smokestack of the locomotive: a flared brass collar, and a plume of steam that lifts
+  const x = e.x, y = e.y, w = (S3L.chimney[1] - S3L.chimney[0]) * U;
+  c.fillStyle = INK; c.fillRect(x - w / 2 - 8, y - 14, w + 16, 22); c.fillStyle = TR.brass; c.fillRect(x - w / 2 - 5, y - 11, w + 10, 15); c.fillStyle = TR.brassL; c.fillRect(x - w / 2 - 5, y - 11, w + 10, 4);
+  c.fillStyle = INK; c.fillRect(x - w / 2 + 10, y - 30, w - 20, 22); c.fillStyle = '#1a1722'; c.fillRect(x - w / 2 + 14, y - 28, w - 28, 18);
+  for (let i = 0; i < 9; i++) {
+    const k = ((e.ph * 0.5 + i / 9) % 1), px = x + Math.sin(i * 2.3 + e.ph) * 26 * k, py = y - 30 - k * 8.5 * U;
+    c.fillStyle = 'rgba(210,225,235,' + (0.28 * (1 - k)) + ')'; c.beginPath(); c.arc(px, py, 14 + 30 * k, 0, 6.3); c.fill();
+  }
+}
+function drawKnob(c, e) {                                         // a big brass time-knob on the wall: it clicks between "slow" and "fast"
+  const r = e.rot || 0, sp = e.spin || 0;
+  c.save(); c.translate(e.x, e.y);
+  c.fillStyle = INK; c.beginPath(); c.arc(0, 0, 56, 0, 6.3); c.fill(); c.fillStyle = '#2a3140'; c.beginPath(); c.arc(0, 0, 50, 0, 6.3); c.fill();
+  c.strokeStyle = TR.brass; c.lineWidth = 3; for (let i = 0; i < 9; i++) { const a = -2.2 + i * 0.55; c.beginPath(); c.moveTo(Math.cos(a) * 40, Math.sin(a) * 40 - 0); c.lineTo(Math.cos(a) * 47, Math.sin(a) * 47); c.stroke(); }
+  c.fillStyle = '#7ff3e6'; c.beginPath(); c.arc(Math.cos(-2.2) * 36, Math.sin(-2.2) * 36, 5, 0, 6.3); c.fill(); c.fillStyle = TR.amber; c.beginPath(); c.arc(Math.cos(0.1) * 36, Math.sin(0.1) * 36, 5, 0, 6.3); c.fill();
+  c.rotate(-1.05 + r * 1.2 + Math.sin(Game.time * 40) * 0.05 * sp); c.fillStyle = INK; c.fillRect(-9, -36, 18, 44); c.fillStyle = TR.brassL; c.fillRect(-6, -34, 12, 40); c.beginPath(); c.arc(0, 0, 12, 0, 6.3); c.fill();
+  c.restore();
+}
+function drawWClock(c, e) {                                       // a wall clock whose hands run at the speed of time in its car
+  c.save(); c.translate(e.x, e.y);
+  c.fillStyle = INK; c.beginPath(); c.arc(0, 0, 36, 0, 6.3); c.fill(); c.fillStyle = TR.brass; c.beginPath(); c.arc(0, 0, 32, 0, 6.3); c.fill(); c.fillStyle = TR.cream; c.beginPath(); c.arc(0, 0, 27, 0, 6.3); c.fill();
+  c.strokeStyle = INK; c.lineWidth = 2; for (let i = 0; i < 12; i++) { const a = i / 12 * 6.2832; c.beginPath(); c.moveTo(Math.sin(a) * 22, -Math.cos(a) * 22); c.lineTo(Math.sin(a) * 26, -Math.cos(a) * 26); c.stroke(); }
+  c.lineCap = 'round'; c.lineWidth = 4; c.beginPath(); c.moveTo(0, 0); c.lineTo(Math.sin(e.a / 12) * 13, -Math.cos(e.a / 12) * 13); c.stroke();
+  c.lineWidth = 2.5; c.beginPath(); c.moveTo(0, 0); c.lineTo(Math.sin(e.a) * 21, -Math.cos(e.a) * 21); c.stroke();
+  c.fillStyle = INK; c.beginPath(); c.arc(0, 0, 3, 0, 6.3); c.fill();
+  c.restore();
+}
+function drawInsp(c, e) {                                         // the Ticket Inspector: a ticket booth on a bogie, a glass window, a stamp arm and a clamp arm, a clock in his chest
+  const dying = e.state === 'dying', weak = e.weak > 0 || e.state === 'weakT', sh = e.shake > 0 ? Math.sin(Game.time * 80) * 4 : 0, d = e.dir || -1, ph2 = e.phase === 2;
+  c.save(); c.translate(e.x + sh, e.y); if (dying) c.rotate(Math.sin(Game.time * 30) * 0.03);
+  c.fillStyle = 'rgba(0,0,0,0.35)'; c.beginPath(); c.ellipse(0, 0, 90, 9, 0, 0, 6.3); c.fill();
+  /* the bogie: a rail platform and four wheels */
+  c.fillStyle = INK; c.fillRect(-84, -36, 168, 24); c.fillStyle = '#4a5368'; c.fillRect(-80, -33, 160, 14); c.fillStyle = TR.brass; c.fillRect(-80, -33, 160, 4);
+  const wr = (e.rotor || 0) * (e.state === 'move' ? 1 : 0.2);
+  for (const wx of [-60, -22, 22, 60]) { c.fillStyle = INK; c.beginPath(); c.arc(wx, -12, 17, 0, 6.3); c.fill(); c.fillStyle = '#566178'; c.beginPath(); c.arc(wx, -12, 12, 0, 6.3); c.fill(); c.strokeStyle = INK; c.lineWidth = 3; c.beginPath(); c.moveTo(wx, -12); c.lineTo(wx + Math.cos(wr) * 11, -12 + Math.sin(wr) * 11); c.stroke(); }
+  /* the booth */
+  c.fillStyle = INK; rrect(c, -64, -178, 128, 148, 10); c.fill();
+  c.fillStyle = e.flash > 0 ? '#ffffff' : '#3f4a63'; rrect(c, -59, -173, 118, 138, 8); c.fill();
+  c.fillStyle = 'rgba(255,255,255,.1)'; c.fillRect(-55, -170, 110, 8);
+  c.fillStyle = TR.brass; c.fillRect(-59, -78, 118, 6); c.fillStyle = TR.brassL; c.fillRect(-59, -78, 118, 2);
+  c.fillStyle = INK; c.beginPath(); c.moveTo(-74, -176); c.lineTo(0, -222); c.lineTo(74, -176); c.closePath(); c.fill(); c.fillStyle = TR.wine; c.beginPath(); c.moveTo(-68, -178); c.lineTo(0, -216); c.lineTo(68, -178); c.closePath(); c.fill();
+  c.fillStyle = INK; c.fillRect(-4, -250, 8, 34); c.beginPath(); c.arc(0, -252, 12, 0, 6.3); c.fill(); c.fillStyle = (e.state === 'clampT' || e.state === 'cardT' || e.state === 'stampT') ? '#ff5b4d' : '#ffd696'; c.beginPath(); c.arc(0, -252, 8, 0, 6.3); c.fill();
+  /* the ticket window */
+  c.fillStyle = INK; c.fillRect(-42, -150, 84, 56); c.fillStyle = '#26324a'; c.fillRect(-38, -146, 76, 48); c.fillStyle = 'rgba(255,196,110,' + (0.55 + 0.2 * Math.sin(Game.time * 3)) + ')'; c.fillRect(-38, -146, 76, 48);
+  c.fillStyle = INK; for (let k = 0; k < 4; k++) c.fillRect(-30 + k * 20, -146, 3, 48); c.fillRect(-38, -124, 76, 3);
+  c.fillStyle = INK; c.beginPath(); c.arc(-14 * d, -120, 7, 0, 6.3); c.arc(14 * d, -120, 7, 0, 6.3); c.fill(); c.fillStyle = e.glow > 0.5 ? '#ff5b4d' : '#fff4d0'; c.beginPath(); c.arc(-14 * d, -120, 3.4, 0, 6.3); c.arc(14 * d, -120, 3.4, 0, 6.3); c.fill();      // two lamp "eyes" behind the glass
+  if (ph2) { c.strokeStyle = 'rgba(255,255,255,.7)'; c.lineWidth = 2; c.beginPath(); c.moveTo(-30, -146); c.lineTo(-6, -118); c.lineTo(-18, -100); c.moveTo(20, -146); c.lineTo(8, -126); c.stroke(); }
+  /* the chest clock behind its hatch */
+  const open = weak ? 1 : 0;
+  c.fillStyle = INK; c.beginPath(); c.arc(0, -56, 26, 0, 6.3); c.fill();
+  c.fillStyle = TR.cream; c.beginPath(); c.arc(0, -56, 21, 0, 6.3); c.fill();
+  c.strokeStyle = INK; c.lineWidth = 3; c.lineCap = 'round'; const ha = Game.time * (e.rate || 1) * 3; c.beginPath(); c.moveTo(0, -56); c.lineTo(Math.sin(ha) * 15, -56 - Math.cos(ha) * 15); c.moveTo(0, -56); c.lineTo(Math.sin(ha / 12) * 9, -56 - Math.cos(ha / 12) * 9); c.stroke();
+  if (open) { c.fillStyle = 'rgba(255,214,150,' + (0.25 + 0.15 * Math.sin(Game.time * 14)) + ')'; c.beginPath(); c.arc(0, -56, 54, 0, 6.3); c.fill(); }
+  c.fillStyle = INK; const hx = open ? 22 : 0; c.fillRect(-26 - hx, -84, 26, 56); c.fillRect(0 + hx, -84, 26, 56); c.fillStyle = TR.brass; c.fillRect(-23 - hx, -81, 20, 50); c.fillRect(3 + hx, -81, 20, 50);
+  /* the arms */
+  const arm = e.arm || 0, st = e.state;
+  c.save(); c.translate(-d * 60, -110); const sa = st === 'stampT' ? -1.2 - 0.2 * Math.sin(Game.time * 12) : st === 'idle' ? 0.2 : -0.3 + arm * -0.6; c.rotate(-d * sa * -1);
+  c.fillStyle = INK; c.fillRect(d < 0 ? 0 : -52, -7, 52, 14); c.fillStyle = '#9aa5b8'; c.fillRect(d < 0 ? 2 : -50, -4, 48, 8); c.fillStyle = INK; c.fillRect(d < 0 ? 44 : -66, -14, 22, 36); c.fillStyle = TR.wine; c.fillRect(d < 0 ? 47 : -63, -11, 16, 30);
+  c.restore();
+  c.save(); c.translate(d * 62, -110); c.fillStyle = INK; c.fillRect(d > 0 ? 0 : -34, -8, 34, 16); c.fillStyle = TR.brassL; c.fillRect(d > 0 ? 2 : -32, -5, 30, 10);
+  if (!e.clamp) { c.fillStyle = INK; c.beginPath(); c.arc(d * 40, 0, 14, 0, 6.3); c.fill(); c.fillStyle = TR.brass; c.beginPath(); c.arc(d * 40, 0, 9, 0, 6.3); c.fill(); }
+  c.restore();
+  if (st === 'clampT') {                                          // the aim line: a thin red line from the clamp arm to where it will fly
+    c.restore(); c.save(); c.strokeStyle = 'rgba(255,91,77,' + (0.35 + 0.35 * Math.sin(Game.time * 24)) + ')'; c.lineWidth = 3; c.setLineDash([10, 8]); c.beginPath(); c.moveTo(e.gx, e.gy);
+    const dx = e.aimX - e.gx, dy = e.aimY - e.gy, dd = Math.max(1, Math.hypot(dx, dy)); c.lineTo(e.gx + dx / dd * IN3.clampMax, e.gy + dy / dd * IN3.clampMax); c.stroke(); c.setLineDash([]); c.restore(); return;
+  }
+  c.restore();
+}
+
+/* ---------- world effects: movers (crate ferries, tik/tak platforms), rails, shutters, trolleys and beams, the boss's marks, stamps, clamp and cards ---------- */
+function drawS3Fx(c, cx) {
+  const Z = Level.S3, vw = Game.viewW; if (!Z) return;
+  /* ferry rails and marks, crates */
+  for (let i = 0; i < Z.ferries.length; i++) {
+    const f = Z.ferries[i], m = f.m; if (m.x1 < cx - 300 || m.x0 > cx + vw + 300) continue;
+    const ry = m.y + 0.62 * U;
+    if (!f.locked) {
+      c.fillStyle = INK; c.fillRect(f.cx - f.amp - 1.6 * U, ry, 2 * f.amp + 3.2 * U, 8); c.fillStyle = '#4a5368'; c.fillRect(f.cx - f.amp - 1.6 * U, ry, 2 * f.amp + 3.2 * U, 3);
+      const near = f.near ? 1 : 0, a = 0.35 + 0.4 * near + 0.1 * Math.sin(Game.time * 6);
+      c.fillStyle = near ? 'rgba(47,214,196,' + a + ')' : 'rgba(255,179,71,' + a + ')'; c.fillRect(f.cx - 1.15 * U, ry - 4, 2.3 * U, 16);
+      c.fillStyle = near ? '#7ff3e6' : TR.amber; c.beginPath(); c.moveTo(f.cx, ry - 8); c.lineTo(f.cx - 9, ry - 22); c.lineTo(f.cx + 9, ry - 22); c.closePath(); c.fill();
+    }
+    const sh = f.shake > 0 ? Math.sin(Game.time * 80) * 3 : 0, w = m.x1 - m.x0;
+    pCrate(c, m.x0 + sh, m.y, w, U * 1.0);
+    c.fillStyle = INK; c.fillRect(m.x0 + 4 + sh, m.y + U - 5, 14, 10); c.fillRect(m.x1 - 18 + sh, m.y + U - 5, 14, 10);
+    if (f.locked) { c.fillStyle = 'rgba(47,214,196,' + (0.4 + 0.5 * f.flash) + ')'; c.fillRect(m.x0, m.y - 5, w, 5); c.fillStyle = '#7ff3e6'; c.fillRect(m.x0 + w / 2 - 8, m.y + 12, 16, 16); }
+  }
+  /* shutters */
+  for (let i = 0; i < Z.shut.length; i++) {
+    const s = Z.shut[i], x = s.x * U; if (x < cx - 100 || x > cx + vw + 100) continue;
+    const top = (G - 6) * U, h = 6 * U, a = s.a;
+    c.fillStyle = INK; c.fillRect(x - 6, top - 14, U + 12, 14); c.fillStyle = TR.brass; c.fillRect(x - 4, top - 12, U + 8, 8);
+    if (a > 0.02) { c.save(); c.beginPath(); c.rect(x, top, U, h); c.clip(); const lift = (1 - a) * h; for (let k = 0; k < 6; k++) c.drawImage(Atlas.cv, 8 * TS, 0, TS, TS, x, top + k * U - lift, U + 1, U + 1); c.restore(); }
+    const L = s.open ? (s.warn ? '255,196,110' : '47,214,196') : '224,86,74';
+    c.fillStyle = 'rgba(' + L + ',' + (0.25 + 0.12 * Math.sin(Game.time * 8)) + ')'; c.beginPath(); c.arc(x + U / 2, top - 28, 24, 0, 6.3); c.fill();
+    c.fillStyle = INK; c.beginPath(); c.arc(x + U / 2, top - 28, 11, 0, 6.3); c.fill(); c.fillStyle = 'rgb(' + L + ')'; c.beginPath(); c.arc(x + U / 2, top - 28, 7.5, 0, 6.3); c.fill();
+  }
+  /* the tik/tak platforms */
+  for (let i = 0; i < Z.plat.length; i++) {
+    const m = Z.plat[i]; if (m.x1 < cx - 100 || m.x0 > cx + vw + 100) continue;
+    const col = m.beat ? '255,179,71' : '95,170,255', on = m.on, w = m.x1 - m.x0;
+    if (!on) { c.strokeStyle = 'rgba(' + col + ',0.28)'; c.lineWidth = 2; c.setLineDash([8, 7]); c.strokeRect(m.x0 + 1, m.y + 1, w - 2, 12); c.setLineDash([]); continue; }
+    if (m.warn && ((Game.time * 14) | 0) % 2) { c.fillStyle = 'rgba(' + col + ',0.35)'; c.fillRect(m.x0, m.y, w, 14); continue; }
+    c.fillStyle = INK; c.fillRect(m.x0 - 3, m.y - 2, w + 6, 24); c.fillStyle = 'rgb(' + col + ')'; c.fillRect(m.x0, m.y, w, 16); c.fillStyle = 'rgba(255,255,255,.45)'; c.fillRect(m.x0, m.y, w, 4);
+    c.fillStyle = INK; for (let x = m.x0 + 14; x < m.x1 - 8; x += 22) c.fillRect(x, m.y + 6, 8, 6);
+    c.fillStyle = 'rgba(' + col + ',0.18)'; c.fillRect(m.x0, m.y + 16, w, 26);
+  }
+  /* the overhead trolleys and their low beams */
+  for (let i = 0; i < Z.gantries.length; i++) {
+    const g = Z.gantries[i]; if (g.x1 < cx - 200 || g.x0 > cx + vw + 200) continue;
+    const y = (G - 7.2) * U;
+    c.fillStyle = INK; c.fillRect(g.x0, y, g.x1 - g.x0 + U, 7); c.fillStyle = '#4a5368'; c.fillRect(g.x0, y, g.x1 - g.x0 + U, 3);
+    for (let x = g.x0; x < g.x1; x += 5 * U) { c.fillStyle = INK; c.fillRect(x - 4, y, 8, 30); }
+    const w = g.warn || 0;
+    if (w > 0) { const lx = g.x1 + 0.2 * U; c.fillStyle = 'rgba(255,91,77,' + (0.2 * (1 + Math.sin(Game.time * 24)) * w) + ')'; c.beginPath(); c.arc(lx, y + 6, 34, 0, 6.3); c.fill(); c.fillStyle = INK; c.beginPath(); c.arc(lx, y + 6, 12, 0, 6.3); c.fill(); c.fillStyle = Math.sin(Game.time * 24) > 0 ? '#ff5b4d' : '#7a2018'; c.beginPath(); c.arc(lx, y + 6, 8, 0, 6.3); c.fill(); }
+  }
+  for (let i = 0; i < Z.bars.length; i++) {
+    const b = Z.bars[i]; if (!b.on || b.delay > 0 || b.x < cx - 100 || b.x > cx + vw + 100) continue;
+    const top = (G - 7.2) * U;
+    c.strokeStyle = INK; c.lineWidth = 9; c.beginPath(); c.moveTo(b.x, top + 6); c.lineTo(b.x, G * U - 1.0 * U); c.stroke(); c.strokeStyle = '#4a5368'; c.lineWidth = 4; c.stroke();
+    c.fillStyle = INK; c.fillRect(b.x - 14, top - 2, 28, 16);
+    c.fillStyle = INK; c.fillRect(b.x - 0.5 * U, G * U - 1.02 * U, U, 0.9 * U); c.fillStyle = TR.steelL; c.fillRect(b.x - 0.5 * U + 3, G * U - 1.0 * U + 2, U - 6, 0.9 * U - 5);
+    c.fillStyle = 'rgba(255,200,60,.9)'; for (let k = 0; k < 4; k++) { c.beginPath(); c.moveTo(b.x - 0.5 * U + 4 + k * 0.26 * U, G * U - 0.14 * U); c.lineTo(b.x - 0.5 * U + 4 + k * 0.26 * U + 8, G * U - 0.14 * U); c.lineTo(b.x - 0.5 * U + 4 + k * 0.26 * U + 18, G * U - 1.0 * U + 2); c.lineTo(b.x - 0.5 * U + 4 + k * 0.26 * U + 10, G * U - 1.0 * U + 2); c.closePath(); c.fill(); }
+  }
+  /* the Inspector's attacks */
+  const bs = Level.boss;
+  if (bs && bs.t === 'insp') {
+    for (let i = 0; i < bs.marks.length; i++) {
+      const m = bs.marks[i], gy = G * U;
+      if (m.state === 1) {
+        const k = clamp((bs.st - m.lit) / (m.fall - m.lit), 0, 1), pulse = 0.5 + 0.5 * Math.sin(Game.time * (6 + 14 * k));
+        c.fillStyle = 'rgba(224,86,74,' + (0.16 + 0.2 * k) + ')'; c.fillRect(m.x - IN3.colHalf, 0, IN3.colHalf * 2, gy);
+        c.fillStyle = 'rgba(8,6,14,0.78)'; c.beginPath(); c.ellipse(m.x, gy - 4, 1.0 * U, 0.26 * U, 0, 0, 6.3); c.fill();
+        c.strokeStyle = 'rgba(255,' + (140 + 80 * pulse | 0) + ',110,0.95)'; c.lineWidth = 4; c.beginPath(); c.ellipse(m.x, gy - 4, 1.0 * U, 0.26 * U, 0, 0, 6.3); c.stroke();
+        c.fillStyle = '#fff4d0'; c.font = '700 40px ' + FONT; c.textAlign = 'center'; c.textBaseline = 'middle'; c.direction = 'ltr'; c.fillText(String(m.n), m.x, gy - 1.1 * U);
+      } else if (m.state === 2) {
+        const k = Math.min(1, m.t / 0.07), fade = 1 - clamp((m.t - 0.2) / (IN3.colT - 0.2), 0, 1), hy = lerp(-0.5 * U, gy - 1.3 * U, k * k);
+        c.fillStyle = 'rgba(255,214,150,' + (0.25 * fade) + ')'; c.fillRect(m.x - IN3.colHalf, 0, IN3.colHalf * 2, gy);
+        c.fillStyle = INK; c.fillRect(m.x - 5, 0, 10, hy); c.fillStyle = '#4a5368'; c.fillRect(m.x - 2, 0, 4, hy);
+        c.fillStyle = INK; c.fillRect(m.x - IN3.colHalf, hy, IN3.colHalf * 2, 1.3 * U); c.fillStyle = TR.wine; c.fillRect(m.x - IN3.colHalf + 5, hy + 5, IN3.colHalf * 2 - 10, 1.3 * U - 10); c.fillStyle = '#fff4d0'; c.fillRect(m.x - IN3.colHalf + 5, hy + 5, IN3.colHalf * 2 - 10, 5);
+      }
+    }
+    if (bs.clamp) {                                               // the clamp on its chain
+      const q = bs.clamp, x0 = bs.x + (bs.dir || -1) * IN3.hw, y0 = bs.y - 2.1 * U, ang = Math.atan2(q.y - y0, q.x - x0), n = Math.max(2, Math.floor(Math.hypot(q.x - x0, q.y - y0) / 14));
+      c.strokeStyle = INK; c.lineWidth = 5; c.beginPath(); c.moveTo(x0, y0); c.lineTo(q.x, q.y); c.stroke(); c.strokeStyle = TR.brassL; c.lineWidth = 2; for (let i = 1; i < n; i++) { const k = i / n; c.beginPath(); c.arc(x0 + (q.x - x0) * k, y0 + (q.y - y0) * k, 4, 0, 6.3); c.stroke(); }
+      c.save(); c.translate(q.x, q.y); c.rotate(ang); c.fillStyle = 'rgba(127,243,230,' + (0.18 + 0.12 * Math.sin(Game.time * 12)) + ')'; c.beginPath(); c.arc(0, 0, 34, 0, 6.3); c.fill();
+      c.lineCap = 'round'; c.strokeStyle = INK; c.lineWidth = 9; c.beginPath(); c.moveTo(-8, 0); c.lineTo(6, 0); c.moveTo(6, 0); c.quadraticCurveTo(18, -12, 10, -20); c.moveTo(6, 0); c.quadraticCurveTo(18, 12, 10, 20); c.stroke();
+      c.strokeStyle = '#e8eef8'; c.lineWidth = 5; c.stroke(); c.restore();
+    }
+  }
+  /* cards and anything else thrown */
+  for (let i = 0; i < Level.blades.length; i++) {
+    const s = Level.blades[i]; if (!s.on) continue;
+    c.save(); c.translate(s.x, s.y); c.rotate(s.rot);
+    c.fillStyle = 'rgba(255,214,150,.2)'; c.beginPath(); c.arc(0, 0, s.r * 2, 0, 6.3); c.fill();
+    c.fillStyle = INK; c.fillRect(-18, -12, 36, 24); c.fillStyle = TR.cream; c.fillRect(-15, -9, 30, 18); c.fillStyle = TR.wine; c.fillRect(-11, -4, 22, 3); c.fillRect(-11, 2, 14, 3);
+    c.restore();
+  }
+  /* the tunnel warning: the edges of the screen pulse red */
+  if (bs && bs.t === 'insp' && bs.tunWarn) {
+    const a = 0.1 + 0.08 * Math.sin(Game.time * 14), y0 = (G - 8) * U;
+    c.fillStyle = 'rgba(224,86,74,' + a + ')'; c.fillRect(cx, y0, vw, 8 * U);
+    for (let x = Math.floor(cx / 120) * 120; x < cx + vw; x += 120) { c.fillStyle = 'rgba(255,200,60,' + (a * 3) + ')'; c.beginPath(); c.moveTo(x, y0); c.lineTo(x + 30, y0); c.lineTo(x + 8, y0 + 16); c.lineTo(x - 22, y0 + 16); c.closePath(); c.fill(); }
   }
 }
 
@@ -6682,7 +8040,7 @@ const UI = {
     const rs = document.createElement('button'); rs.type = 'button'; rs.className = 'lnk danger'; rs.textContent = t('s_reset'); let armed = 0;
     rs.addEventListener('click', function () {
       if (!armed) { armed = 1; rs.textContent = t('s_reset_confirm'); setTimeout(function () { armed = 0; rs.textContent = t('s_reset'); }, 3500); return; }
-      S.progress = null; S.lab = null; S.sl_s2 = null; S.done = {}; checkpoint = { x: Level.spawn.x, y: Level.spawn.y }; persist(); armed = 0; rs.textContent = t('s_reset'); ui.toast(t('s_reset_done')); $('#b-continue').style.display = 'none';
+      S.progress = null; S.lab = null; S.sl_s2 = null; S.sl_s3 = null; S.done = {}; S.ham = false; checkpoint = { x: Level.spawn.x, y: Level.spawn.y }; persist(); armed = 0; rs.textContent = t('s_reset'); ui.toast(t('s_reset_done')); $('#b-continue').style.display = 'none';
     });
     const w = document.createElement('div'); w.style.padding = '10px 0 6px'; w.appendChild(rs); body.appendChild(w);
     if (!Store.ok) { const n = document.createElement('p'); n.className = 'note'; n.textContent = t('s_storage'); body.appendChild(n); }
@@ -6703,7 +8061,7 @@ const UI = {
   },
   renderStages() {                                                           // one row per stage: continue (when a save exists) and new game
     const body = $('#stages-body'); body.innerHTML = '';
-    [['s1', 'st_s1', 'progress'], ['s2', 'st_s2', 'sl_s2']].forEach(function (q) {
+    [['s1', 'st_s1', 'progress'], ['s2', 'st_s2', 'sl_s2'], ['s3', 'st_s3', 'sl_s3']].forEach(function (q) {
       const id = q[0], sv = S[q[2]], row = document.createElement('div'); row.className = 'strow';
       const nm = document.createElement('div'); nm.className = 'nm'; nm.textContent = t(q[1]);
       const sm = document.createElement('small'); sm.textContent = (S.done && S.done[id]) ? t('st_done') : t('st_open'); nm.appendChild(sm); row.appendChild(nm);
@@ -6949,6 +8307,7 @@ window.__KSM = {
   DX: DX, shed: shedLoad, unshed: unshedLoad, applyQuality: function () { applyQuality(); resize(); }, RES: RES,
   U: U, TUNE: TUNE, P: P, Game: Game, Level: Level, Input: Input, Art: Art, Snd: Snd, Amb: Amb, Cam: Cam, Perf: Perf, Stress: Stress, UI: UI, S: function () { return S; },
   start: function (cont, id) { return startGame(cont, id || 'lab'); }, startStage: startGame, Hitch: Hitch, Talk: Talk, Tik: Tik, Cine: Cine, Pow: Pow, STAGES: STAGES, STR: STR, Hook: Hook, Cyc: Cyc, S2: { L: S2L, AU: AU, CB2: CB2, EV: CYC_EV, startAuctFight: startAuctFight, auctNext: auctNext, fireBlade: fireBlade, spawnCollectors: spawnCollectors, s2Damage: s2Damage, takeHook: takeHook },
+  S3: { L: S3L, IN3: IN3, CB3: CB3, ugCount: ugCount, startInspFight: startInspFight, inspNext: inspNext, s3Tunnel: s3Tunnel, s3Damage: s3Damage, rateAt: s3RateAt, lockFerry: s3LockFerry, collector: s3CollectorScene, bench: s3Bench },
   W: { damageEnt: damageEnt, hurtPlayer: hurtPlayer, resetEncounters: resetEncounters, respawn: respawnAtCheckpoint, newWorld: function (f, id) { return newWorld(f, id || 'lab'); }, CB: CB, BOSS: BOSS, AR: AR, Hit: Hit, HUD: HUD, startBossFight: startBossFight, spawnTool: spawnTool, bossQuake: bossQuake, collectLost: collectLost, snapshot: snapshotProgress, persist: persist, pulsesFor: pulsesFor, nextAttack: nextAttack, bossStartAttack: bossStartAttack },
   dbg: function () { return { ctx: ctx, BG: BG, drawBackdrop: drawBackdrop, drawTiles: drawTiles, drawEntities: drawEntities, drawNader: drawNader, drawSigns: drawSigns, drawParticles: drawParticles, drawPrompt: drawPrompt, overlayFor: overlayFor, render: render, VIEW_H: VIEW_H }; },
   hold: function (v) { Game.testHold = !!v; },
