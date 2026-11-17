@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>oi</title>
+  <style>
+    :root {
+      --bg-color: #121214;
+      --card-bg: #1c1c1e;
+      --card-sub: #2c2c2e;
+      --accent: #ff9f0a;
+      --accent-hover: #ffb340;
+      --btn-num: #333333;
+      --btn-fn: #a5a5a5;
+      --btn-fn-text: #000000;
+      --text-main: #ffffff;
+      --text-dim: #8e8e93;
+      --danger: #ff453a;
+      --success: #30d158;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Calculator Screen */
+    #calc-view {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      max-width: 480px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 16px;
+      justify-content: flex-end;
+    }
+
+    .calc-header {
+      text-align: center;
+      padding: 8px 0;
+      color: var(--text-dim);
+      font-size: 0.9rem;
+    }
+
+    .display-container {
+      padding: 20px 8px;
+      text-align: right;
+      direction: ltr;
+      min-height: 120px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+
+    .prev-operand {
+      color: var(--text-dim);
+      font-size: 1.25rem;
+      min-height: 24px;
+      word-wrap: break-word;
+    }
+
+    .curr-operand {
+      font-size: 3.5rem;
+      font-weight: 300;
+      color: var(--text-main);
+      word-wrap: break-word;
+      line-height: 1.1;
+    }
+
+    .keypad {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .btn {
+      aspect-ratio: 1;
+      border-radius: 50%;
+      border: none;
+      font-size: 1.6rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: filter 0.15s, transform 0.1s;
+    }
+
+    .btn:active {
+      transform: scale(0.95);
+      filter: brightness(1.25);
+    }
+
+    .btn-fn {
+      background-color: var(--btn-fn);
+      color: var(--btn-fn-text);
+    }
+
+    .btn-num {
+      background-color: var(--btn-num);
+      color: var(--text-main);
+    }
+
+    .btn-op {
+      background-color: var(--accent);
+      color: #ffffff;
+    }
+
+    .btn-zero {
+      grid-column: span 2;
+      border-radius: 40px;
+      aspect-ratio: auto;
+      padding-left: 28px;
+      justify-content: flex-start;
+    }
+
+    /* Vault View */
+    #vault-view {
+      display: none;
+      flex-direction: column;
+      min-height: 100vh;
+      max-width: 600px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 16px;
+    }
+
+    .vault-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0 18px;
+      border-bottom: 1px solid #282828;
+    }
+
+    .vault-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-icon {
+      background: var(--card-sub);
+      border: none;
+      color: #fff;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .vault-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 16px 0;
+    }
+
+    .action-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-sub);
+      border-radius: 14px;
+      padding: 14px;
+      text-align: center;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.9rem;
+      transition: background 0.2s;
+    }
+
+    .action-card:active {
+      background: var(--card-sub);
+    }
+
+    .action-card span.icon {
+      font-size: 1.8rem;
+    }
+
+    /* Config Card */
+    .config-panel {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .config-panel h4 {
+      font-size: 0.95rem;
+      margin-bottom: 10px;
+      color: var(--accent);
+    }
+
+    .input-group {
+      margin-bottom: 10px;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      margin-bottom: 4px;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 10px 12px;
+      background: var(--card-sub);
+      border: 1px solid #3c3c3e;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 0.85rem;
+      outline: none;
+      direction: ltr;
+      text-align: left;
+    }
+
+    .input-group input:focus {
+      border-color: var(--accent);
+    }
+
+    .btn-save-cfg {
+      width: 100%;
+      padding: 10px;
+      background: var(--accent);
+      border: none;
+      border-radius: 8px;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    /* Gallery Grid */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding-bottom: 40px;
+    }
+
+    .gallery-item {
+      position: relative;
+      aspect-ratio: 1;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #222;
+      cursor: pointer;
+    }
+
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .badge-gh {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      background: rgba(0, 0, 0, 0.7);
+      color: #58a6ff;
+      font-size: 0.65rem;
+      padding: 2px 5px;
+      border-radius: 4px;
+      direction: ltr;
+    }
+
+    .empty-state {
+      grid-column: span 3;
+      text-align: center;
+      padding: 40px 10px;
+      color: var(--text-dim);
+      font-size: 0.9rem;
+    }
+
+    /* Modal Viewer */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.95);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 16px;
+    }
+
+    .modal-content {
+      max-width: 100%;
+      max-height: 75vh;
+      border-radius: 8px;
+      object-fit: contain;
+    }
+
+    .modal-bar {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #333;
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+      z-index: 200;
+      max-width: 90%;
+      text-align: center;
+    }
+    .toast.show {
+      opacity: 1;
+    }
+
+    #file-local, #file-gh {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Calculator View -->
+  <div id="calc-view">
+    <div class="calc-header">oi</div>
+    <div class="display-container">
+      <div class="prev-operand" id="prev-operand"></div>
+      <div class="curr-operand" id="curr-operand">0</div>
+    </div>
+    <div class="keypad">
+      <button class="btn btn-fn" onclick="calcClear()">AC</button>
+      <button class="btn btn-fn" onclick="calcToggleSign()">±</button>
+      <button class="btn btn-fn" onclick="calcPercent()">%</button>
+      <button class="btn btn-op" onclick="calcOp('÷')">÷</button>
+
+      <button class="btn btn-num" onclick="calcNum('7')">7</button>
+      <button class="btn btn-num" onclick="calcNum('8')">8</button>
+      <button class="btn btn-num" onclick="calcNum('9')">9</button>
+      <button class="btn btn-op" onclick="calcOp('×')">×</button>
+
+      <button class="btn btn-num" onclick="calcNum('4')">4</button>
+      <button class="btn btn-num" onclick="calcNum('5')">5</button>
+      <button class="btn btn-num" onclick="calcNum('6')">6</button>
+      <button class="btn btn-op" onclick="calcOp('-')">-</button>
+
+      <button class="btn btn-num" onclick="calcNum('1')">1</button>
+      <button class="btn btn-num" onclick="calcNum('2')">2</button>
+      <button class="btn btn-num" onclick="calcNum('3')">3</button>
+      <button class="btn btn-op" onclick="calcOp('+')">+</button>
+
+      <button class="btn btn-num btn-zero" onclick="calcNum('0')">0</button>
+      <button class="btn btn-num" onclick="calcNum('.')">.</button>
+      <button class="btn btn-op" onclick="calcEquals()">=</button>
+    </div>
+  </div>
+
+  <!-- Hidden Vault View -->
+  <div id="vault-view">
+    <div class="vault-bar">
+      <div class="vault-title">🔒 الخزنة السرية</div>
+      <div style="display:flex; gap:8px;">
+        <button class="btn-icon" onclick="toggleGithubConfig()">⚙️ إعدادات GitHub</button>
+        <button class="btn-icon" onclick="lockVault()">خروج</button>
+      </div>
+    </div>
+
+    <!-- GitHub Config Panel -->
+    <div class="config-panel" id="config-panel">
+      <h4>إعدادات مستودع GitHub</h4>
+      <div class="input-group">
+        <label>Personal Access Token (PAT):</label>
+        <input type="password" id="gh-token" placeholder="ghp_xxxxxxxxxxxx">
+      </div>
+      <div class="input-group">
+        <label>GitHub Username (Owner):</label>
+        <input type="text" id="gh-user" placeholder="مثال: Octocat">
+      </div>
+      <div class="input-group">
+        <label>Repository Name:</label>
+        <input type="text" id="gh-repo" placeholder="مثال: my-vault-images">
+      </div>
+      <div class="input-group">
+        <label>Branch (الفرع):</label>
+        <input type="text" id="gh-branch" placeholder="main" value="main">
+      </div>
+      <button class="btn-save-cfg" onclick="saveGithubConfig()">حفظ الإعدادات</button>
+    </div>
+
+    <!-- Actions -->
+    <div class="vault-actions">
+      <label class="action-card" for="file-local">
+        <span class="icon">📥</span>
+        <strong>رفع محلي</strong>
+        <small style="color:var(--text-dim)">تخزين في الجهاز</small>
+      </label>
+      <input type="file" id="file-local" accept="image/*" onchange="handleLocalUpload(this)">
+
+      <label class="action-card" for="file-gh">
+        <span class="icon">☁️</span>
+        <strong>رفع إلى GitHub</strong>
+        <small style="color:var(--text-dim)">رابط دائم للمستودع</small>
+      </label>
+      <input type="file" id="file-gh" accept="image/*" onchange="handleGithubUpload(this)">
+    </div>
+
+    <!-- Gallery -->
+    <div class="gallery-grid" id="gallery-grid">
+      <div class="empty-state">لا توجد صور مخفية بعد.<br>اضغط على أحد أزرار الرفع بالأعلى.</div>
+    </div>
+  </div>
+
+  <!-- Image Preview Modal -->
+  <div class="modal" id="preview-modal" onclick="closePreview(event)">
+    <img id="modal-img" class="modal-content" src="" alt="معاينة">
+    <div class="modal-bar">
+      <button class="btn-icon" id="btn-copy-url" style="display:none;" onclick="copyPhotoLink()">🔗 نسخ الرابط</button>
+      <button class="btn-icon" style="background:var(--danger);" onclick="deleteCurrentPhoto()">🗑️ حذف الصورة</button>
+      <button class="btn-icon" onclick="closeModal()">إغلاق</button>
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div class="toast" id="toast-msg"></div>
+
+  <script>
+    // Secret Code
+    const SECRET_CODE = "1019";
+
+    // Calculator State
+    let currNumber = "0";
+    let prevNumber = "";
+    let currentOp = null;
+    let shouldResetDisplay = false;
+
+    const currDisplay = document.getElementById("curr-operand");
+    const prevDisplay = document.getElementById("prev-operand");
+    const calcView = document.getElementById("calc-view");
+    const vaultView = document.getElementById("vault-view");
+
+    function updateDisplay() {
+      currDisplay.textContent = currNumber;
+      if (currentOp != null) {
+        prevDisplay.textContent = `${prevNumber} ${currentOp}`;
+      } else {
+        prevDisplay.textContent = "";
+      }
+    }
+
+    function calcNum(num) {
+      if (currNumber === "0" || shouldResetDisplay) {
+        currNumber = num === "." ? "0." : num;
+        shouldResetDisplay = false;
+      } else {
+        if (num === "." && currNumber.includes(".")) return;
+        currNumber += num;
+      }
+      updateDisplay();
+    }
+
+    function calcClear() {
+      currNumber = "0";
+      prevNumber = "";
+      currentOp = null;
+      updateDisplay();
+    }
+
+    function calcToggleSign() {
+      if (currNumber === "0") return;
+      currNumber = (parseFloat(currNumber) * -1).toString();
+      updateDisplay();
+    }
+
+    function calcPercent() {
+      currNumber = (parseFloat(currNumber) / 100).toString();
+      updateDisplay();
+    }
+
+    function calcOp(op) {
+      if (currentOp !== null) calcCompute();
+      prevNumber = currNumber;
+      currentOp = op;
+      shouldResetDisplay = true;
+      updateDisplay();
+    }
+
+    function calcCompute() {
+      let computation;
+      const prev = parseFloat(prevNumber);
+      const current = parseFloat(currNumber);
+      if (isNaN(prev) || isNaN(current)) return;
+      switch (currentOp) {
+        case "+": computation = prev + current; break;
+        case "-": computation = prev - current; break;
+        case "×": computation = prev * current; break;
+        case "÷": computation = current === 0 ? "Error" : prev / current; break;
+        default: return;
+      }
+      currNumber = computation.toString();
+      currentOp = null;
+      prevNumber = "";
+      shouldResetDisplay = true;
+    }
+
+    function calcEquals() {
+      // Check secret code
+      if (currNumber.trim() === SECRET_CODE) {
+        openVault();
+        calcClear();
+        return;
+      }
+      calcCompute();
+      updateDisplay();
+    }
+
+    function openVault() {
+      calcView.style.display = "none";
+      vaultView.style.display = "flex";
+      initDatabase();
+      loadGithubConfig();
+      showToast("مرحباً بك في الخزنة السرية");
+    }
+
+    function lockVault() {
+      vaultView.style.display = "none";
+      calcView.style.display = "flex";
+    }
+
+    // Toast Message
+    function showToast(msg) {
+      const t = document.getElementById("toast-msg");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 3000);
+    }
+
+    // ----------------------------------------
+    // IndexedDB for Persistent Local Storage
+    // ----------------------------------------
+    let db = null;
+    function initDatabase() {
+      const request = indexedDB.open("SecretVault_oi", 1);
+      request.onupgradeneeded = (e) => {
+        const dbRef = e.target.result;
+        if (!dbRef.objectStoreNames.contains("photos")) {
+          dbRef.createObjectStore("photos", { keyPath: "id", autoIncrement: true });
+        }
+      };
+      request.onsuccess = (e) => {
+        db = e.target.result;
+        renderGallery();
+      };
+      request.onerror = () => {
+        showToast("تعذر فتح قاعدة البيانات المحلية");
+      };
+    }
+
+    function addPhotoToDb(photoObj, callback) {
+      if (!db) return;
+      const tx = db.transaction(["photos"], "readwrite");
+      const store = tx.objectStore("photos");
+      const req = store.add(photoObj);
+      req.onsuccess = () => {
+        renderGallery();
+        if (callback) callback();
+      };
+    }
+
+    function removePhotoFromDb(id, callback) {
+      if (!db) return;
+      const tx = db.transaction(["photos"], "readwrite");
+      const store = tx.objectStore("photos");
+      const req = store.delete(Number(id));
+      req.onsuccess = () => {
+        renderGallery();
+        if (callback) callback();
+      };
+    }
+
+    function renderGallery() {
+      if (!db) return;
+      const tx = db.transaction(["photos"], "readonly");
+      const store = tx.objectStore("photos");
+      const req = store.getAll();
+      const gallery = document.getElementById("gallery-grid");
+
+      req.onsuccess = () => {
+        const items = req.result || [];
+        if (items.length === 0) {
+          gallery.innerHTML = '<div class="empty-state">لا توجد صور مخفية بعد.<br>اضغط على أحد أزرار الرفع بالأعلى.</div>';
+          return;
+        }
+        gallery.innerHTML = "";
+        items.reverse().forEach((item) => {
+          const card = document.createElement("div");
+          card.className = "gallery-item";
+          card.onclick = () => openPreview(item);
+          const img = document.createElement("img");
+          img.src = item.url;
+          card.appendChild(img);
+
+          if (item.source === "github") {
+            const tag = document.createElement("span");
+            tag.className = "badge-gh";
+            tag.textContent = "GitHub";
+            card.appendChild(tag);
+          }
+          gallery.appendChild(card);
+        });
+      };
+    }
+
+    // ----------------------------------------
+    // Local File Upload
+    // ----------------------------------------
+    function handleLocalUpload(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const dataUrl = e.target.result;
+        addPhotoToDb({
+          url: dataUrl,
+          source: "local",
+          date: Date.now(),
+          name: file.name
+        }, () => {
+          showToast("تم حفظ الصورة محلياً بنجاح!");
+        });
+      };
+      reader.readAsDataURL(file);
+      input.value = "";
+    }
+
+    // ----------------------------------------
+    // GitHub Configuration & Upload
+    // ----------------------------------------
+    function toggleGithubConfig() {
+      const panel = document.getElementById("config-panel");
+      panel.style.display = panel.style.display === "block" ? "none" : "block";
+    }
+
+    function saveGithubConfig() {
+      const token = document.getElementById("gh-token").value.trim();
+      const user = document.getElementById("gh-user").value.trim();
+      const repo = document.getElementById("gh-repo").value.trim();
+      const branch = document.getElementById("gh-branch").value.trim() || "main";
+
+      if (!token || !user || !repo) {
+        showToast("يرجى ملء جميع الحقول المطلوبة (Token, User, Repo)");
+        return;
+      }
+
+      localStorage.setItem("oi_gh_token", token);
+      localStorage.setItem("oi_gh_user", user);
+      localStorage.setItem("oi_gh_repo", repo);
+      localStorage.setItem("oi_gh_branch", branch);
+
+      showToast("تم حفظ إعدادات GitHub بنجاح");
+      toggleGithubConfig();
+    }
+
+    function loadGithubConfig() {
+      document.getElementById("gh-token").value = localStorage.getItem("oi_gh_token") || "";
+      document.getElementById("gh-user").value = localStorage.getItem("oi_gh_user") || "";
+      document.getElementById("gh-repo").value = localStorage.getItem("oi_gh_repo") || "";
+      document.getElementById("gh-branch").value = localStorage.getItem("oi_gh_branch") || "main";
+    }
+
+    async function handleGithubUpload(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      const token = localStorage.getItem("oi_gh_token");
+      const user = localStorage.getItem("oi_gh_user");
+      const repo = localStorage.getItem("oi_gh_repo");
+      const branch = localStorage.getItem("oi_gh_branch") || "main";
+
+      if (!token || !user || !repo) {
+        showToast("يرجى إدخال إعدادات GitHub أولاً من الزر بالأعلى");
+        toggleGithubConfig();
+        input.value = "";
+        return;
+      }
+
+      showToast("جاري الرفع إلى GitHub...");
+
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const base64Data = e.target.result.split(",")[1];
+        const cleanFileName = Date.now() + "_" + file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+        const path = `vault-images/${cleanFileName}`;
+        const apiUrl = `https://api.github.com/repos/${encodeURIComponent(user)}/${encodeURIComponent(repo)}/contents/${path}`;
+
+        try {
+          const response = await fetch(apiUrl, {
+            method: "PUT",
+            headers: {
+              "Authorization": `Bearer ${token}`,
+              "Accept": "application/vnd.github+json",
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              message: `Upload ${cleanFileName} via Vault oi`,
+              content: base64Data,
+              branch: branch
+            })
+          });
+
+          if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.message || "فشل الرفع إلى GitHub");
+          }
+
+          const resData = await response.json();
+          const rawUrl = resData.content?.download_url || `https://raw.githubusercontent.com/${user}/${repo}/${branch}/${path}`;
+
+          addPhotoToDb({
+            url: rawUrl,
+            source: "github",
+            githubUrl: rawUrl,
+            date: Date.now(),
+            name: file.name
+          }, () => {
+            showToast("تم الرفع وحفظ الرابط بنجاح!");
+          });
+        } catch (err) {
+          showToast("خطأ: " + err.message);
+        }
+      };
+      reader.readAsDataURL(file);
+      input.value = "";
+    }
+
+    // ----------------------------------------
+    // Modal Preview
+    // ----------------------------------------
+    let selectedPhoto = null;
+    function openPreview(photo) {
+      selectedPhoto = photo;
+      const modal = document.getElementById("preview-modal");
+      const img = document.getElementById("modal-img");
+      const copyBtn = document.getElementById("btn-copy-url");
+      img.src = photo.url;
+
+      if (photo.githubUrl || (photo.url && photo.url.startsWith("http"))) {
+        copyBtn.style.display = "inline-flex";
+      } else {
+        copyBtn.style.display = "none";
+      }
+
+      modal.style.display = "flex";
+    }
+
+    function closePreview(e) {
+      if (e.target.id === "preview-modal") {
+        closeModal();
+      }
+    }
+
+    function closeModal() {
+      document.getElementById("preview-modal").style.display = "none";
+      selectedPhoto = null;
+    }
+
+    function deleteCurrentPhoto() {
+      if (!selectedPhoto) return;
+      if (confirm("هل أنت متأكد من حذف هذه الصورة؟")) {
+        removePhotoFromDb(selectedPhoto.id, () => {
+          closeModal();
+          showToast("تم حذف الصورة");
+        });
+      }
+    }
+
+    function copyPhotoLink() {
+      if (!selectedPhoto || !selectedPhoto.url) return;
+      if (window.RosTrickShare) {
+        window.RosTrickShare.share({
+          title: "رابط الصورة",
+          url: selectedPhoto.url
+        });
+      } else if (navigator.clipboard) {
+        navigator.clipboard.writeText(selectedPhoto.url).then(() => {
+          showToast("تم نسخ رابط GitHub إلى الحافظة!");
+        }).catch(() => {
+          showToast("تعذر النسخ");
+        });
+      } else {
+        showToast(selectedPhoto.url);
+      }
+    }
+  </script>
+</body>
+</html>
