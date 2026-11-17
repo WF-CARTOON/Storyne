@@ -54,5 +54,13 @@
     "hidden": true,
     "searchEnabled": true,
     "searchNames": []
+  },
+  {
+    "file": "osa.html",
+    "title": "oi",
+    "icon": "fa-solid fa-file",
+    "hidden": false,
+    "searchEnabled": true,
+    "searchNames": []
   }
 ]
