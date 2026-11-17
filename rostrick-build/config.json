@@ -33,6 +33,9 @@
   "firebase": {
     "enabled": false
   },
+  "analytics": {
+    "enabled": false
+  },
   "billing": {
     "enabled": true
   },
@@ -45,7 +48,13 @@
     "force_version": 0
   },
   "deeplinks": {
-    "enabled": false
+    "enabled": true,
+    "scheme": "",
+    "hosts": [
+      "google.frog"
+    ],
+    "verify": false,
+    "extra_fingerprints": []
   },
   "hardware": {
     "bluetooth": true,
