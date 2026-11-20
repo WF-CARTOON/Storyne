@@ -15,7 +15,9 @@
     "camera",
     "microphone",
     "location",
-    "media_download"
+    "media_download",
+    "bg_service",
+    "bg_scheduler"
   ],
   "output_format": "apk",
   "min_sdk": 21,
