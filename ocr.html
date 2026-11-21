@@ -109,16 +109,6 @@
   <div id="drop">اسحب صورة وأفلتها هنا، أو الصقها، أو افتح صورة <b>بواسطة هذا التطبيق</b> من معرض الصور.</div>
 </div>
 
-<div class="card" id="float-card">
-  <h2><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="14" height="12" rx="2"/><path d="M9 20h8a4 4 0 0 0 4-4v-4"/><path d="M13 8h4"/></svg>الوضع العائم فوق التطبيقات</h2>
-  <p class="note">زر عائم تضغطه وأنت داخل أي تطبيق آخر: تحدّد المنطقة فتُقرأ من الشاشة مباشرة، ثم يظهر النص في نافذة صغيرة تحدّد منها الأسطر وتنسخها (ومع «النسخ المباشر» تُنسخ بمجرد التحديد).</p>
-  <div class="step" id="fl-s-ov"><div class="st"><b>العرض فوق التطبيقات</b><small id="fl-ov-st"></small></div><button type="button" class="btn sm" id="fl-ov" hidden>منح الإذن</button></div>
-  <div class="step" id="fl-s-sc"><div class="st"><b>تسجيل الشاشة</b><small id="fl-sc-st"></small></div><button type="button" class="btn sm" id="fl-sc" hidden>بدء الجلسة</button><button type="button" class="btn sm" id="fl-sc-stop" hidden>إنهاء</button></div>
-  <div class="step" id="fl-s-ocr"><div class="st"><b>محرّك القراءة (دون إنترنت)</b><small id="fl-ocr-st"></small></div></div>
-  <button type="button" class="btn pri" id="fl-go" disabled style="margin-top:4px"><svg class="i" viewBox="0 0 24 24"><path d="M4 7V5a1 1 0 0 1 1-1h2M17 4h2a1 1 0 0 1 1 1v2M20 17v2a1 1 0 0 1-1 1h-2M7 20H5a1 1 0 0 1-1-1v-2M4 12h16"/></svg><span id="fl-go-t">تشغيل الأداة العائمة</span></button>
-  <div id="fl-hint"></div>
-</div>
-
 <div class="card" id="stage-card" hidden>
   <div class="tools">
     <div class="seg" role="group" aria-label="وضع التحديد">
@@ -168,6 +158,16 @@
   <small style="color:var(--mut);display:block">الأدوات تعمل على الجزء المحدد من النص إن وُجد، وإلا على النص كاملاً.</small>
 </div>
 
+<div class="card" id="tr-card">
+  <h2><svg class="i" viewBox="0 0 24 24"><path d="M4 5h9M8.5 3v2M6 5c0 4 3 7 7 8M12 5c0 4-3 7-7 8M13 21l4-10 4 10M14.5 18h5"/></svg>الترجمة</h2>
+  <p class="note" style="color:var(--mut);font-size:13px;margin:0 0 10px">تترجم النص المقروء إلى لغتك وتعرف لغته تلقائياً. القراءة تعمل دون إنترنت، أما الترجمة فتحتاج اتصالاً بالإنترنت.</p>
+  <div class="row"><label style="display:flex;flex-direction:column;font-size:13px;color:var(--mut);flex:1 1 150px;margin:0 0 8px">الترجمة إلى<select id="tr-lang"></select></label></div>
+  <label class="chk"><input type="checkbox" id="tr-on"><span>ترجمة تلقائية للنص المقروء<small>تُترجم كل قراءة جديدة، وفي الوضع العائم تظهر الترجمة في النافذة.</small></span></label>
+  <div class="row" style="margin-top:6px"><button type="button" class="btn sm" id="tr-now">ترجم الآن</button><button type="button" class="btn sm" id="tr-copy" disabled>نسخ الترجمة</button></div>
+  <div id="tr-status" role="status" aria-live="polite" style="min-height:22px;font-size:14px;color:var(--mut)"></div>
+  <div id="tr-out" dir="auto" hidden style="white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px;margin-top:6px;line-height:1.8"></div>
+</div>
+
 <div class="card" id="lines-card" hidden>
   <h2><svg class="i" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>الأسطر المكتشفة</h2>
   <div class="row">
@@ -176,6 +176,18 @@
   </div>
   <small style="color:var(--mut);display:block">اضغط سطراً هنا أو على الصورة لتحديده. الأسطر ذات الثقة المنخفضة بلون مختلف، راجعها.</small>
   <ul id="lines"></ul>
+</div>
+
+<div class="card" id="float-card">
+  <h2><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="14" height="12" rx="2"/><path d="M9 20h8a4 4 0 0 0 4-4v-4"/><path d="M13 8h4"/></svg>الوضع العائم فوق التطبيقات</h2>
+  <p class="note">زر عائم تضغطه وأنت داخل أي تطبيق آخر: تحدّد المنطقة فتُقرأ من الشاشة مباشرة، ثم يظهر النص في نافذة صغيرة تحدّد منها الأسطر وتنسخها (ومع «النسخ المباشر» تُنسخ بمجرد التحديد).</p>
+  <div class="step" id="fl-s-ov"><div class="st"><b>العرض فوق التطبيقات</b><small id="fl-ov-st"></small></div><button type="button" class="btn sm" id="fl-ov" hidden>منح الإذن</button></div>
+  <div class="step" id="fl-s-sc"><div class="st"><b>تسجيل الشاشة</b><small id="fl-sc-st"></small></div><button type="button" class="btn sm" id="fl-sc" hidden>بدء الجلسة</button><button type="button" class="btn sm" id="fl-sc-stop" hidden>إنهاء</button></div>
+  <div class="step" id="fl-s-ocr"><div class="st"><b>محرّك القراءة (دون إنترنت)</b><small id="fl-ocr-st"></small></div></div>
+  <label class="chk"><input type="checkbox" id="fl-live"><span>تحديث مباشر<small>يعيد قراءة المنطقة نفسها كل بضع ثوانٍ ويحدّث النص والترجمة عند تغيّره (للحوارات والترجمة الفورية).</small></span></label>
+  <label class="opts-l" style="display:flex;flex-direction:column;font-size:13px;color:var(--mut);margin:0 0 8px">مدة التحديث<select id="live-int"><option value="1">كل ثانية</option><option value="2">كل ثانيتين</option><option value="3">كل 3 ثوانٍ</option><option value="5">كل 5 ثوانٍ</option></select></label>
+  <button type="button" class="btn pri" id="fl-go" disabled style="margin-top:4px"><svg class="i" viewBox="0 0 24 24"><path d="M4 7V5a1 1 0 0 1 1-1h2M17 4h2a1 1 0 0 1 1 1v2M20 17v2a1 1 0 0 1-1 1h-2M7 20H5a1 1 0 0 1-1-1v-2M4 12h16"/></svg><span id="fl-go-t">تشغيل الأداة العائمة</span></button>
+  <div id="fl-hint"></div>
 </div>
 
 <div class="card" id="hist-card">
@@ -206,7 +218,7 @@ var ZOOMS = [0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4];
 
 var S = { img: null, lines: [], sel: {}, mode: "lines", region: null, zoom: 1, busy: false, thumbs: [], thumbOn: -1, undo: [], loadTok: 0, autoKey: "" };
 var opt = LS.get("ocr_opts_v1", {});
-opt = { lang: opt.lang || "", psm: String(opt.psm || "3"), invert: String(opt.invert || "auto"), autoCopy: !!opt.autoCopy, autoRun: opt.autoRun !== false };
+opt = { lang: opt.lang || "", psm: String(opt.psm || "3"), invert: String(opt.invert || "auto"), autoCopy: !!opt.autoCopy, autoRun: opt.autoRun !== false, trOn: !!opt.trOn, trLang: String(opt.trLang || "ar"), live: !!opt.live, liveInt: String(opt.liveInt || "2") };
 function saveOpt() { LS.set("ocr_opts_v1", opt); }
 
 /* ---------- أدوات صغيرة ---------- */
@@ -501,6 +513,7 @@ function applyResult(r, off, o, took) {
   setStatus(S.lines.length ? "تمت القراءة. اضغط سطراً لتحديده أو حدّد من النص." : "تمت القراءة.", "ok");
   addHistory({ text: text, conf: conf, lang: lang, name: S.img ? S.img.name : "" });
   try { $("res-card").scrollIntoView({ block: "nearest" }); } catch (e) {}
+  if (opt.trOn) trMain(text);
 }
 
 /* ---------- السجل ---------- */
@@ -555,8 +568,105 @@ function onIntent(d) {
 }
 
 
+/* ---------- الترجمة (تحتاج إنترنت): مزوّدان احتياطيان + ذاكرة مؤقتة ---------- */
+var TR_LANGS = [["ar", "العربية"], ["en", "English"], ["fr", "Français"], ["de", "Deutsch"], ["es", "Español"], ["it", "Italiano"], ["pt", "Português"], ["tr", "Türkçe"], ["ru", "Русский"], ["fa", "فارسی"], ["ur", "اردو"], ["hi", "हिन्दी"], ["id", "Indonesia"], ["zh-CN", "中文"], ["ja", "日本語"], ["ko", "한국어"]];
+var trCache = {}, trCacheN = 0, TR_G = 1500, TR_M = 450;
+function trSameLang(text, to) {
+  if (to !== "ar") return false;
+  var letters = text.match(/[A-Za-zÀ-ɏЀ-ӿ؀-ۿݐ-ݿ぀-ヿ一-鿿가-힯]/g) || [];
+  if (!letters.length) return false;
+  var ar = text.match(/[؀-ۿݐ-ݿ]/g) || [];
+  return ar.length / letters.length >= 0.7 && !/[پچژگکیۀھںٹڈڑے]/.test(text);
+}
+function trChunks(text, max) {
+  var out = [], cur = "";
+  var push = function () { if (cur) { out.push(cur); cur = ""; } };
+  text.split("\n").forEach(function (line) {
+    while (line.length > max) {
+      var cut = line.lastIndexOf(" ", max); if (cut < max * 0.5) cut = max;
+      push(); out.push(line.slice(0, cut)); line = line.slice(cut).replace(/^\s+/, "");
+    }
+    if (cur && cur.length + 1 + line.length > max) push();
+    cur = cur ? cur + "\n" + line : line;
+  });
+  push(); return out;
+}
+function trFetchJson(url, ms) {
+  return new Promise(function (res, rej) {
+    var done = false, t = setTimeout(function () { if (!done) { done = true; rej(new Error("timeout")); } }, ms || 9000);
+    fetch(url).then(function (r) { if (!r.ok) throw new Error("http " + r.status); return r.json(); })
+      .then(function (j) { if (!done) { done = true; clearTimeout(t); res(j); } }, function (e) { if (!done) { done = true; clearTimeout(t); rej(e); } });
+  });
+}
+function trGoogle(chunk, to) {
+  var u = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=" + encodeURIComponent(to) + "&dt=t&dj=1&q=" + encodeURIComponent(chunk);
+  return trFetchJson(u).then(function (j) {
+    var out = "", src = "";
+    if (j && j.sentences) { out = j.sentences.map(function (s) { return s.trans || ""; }).join(""); src = j.src || ""; }
+    else if (j && j[0] && Array.isArray(j[0])) { out = j[0].map(function (s) { return s[0] || ""; }).join(""); src = j[2] || ""; }
+    if (!out) throw new Error("empty");
+    return { text: out.replace(/\n$/, ""), from: src };
+  });
+}
+function trMyMemory(chunk, to) {
+  var parts = trChunks(chunk, TR_M), i = 0, outs = [];
+  var next = function () {
+    if (i >= parts.length) return Promise.resolve({ text: outs.join("\n"), from: "" });
+    var u = "https://api.mymemory.translated.net/get?q=" + encodeURIComponent(parts[i++]) + "&langpair=" + encodeURIComponent("Autodetect|" + to);
+    return trFetchJson(u).then(function (j) {
+      if (!j || String(j.responseStatus) !== "200" || !j.responseData || !j.responseData.translatedText) throw new Error("mm");
+      outs.push(j.responseData.translatedText); return next();
+    });
+  };
+  return next();
+}
+function trChunk(chunk, to) { return trGoogle(chunk, to).catch(function () { return trMyMemory(chunk, to); }); }
+function translateText(text, to) {
+  text = String(text || "").trim(); to = to || "ar";
+  if (!text) return Promise.resolve({ text: "", same: true });
+  if (trSameLang(text, to)) return Promise.resolve({ text: text, same: true });
+  var key = to + "\u0001" + text; if (trCache[key]) return Promise.resolve(trCache[key]);
+  var parts = trChunks(text, TR_G), outs = [], from = "", i = 0;
+  var next = function () {
+    if (i >= parts.length) return Promise.resolve();
+    return trChunk(parts[i++], to).then(function (r) { outs.push(r.text); if (r.from && !from) from = r.from; return next(); });
+  };
+  return next().then(function () {
+    var res = { text: outs.join("\n"), same: !!from && from.split("-")[0] === to.split("-")[0] };
+    if (trCacheN > 150) { trCache = {}; trCacheN = 0; }
+    trCache[key] = res; trCacheN++; return res;
+  });
+}
+var trTok = 0;
+function trMain(text) {
+  var st = $("tr-status"), out = $("tr-out"), my = ++trTok;
+  if (!String(text || "").trim()) { toast("لا يوجد نص لترجمته."); return Promise.resolve(); }
+  st.className = ""; st.textContent = "جارٍ الترجمة…"; $("tr-copy").disabled = true;
+  return translateText(text, opt.trLang).then(function (r) {
+    if (my !== trTok) return;
+    if (r.same) { out.hidden = true; out.textContent = ""; st.textContent = "النص بلغة الهدف نفسها، لا حاجة للترجمة."; return; }
+    out.hidden = false; out.textContent = r.text; $("tr-copy").disabled = false; st.className = "ok"; st.textContent = "تمت الترجمة إلى " + trLabel(opt.trLang) + ".";
+  }, function () { if (my !== trTok) return; st.className = "bad"; st.textContent = "تعذّرت الترجمة. تحتاج الترجمة إلى اتصال بالإنترنت."; });
+}
+function trLabel(c) { for (var i = 0; i < TR_LANGS.length; i++) if (TR_LANGS[i][0] === c) return TR_LANGS[i][1]; return c; }
+function trNow() {
+  var ta = $("result"), s = ta.selectionStart, e = ta.selectionEnd, v = ta.value;
+  return trMain(e > s ? v.slice(s, e) : v);
+}
+function bindTr() {
+  var sel = $("tr-lang"); TR_LANGS.forEach(function (l) { var o = document.createElement("option"); o.value = l[0]; o.textContent = l[1]; sel.appendChild(o); });
+  sel.value = opt.trLang; if (sel.value !== opt.trLang) { opt.trLang = "ar"; sel.value = "ar"; }
+  sel.onchange = function () { opt.trLang = this.value; saveOpt(); };
+  $("tr-on").checked = opt.trOn; $("tr-on").onchange = function () { opt.trOn = this.checked; saveOpt(); toast(opt.trOn ? "الترجمة التلقائية مفعّلة." : "الترجمة التلقائية متوقفة."); };
+  $("tr-now").onclick = trNow;
+  $("tr-copy").onclick = function () { var t = $("tr-out").textContent; if (t) copyWithToast(t, "نُسخت الترجمة."); };
+  $("fl-live").checked = opt.live; $("fl-live").onchange = function () { opt.live = this.checked; saveOpt(); };
+  var li = $("live-int"); li.value = opt.liveInt; if (li.value !== opt.liveInt) { opt.liveInt = "2"; li.value = "2"; }
+  li.onchange = function () { opt.liveInt = this.value; saveOpt(); };
+}
+
 /* ---------- الوضع العائم: زر فوق التطبيقات الأخرى + التقاط الشاشة + قراءة ---------- */
-var FL = { on: false, busy: false, last: null, sel: [], offs: [], selOff: null, autoT: 0, ids: { b: "ocr-bubble", s: "ocr-sel", r: "ocr-res" } };
+var FL = { on: false, busy: false, last: null, sel: [], offs: [], selOff: null, autoT: 0, seq: 0, trTok: 0, trText: "", trState: null, conf: 0, langLbl: "", live: null, ids: { b: "ocr-bubble", s: "ocr-sel", r: "ocr-res" } };
 var ICN_SCAN = "M4 7V5a1 1 0 0 1 1-1h2M17 4h2a1 1 0 0 1 1 1v2M20 17v2a1 1 0 0 1-1 1h-2M7 20H5a1 1 0 0 1-1-1v-2M4 12h16";
 var OV_BUBBLE = ['<html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>',
   'html,body{margin:0;height:100%;background:transparent;overflow:hidden}',
@@ -591,7 +701,9 @@ var OV_RES = ['<html><head><meta name="viewport" content="width=device-width,ini
   '.c{box-sizing:border-box;height:100%;background:#17202b;color:#e8edf4;border-radius:16px;box-shadow:0 4px 18px rgba(0,0,0,.5);display:flex;flex-direction:column;overflow:hidden;border:1px solid #263341}',
   '.h{display:flex;align-items:center;padding:8px 12px;background:#1f6feb;color:#fff;font-weight:700;font-size:14px;touch-action:none}.h span{flex:1}.h small{font-weight:400;opacity:.9;margin:0 8px}',
   '.x{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;border:0;color:#fff;padding:0}',
+  '#lv{border:0;border-radius:999px;background:#dc2626;color:#fff;font:inherit;font-size:12px;font-weight:700;padding:4px 10px;margin:0 6px}#lv[hidden]{display:none}',
   'svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}',
+  '#tb{margin:8px 8px 0;padding:8px 10px;border-radius:10px;background:#12263f;border:1px solid #1f6feb;max-height:96px;overflow:auto;font-size:15px;line-height:1.55;word-break:break-word;white-space:pre-wrap;-webkit-overflow-scrolling:touch}#tb[hidden]{display:none}#tb.w{color:#93a1b3;font-size:13px}#tb.e{color:#f87171;font-size:13px}',
   '#ls{flex:1;overflow:auto;padding:8px;-webkit-overflow-scrolling:touch}',
   '.ln{display:flex;align-items:center;border:1px solid #263341;border-radius:10px;padding:8px 10px;margin-bottom:6px;font-size:15px;line-height:1.5;background:#1d2833}',
   '.ln .t{flex:1;word-break:break-word}.ln .cf{font-size:11px;color:#93a1b3;margin-right:8px}',
@@ -600,37 +712,50 @@ var OV_RES = ['<html><head><meta name="viewport" content="width=device-width,ini
   '.m{padding:20px 12px;text-align:center;color:#93a1b3;font-size:14px}.m.e{color:#f87171}',
   '.b{display:flex;align-items:center;padding:6px 10px;border-top:1px solid #263341;font-size:12px;color:#93a1b3}.b #si{flex:1}',
   '.b a{color:#4c9bff;margin-right:12px;font-weight:700;font-size:13px}',
-  '.f{display:flex;padding:6px 8px 8px}.f button{flex:1;margin:0 3px;min-height:40px;border-radius:10px;border:0;background:#243242;color:#e8edf4;font:inherit;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px}',
-  '.f button svg{margin-left:5px;flex:0 0 auto}.f #cp{background:#4c9bff;color:#06121f;flex:1.7}.f button{white-space:nowrap}',
-  '</style></head><body><div class="c"><div class="h" id="h"><span>النتيجة</span><small id="mt"></small><button type="button" class="x" id="x" aria-label="إغلاق"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>',
-  '<div id="ls"></div><div class="b"><span id="si"></span><a id="all" role="button">الكل</a><a id="none" role="button">لا شيء</a></div>',
-  '<div class="f"><button type="button" id="cp"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg><span>نسخ المحدد</span></button>',
-  '<button type="button" id="ca">نسخ الكل</button><button type="button" id="sh">مشاركة</button><button type="button" id="ag">تحديد جديد</button></div></div><script>',
-  'var D=window.__D||{},S=[],L=D.lines||[],ls=document.getElementById("ls"),si=document.getElementById("si"),cp=document.getElementById("cp"),tm=0;',
+  '.f{display:flex;padding:4px 8px 0}.f:last-child{padding-bottom:8px}.f button{flex:1;margin:0 3px;min-height:38px;border-radius:10px;border:0;background:#243242;color:#e8edf4;font:inherit;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px;white-space:nowrap}',
+  '.f button svg{margin-left:5px;flex:0 0 auto}.f #cp{background:#4c9bff;color:#06121f;flex:1.7}',
+  '</style></head><body><div class="c"><div class="h" id="h"><span>النتيجة</span><small id="mt"></small><button type="button" id="lv" hidden>مباشر · إيقاف</button><button type="button" class="x" id="x" aria-label="إغلاق"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>',
+  '<div id="tb" hidden></div><div id="ls"></div><div class="b"><span id="si"></span><a id="all" role="button">الكل</a><a id="none" role="button">لا شيء</a></div>',
+  '<div class="f"><button type="button" id="cp"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg><span>نسخ المحدد</span></button><button type="button" id="ca">نسخ الكل</button></div>',
+  '<div class="f"><button type="button" id="ct">نسخ الترجمة</button><button type="button" id="sh">مشاركة</button><button type="button" id="ag">تحديد جديد</button></div></div><script>',
+  'var D=window.__D||{},S=[],L=D.lines||[],seq=D.seq||0,ls=document.getElementById("ls"),si=document.getElementById("si"),cp=document.getElementById("cp"),tb=document.getElementById("tb"),tm=0;',
   'function post(m){RosTrickOverlay.post(m)}',
   'function info(){si.textContent=S.length?(S.length+" محدد"):(L.length?"اضغط سطراً لتحديده":"")}',
   'function paint(){var n=ls.children;for(var i=0;i<n.length;i++){var k=n[i].getAttribute("data-i");if(k!==null)n[i].className="ln"+(L[+k].c<60?" low":"")+(S.indexOf(+k)>=0?" on":"")}info()}',
   'function tog(i){var k=S.indexOf(i);if(k>=0)S.splice(k,1);else{S.push(i);S.sort(function(a,b){return a-b})}paint();post({type:"sel",sel:S.slice()})}',
   'function setSel(a){S=a;paint();post({type:"sel",sel:S.slice()})}',
   'function lbl(t){cp.lastChild.textContent=t;clearTimeout(tm);tm=setTimeout(function(){cp.lastChild.textContent="نسخ المحدد"},1600)}',
-  'function go(){',
-  'if(D.error){ls.innerHTML="<div class=\\"m e\\"></div>";ls.firstChild.textContent=D.error}',
+  'function build(){ls.innerHTML="";S=[];',
+  'if(D.error){var e=document.createElement("div");e.className="m e";e.textContent=D.error;ls.appendChild(e)}',
   'else if(!L.length){ls.innerHTML="<div class=\\"m\\">لم أجد نصًا في هذه المنطقة</div>"}',
   'else{L.forEach(function(l,i){var d=document.createElement("div");d.className="ln";d.setAttribute("data-i",i);d.setAttribute("role","button");',
   'var t=document.createElement("span");t.className="t";t.dir="auto";t.textContent=l.t;var c=document.createElement("span");c.className="cf";c.textContent=l.c+"%";',
   'd.appendChild(t);d.appendChild(c);d.onclick=function(){tog(i)};ls.appendChild(d)})}',
-  'document.getElementById("mt").textContent=L.length?(D.conf+"% · "+D.lang):"";paint();',
+  'document.getElementById("mt").textContent=L.length?(D.conf+"% · "+D.lang):"";paint()}',
+  'function setTr(t){if(!t){return}',
+  'tb.hidden=false;tb.className="";',
+  'if(t.state==="ok"){tb.dir="auto";tb.textContent=t.text||""}',
+  'else if(t.state==="same"){tb.className="w";tb.dir="rtl";tb.textContent="النص بلغة الهدف نفسها."}',
+  'else if(t.state==="err"){tb.className="e";tb.dir="rtl";tb.textContent="تعذّرت الترجمة. تحتاج الترجمة إلى اتصال بالإنترنت."}',
+  'else{tb.className="w";tb.dir="rtl";tb.textContent="جارٍ الترجمة…"}}',
+  'function go(){build();',
+  'if(D.trOn||D.tr){setTr(D.tr||{state:"pending"})}',
+  'document.getElementById("lv").hidden=!D.live;',
   'RosTrickOverlay.drag(document.getElementById("h"),{});',
   'document.getElementById("x").onclick=function(){post({type:"close"})};',
+  'document.getElementById("lv").onclick=function(){post({type:"stoplive"})};',
   'cp.onclick=function(){post({type:"copy"})};',
   'document.getElementById("ca").onclick=function(){post({type:"copyall"})};',
+  'document.getElementById("ct").onclick=function(){post({type:"copytr"})};',
   'document.getElementById("sh").onclick=function(){post({type:"share"})};',
   'document.getElementById("ag").onclick=function(){post({type:"again"})};',
   'document.getElementById("all").onclick=function(){setSel(L.map(function(x,i){return i}))};',
   'document.getElementById("none").onclick=function(){setSel([])};',
-  'RosTrickOverlay.onMessage(function(d){if(!d||d.ack!=="copy")return;',
-  'if(d.ok){lbl("تم النسخ");if(d.auto)si.textContent="نُسخ تلقائياً"}',
-  'else if(d.empty){si.textContent="حدّد سطراً أولاً"}else{lbl("تعذّر النسخ")}})}',
+  'RosTrickOverlay.onMessage(function(d){if(!d)return;',
+  'if(d.live){if(d.live.seq&&d.live.seq<=seq)return;seq=d.live.seq||seq;L=d.live.lines||[];D.conf=d.live.conf;D.lang=d.live.lang;D.error=null;build()}',
+  'if(d.tr){setTr(d.tr)}',
+  'if(d.ack==="copy"){if(d.ok){lbl("تم النسخ");if(d.auto)si.textContent="نُسخ تلقائياً"}',
+  'else if(d.empty){si.textContent=d.tr?"لا توجد ترجمة بعد":"حدّد سطراً أولاً"}else{lbl("تعذّر النسخ")}}})}',
   'if(window.RosTrickOverlay)go();else window.addEventListener("rtoverlay-ready",go);<\/script></body></html>'].join("");
 function resHtml(data) {
   var j = JSON.stringify(data).replace(/</g, "\\u003c").split(String.fromCharCode(8232)).join("\\u2028").split(String.fromCharCode(8233)).join("\\u2029");
@@ -663,7 +788,7 @@ function renderFloat() {
 }
 function flUnlisten() { FL.offs.forEach(function (f) { try { f(); } catch (e) {} }); FL.offs = []; if (FL.selOff) { try { FL.selOff(); } catch (e) {} FL.selOff = null; } clearTimeout(FL.autoT); }
 function flDestroyAll() { var o = OVB(); if (!o) return; [FL.ids.b, FL.ids.s, FL.ids.r].forEach(function (id) { try { o.destroy(id); } catch (e) {} }); }
-function flStop() { FL.on = false; FL.busy = false; flUnlisten(); flDestroyAll(); renderFloat(); }
+function flStop() { flLiveStop(false); FL.on = false; FL.busy = false; flUnlisten(); flDestroyAll(); renderFloat(); }
 function flStart() {
   var o = OVB(); if (!o) return;
   var sc = {}; try { sc = o.screen() || {}; } catch (e) {}
@@ -692,34 +817,63 @@ function flOpenSelector() {
     FL.selOff = off;
   }, function () { o.show(FL.ids.b); });
 }
-function flRun(rect) {
-  var o = OVB(), c = W("RosTrickOcr"); if (!o || !c || !c.fromScreen) return;
-  FL.busy = true; o.post(FL.ids.b, { busy: true });
-  var op = { region: { x: Math.round(rect.x), y: Math.round(rect.y), w: Math.round(rect.w), h: Math.round(rect.h) }, unit: "dp", psm: parseInt(opt.psm, 10) || 3, invert: opt.invert === "true" ? true : (opt.invert === "false" ? false : "auto"), boxes: true };
-  if (opt.lang) op.lang = opt.lang;
-  var p; try { p = c.fromScreen(op); } catch (e) { p = Promise.reject(e); }
-  return p.then(function (r) { r = r || {}; flResult(rect, r); }, function (e) { flShow(rect, { error: errMsg(e) }); })
-    .then(function () { FL.busy = false; o.post(FL.ids.b, { busy: false }); });
-}
-function flResult(rect, r) {
+function flMapLines(r) {
   var lines = (r.lines || []).map(function (l) { return { t: String(l.text || ""), c: Math.round(+l.confidence || 0) }; }).filter(function (l) { return l.t.trim(); });
   var text = String(r.text || "");
   if (!lines.length && text.trim()) lines = text.split(/\n/).filter(function (t) { return t.trim(); }).map(function (t) { return { t: t, c: Math.round(+r.confidence || 0) }; });
-  FL.last = { text: lines.length ? text : "", lines: lines }; FL.sel = []; clearTimeout(FL.autoT);
+  return lines;
+}
+function flRun(rect) {
+  var o = OVB(), c = W("RosTrickOcr"); if (!o || !c || !c.fromScreen) return;
+  if (opt.live) { flLiveStart(rect); return; }
+  FL.busy = true; o.post(FL.ids.b, { busy: true });
+  var p; try { p = c.fromScreen(flOpts(rect, false)); } catch (e) { p = Promise.reject(e); }
+  return p.then(function (r) { flResult(rect, r || {}); }, function (e) { flShow(rect, { error: errMsg(e) }); })
+    .then(function () { FL.busy = false; o.post(FL.ids.b, { busy: false }); });
+}
+function flOpts(rect, noHide) {
+  var op = { region: { x: Math.round(rect.x), y: Math.round(rect.y), w: Math.round(rect.w), h: Math.round(rect.h) }, unit: "dp", psm: parseInt(opt.psm, 10) || 3, invert: opt.invert === "true" ? true : (opt.invert === "false" ? false : "auto"), boxes: true };
+  if (opt.lang) op.lang = opt.lang;
+  if (noHide) op.hideOverlays = false;
+  return op;
+}
+function flResult(rect, r) {
+  var lines = flMapLines(r), text = String(r.text || "");
+  FL.last = { text: lines.length ? text : "", lines: lines }; FL.sel = []; clearTimeout(FL.autoT); FL.seq++; FL.trText = ""; FL.trTok++;
   var conf = Math.round(+r.confidence || 0), lang = r.lang || opt.lang || "";
   if (lines.length) { addHistory({ text: text, conf: conf, lang: lang, name: "" }); hap(); }
-  flShow(rect, { lines: lines, conf: conf, lang: lang ? langLabel(lang) : "", autoCopy: !!opt.autoCopy });
+  var d = { lines: lines, conf: conf, lang: lang ? langLabel(lang) : "", autoCopy: !!opt.autoCopy, seq: FL.seq };
+  var tr = lines.length && opt.trOn;
+  if (tr) { d.trOn = true; d.tr = { state: "pending" }; }
+  var sh = flShow(rect, d);
+  if (tr) flTranslate(text, FL.seq);
+  return sh;
 }
-function flShow(rect, data) {
-  var o = OVB(); if (!o) return;
-  var sc = {}; try { sc = o.screen() || {}; } catch (e) {}
-  var dw = sc.dpW || 360, dh = sc.dpH || 700, w = Math.min(340, dw - 24), h = Math.min(320, dh - 80), x, y;
+function flPlace(rect) {
+  var o = OVB(), sc = {}; try { sc = o.screen() || {}; } catch (e) {}
+  var dw = sc.dpW || 360, dh = sc.dpH || 700, w = Math.min(340, dw - 24), h = Math.min(360, dh - 80), x, y;
   if (rect) { y = rect.y + rect.h + 12; if (y + h > dh - 16) y = Math.max(40, rect.y - h - 12); x = Math.max(12, Math.min(dw - w - 12, rect.x + rect.w / 2 - w / 2)); }
   else { x = Math.max(12, Math.round((dw - w) / 2)); y = 90; }
   y = Math.max(0, Math.min(y, dh - h));
-  var make = function () { return o.create({ id: FL.ids.r, html: resHtml(data), x: Math.round(x), y: Math.round(y), w: Math.round(w), h: Math.round(h), keep: true }); };
+  var ov = !!rect && !(x + w <= rect.x || x >= rect.x + rect.w || y + h <= rect.y || y >= rect.y + rect.h);
+  return { x: Math.round(x), y: Math.round(y), w: Math.round(w), h: Math.round(h), overlap: ov };
+}
+function flShow(rect, data) {
+  var o = OVB(); if (!o) return;
+  var pl = flPlace(rect);
+  var make = function () {
+    var p = o.create({ id: FL.ids.r, html: resHtml(data), x: pl.x, y: pl.y, w: pl.w, h: pl.h, keep: true });
+    /* النافذة تحتاج لحظة لتحميل صفحتها: نعيد إرسال آخر حالة (يتجاهلها إن كانت حديثة) */
+    setTimeout(flResync, 900);
+    return p;
+  };
   var d; try { d = o.destroy(FL.ids.r); } catch (e) {}
   return Promise.resolve(d).then(make, make);
+}
+function flResync() {
+  var o = OVB(); if (!o || !FL.on || !FL.last) return;
+  if (FL.last.lines.length) o.post(FL.ids.r, { live: { lines: FL.last.lines, conf: FL.conf || 0, lang: FL.langLbl || "", seq: FL.seq } });
+  if (FL.trState) o.post(FL.ids.r, { tr: FL.trState });
 }
 function flSelText() { var L = FL.last ? FL.last.lines : []; return FL.sel.map(function (i) { return L[i] ? L[i].t : ""; }).join("\n"); }
 function flAck(m) { var o = OVB(); if (o) o.post(FL.ids.r, m); }
@@ -728,10 +882,79 @@ function flCopy(auto) {
   if (!t.trim()) { if (!auto) flAck({ ack: "copy", ok: false, empty: true }); return; }
   return copyText(t).then(function (ok) { flAck({ ack: "copy", ok: ok, auto: !!auto }); });
 }
+function flPostTr(st) { FL.trState = st; var o = OVB(); if (o) o.post(FL.ids.r, { tr: st }); }
+function flTranslate(text, seq) {
+  var tok = ++FL.trTok; FL.trText = ""; flPostTr({ state: "pending" });
+  return translateText(text, opt.trLang).then(function (r) {
+    if (tok !== FL.trTok || seq !== FL.seq) return;
+    if (r.same) { flPostTr({ state: "same" }); return; }
+    FL.trText = r.text; flPostTr({ state: "ok", text: r.text });
+  }, function () { if (tok === FL.trTok && seq === FL.seq) flPostTr({ state: "err" }); });
+}
+/* ----- التحديث المباشر: يعيد التقاط المنطقة كل بضع ثوانٍ ويحدّث النافذة فقط عند تغيّر النص ----- */
+function flNorm(t) { return String(t).replace(/\s+/g, " ").trim(); }
+function flSim(a, b) {
+  if (a === b) return 1; if (a.length < 2 || b.length < 2) return 0;
+  var m = {}, i, k, hit = 0;
+  for (i = 0; i < a.length - 1; i++) { k = a.substr(i, 2); m[k] = (m[k] || 0) + 1; }
+  for (i = 0; i < b.length - 1; i++) { k = b.substr(i, 2); if (m[k] > 0) { m[k]--; hit++; } }
+  return 2 * hit / ((a.length - 1) + (b.length - 1));
+}
+function flLiveStop(showBubble) {
+  var L = FL.live; if (!L) return; clearTimeout(L.timer); FL.live = null; FL.busy = false;
+  if (showBubble) { var o = OVB(); if (o) o.show(FL.ids.b); }
+}
+function flLiveStart(rect) {
+  var o = OVB(); if (!o) return;
+  flLiveStop(false); clearTimeout(FL.autoT);
+  var pl = flPlace(rect);
+  var L = { rect: rect, norm: "", emp: 0, fail: 0, shown: false, hide: pl.overlap, timer: 0 };
+  FL.live = L; FL.last = null; FL.sel = []; FL.trState = null;
+  o.hide(FL.ids.b); flLiveTick(L);
+}
+function flLiveNext(L, t0) {
+  if (FL.live !== L) return;
+  var wait = Math.max(250, (Number(opt.liveInt) || 2) * 1000 - (Date.now() - t0));
+  L.timer = setTimeout(function () { flLiveTick(L); }, wait);
+}
+function flLiveTick(L) {
+  var c = W("RosTrickOcr"); if (FL.live !== L || !FL.on || !c || !c.fromScreen) return;
+  if (FL.busy) { L.timer = setTimeout(function () { flLiveTick(L); }, 200); return; }
+  FL.busy = true; var t0 = Date.now(), p;
+  try { p = c.fromScreen(flOpts(L.rect, !L.hide)); } catch (e) { p = Promise.reject(e); }
+  p.then(function (r) { if (FL.live !== L) return; L.fail = 0; flLiveApply(L, r || {}); },
+    function (e) {
+      if (FL.live !== L) return; var code = String((e && (e.code || e.message)) || "");
+      if (code === "not_active" || code === "screen_unavailable") { flLiveStop(true); flShow(null, { error: "انتهت جلسة تسجيل الشاشة. أعد تشغيلها من الصفحة ثم ابدأ من جديد." }); return; }
+      if (++L.fail >= 3) { flLiveStop(true); flShow(L.rect, { error: errMsg(e) }); }
+    })
+    .then(function () { FL.busy = false; flLiveNext(L, t0); });
+}
+function flLiveApply(L, r) {
+  var lines = flMapLines(r), text = lines.map(function (l) { return l.t; }).join("\n"), o = OVB(); if (!o) return;
+  var conf = Math.round(+r.confidence || 0), lang = r.lang || opt.lang || "", lbl = lang ? langLabel(lang) : "";
+  if (!text.trim()) {
+    if (!L.shown) { L.shown = true; FL.last = { text: "", lines: [] }; flShow(L.rect, { lines: [], conf: 0, lang: "", live: true, trOn: !!opt.trOn, seq: ++FL.seq }); return; }
+    if (++L.emp >= 2 && L.norm !== "") { L.norm = ""; FL.last = { text: "", lines: [] }; FL.sel = []; FL.seq++; FL.trTok++; FL.trText = ""; FL.trState = null; o.post(FL.ids.r, { live: { lines: [], conf: 0, lang: "", seq: FL.seq } }); }
+    return;
+  }
+  L.emp = 0;
+  var n = flNorm(text); if (L.shown && L.norm && flSim(n, L.norm) >= 0.93) return;
+  L.norm = n; FL.last = { text: text, lines: lines }; FL.sel = []; clearTimeout(FL.autoT); FL.seq++; FL.conf = conf; FL.langLbl = lbl; FL.trText = "";
+  var seq = FL.seq;
+  if (!L.shown) {
+    L.shown = true;
+    var d = { lines: lines, conf: conf, lang: lbl, autoCopy: !!opt.autoCopy, live: true, seq: seq };
+    if (opt.trOn) { d.trOn = true; d.tr = { state: "pending" }; FL.trState = d.tr; }
+    flShow(L.rect, d);
+  } else { o.post(FL.ids.r, { live: { lines: lines, conf: conf, lang: lbl, seq: seq } }); }
+  if (opt.trOn) flTranslate(text, seq); else { FL.trTok++; FL.trState = null; }
+}
 function flResMsg(d) {
   if (!d || !FL.on) return;
   var o = OVB();
-  if (d.type === "close") { if (o) o.destroy(FL.ids.r); }
+  if (d.type === "close") { flLiveStop(true); if (o) { o.destroy(FL.ids.r); o.show(FL.ids.b); } }
+  else if (d.type === "stoplive") { flLiveStop(true); }
   else if (d.type === "sel") {
     var L = FL.last ? FL.last.lines.length : 0, seen = {};
     FL.sel = (d.sel || []).map(Number).filter(function (i) { if (!(i >= 0 && i < L) || i !== Math.floor(i) || seen[i]) return false; seen[i] = 1; return true; }).sort(function (a, b) { return a - b; });
@@ -739,6 +962,7 @@ function flResMsg(d) {
     if (opt.autoCopy && FL.sel.length) FL.autoT = setTimeout(function () { flCopy(true); }, 450);
   }
   else if (d.type === "copy") flCopy(false);
+  else if (d.type === "copytr") { var tt = FL.trText || ""; if (!tt.trim()) flAck({ ack: "copy", ok: false, empty: true, tr: true }); else copyText(tt).then(function (ok) { flAck({ ack: "copy", ok: ok }); }); }
   else if (d.type === "copyall") { var all = FL.last ? FL.last.text : ""; if (!all.trim()) flAck({ ack: "copy", ok: false, empty: true }); else copyText(all).then(function (ok) { flAck({ ack: "copy", ok: ok, all: true }); }); }
   else if (d.type === "share") {
     var t = flSelText() || (FL.last ? FL.last.text : ""); if (!t.trim()) return;
@@ -746,8 +970,9 @@ function flResMsg(d) {
     try { if (navigator.share) { navigator.share({ text: t }); return; } } catch (e) {}
     copyText(t).then(function (ok) { flAck({ ack: "copy", ok: ok }); });
   }
-  else if (d.type === "again") { if (o) o.destroy(FL.ids.r); flOpenSelector(); }
+  else if (d.type === "again") { flLiveStop(false); if (o) o.destroy(FL.ids.r); flOpenSelector(); }
 }
+
 function bindFloat() {
   if (!$("float-card")) return;
   $("fl-ov").onclick = function () { var o = OVB(); if (!o) return; Promise.resolve(o.requestPermission()).then(renderFloat, renderFloat); };
@@ -823,7 +1048,7 @@ function bind() {
   $("img").addEventListener("dragstart", function (e) { e.preventDefault(); });
 }
 function start() {
-  bind(); bindFloat(); setMode("lines"); renderHist(); autosize();
+  bind(); bindTr(); bindFloat(); setMode("lines"); renderHist(); autosize();
   checkBridges();
   window.addEventListener("rtocr-ready", checkBridges);
   if (!ocrOk()) setTimeout(checkBridges, 1200);
