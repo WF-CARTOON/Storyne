@@ -1,0 +1,1565 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="rostrick-statusbar" content="color=#0f172a; icons=light; anim=250">
+  <title>المتصفح</title>
+  <style>
+    :root {
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --surface-2: #f8fafc;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --primary: #2563eb;
+      --primary-soft: rgba(37, 99, 235, 0.12);
+      --danger: #dc2626;
+      --success: #059669;
+      --bar-bg: #0f172a;
+      --bar-text: #f8fafc;
+      --bar-input: #1e293b;
+      --radius: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Tahoma, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .app-shell {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+      transition: padding-top 0.25s ease;
+    }
+
+    html.sb-overlay .app-shell {
+      padding-top: var(--rt-statusbar-height, 0px);
+    }
+
+    /* شريط محاكاة لشريط الحالة عند المعاينة خارج التطبيق فقط */
+    #sb-preview {
+      display: none;
+      height: 24px;
+      padding: 0 12px;
+      font-size: 11px;
+      font-weight: 600;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      transition: all 0.25s ease;
+      z-index: 50;
+    }
+    #sb-preview.show {
+      display: flex;
+    }
+    #sb-preview.is-hidden {
+      height: 0;
+      opacity: 0;
+      overflow: hidden;
+      padding: 0;
+    }
+    #sb-preview.is-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+    }
+    html.sb-overlay.preview-mode .app-shell {
+      padding-top: 24px;
+    }
+
+    /* شريط المتصفح العلوي */
+    .browser-bar {
+      position: relative;
+      background: var(--bar-bg);
+      color: var(--bar-text);
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex-shrink: 0;
+      box-shadow: 0 2px 10px rgba(15, 23, 42, 0.18);
+      z-index: 20;
+    }
+
+    .url-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .icon-btn {
+      width: 38px;
+      height: 38px;
+      min-width: 38px;
+      border: none;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--bar-text);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .icon-btn:active {
+      transform: scale(0.94);
+      background: rgba(255, 255, 255, 0.18);
+    }
+    .icon-btn svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .icon-btn.accent {
+      background: var(--primary);
+      color: #ffffff;
+    }
+
+    .url-box {
+      flex: 1;
+      min-width: 0;
+      height: 40px;
+      background: var(--bar-input);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      padding: 0 6px 0 8px;
+      gap: 6px;
+      transition: border-color 0.2s;
+    }
+    .url-box:focus-within {
+      border-color: #60a5fa;
+    }
+
+    .url-input {
+      flex: 1;
+      min-width: 0;
+      height: 100%;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: #f8fafc;
+      font-size: 14px;
+      direction: ltr;
+      text-align: left;
+    }
+    .url-input::placeholder {
+      color: #94a3b8;
+      direction: rtl;
+      text-align: right;
+    }
+
+    .mini-btn {
+      width: 28px;
+      height: 28px;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      color: #cbd5e1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .mini-btn:active {
+      background: rgba(255, 255, 255, 0.12);
+    }
+    .mini-btn svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .mini-btn.starred {
+      color: #fbbf24;
+    }
+    .mini-btn.starred svg {
+      fill: #fbbf24;
+    }
+
+    .nav-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+    .nav-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .page-title-chip {
+      flex: 1;
+      min-width: 0;
+      font-size: 12px;
+      color: #94a3b8;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-align: center;
+      padding: 0 6px;
+    }
+
+    .progress-track {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 3px;
+      background: transparent;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #38bdf8, #3b82f6);
+      transition: width 0.2s ease, opacity 0.2s ease;
+      opacity: 0;
+    }
+    .progress-fill.active {
+      opacity: 1;
+    }
+
+    /* حاوية WebView */
+    .stage {
+      position: relative;
+      flex: 1;
+      min-height: 0;
+      background: var(--bg);
+      overflow: hidden;
+    }
+
+    #webview-box {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* شاشة البداية داخل التطبيق */
+    .start-view {
+      position: absolute;
+      inset: 0;
+      overflow-y: auto;
+      padding: 18px 16px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      background: var(--bg);
+    }
+
+    .hero-card {
+      background: linear-gradient(135deg, #0f172a, #1e3a8a);
+      color: #ffffff;
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.14);
+    }
+    .hero-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .hero-card h1 {
+      margin: 0 0 6px;
+      font-size: 19px;
+    }
+    .hero-card p {
+      margin: 0;
+      font-size: 13px;
+      color: #cbd5e1;
+      line-height: 1.5;
+    }
+    .bridge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 12px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.14);
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+    }
+    .dot.off {
+      background: #f59e0b;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .section-head h2 {
+      margin: 0;
+      font-size: 15px;
+      color: var(--text);
+    }
+    .text-btn {
+      border: none;
+      background: transparent;
+      color: var(--primary);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 8px;
+    }
+
+    .quick-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    .quick-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 600;
+      transition: transform 0.12s, border-color 0.15s;
+    }
+    .quick-item:active {
+      transform: scale(0.96);
+      border-color: var(--primary);
+    }
+    .quick-badge {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 700;
+      background: var(--primary-soft);
+      color: var(--primary);
+    }
+    .quick-item span {
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .card-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+    }
+
+    .list-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 6px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+    }
+    .list-item:last-child {
+      border-bottom: none;
+    }
+    .list-meta {
+      min-width: 0;
+      flex: 1;
+    }
+    .list-title {
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .list-url {
+      font-size: 11px;
+      color: var(--muted);
+      direction: ltr;
+      text-align: right;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 2px;
+    }
+
+    /* معاينة بديلة خارج التطبيق */
+    .preview-wrap {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      background: #ffffff;
+    }
+    .preview-wrap.show {
+      display: flex;
+    }
+    .preview-banner {
+      background: #fef3c7;
+      color: #92400e;
+      font-size: 12px;
+      padding: 8px 12px;
+      border-bottom: 1px solid #fde68a;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .preview-wrap iframe {
+      flex: 1;
+      width: 100%;
+      border: none;
+      background: #fff;
+    }
+
+    /* النوافذ المنبثقة (يتم إخفاء WebView عند فتحها) */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.56);
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 60;
+      padding: 12px;
+    }
+    .modal-backdrop.open {
+      display: flex;
+    }
+    .modal-sheet {
+      width: 100%;
+      max-width: 520px;
+      max-height: 88vh;
+      background: var(--surface);
+      border-radius: 22px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(15, 23, 42, 0.35);
+      animation: slideUp 0.2s ease;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .modal-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .modal-header h3 {
+      margin: 0;
+      font-size: 16px;
+    }
+    .close-btn {
+      width: 34px;
+      height: 34px;
+      border: none;
+      border-radius: 10px;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 18px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-body {
+      padding: 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .setting-group {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .setting-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .setting-hint {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    .seg-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .seg-btn {
+      flex: 1;
+      min-width: 72px;
+      padding: 9px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+    }
+    .seg-btn.active {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+    }
+
+    .color-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .color-picker {
+      width: 44px;
+      height: 40px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 2px;
+      background: var(--surface);
+      cursor: pointer;
+    }
+    .swatch-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .swatch {
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      border: 2px solid var(--border);
+      cursor: pointer;
+      padding: 0;
+    }
+    .swatch.active {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+
+    .switch-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .switch {
+      position: relative;
+      width: 48px;
+      height: 28px;
+      flex-shrink: 0;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      inset: 0;
+      background: #cbd5e1;
+      border-radius: 999px;
+      transition: 0.2s;
+      cursor: pointer;
+    }
+    .slider::before {
+      content: "";
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      left: 3px;
+      top: 3px;
+      border-radius: 50%;
+      background: #ffffff;
+      transition: 0.2s;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+    .switch input:checked + .slider {
+      background: var(--primary);
+    }
+    .switch input:checked + .slider::before {
+      transform: translateX(20px);
+    }
+
+    .action-row {
+      display: flex;
+      gap: 8px;
+    }
+    .btn-primary {
+      flex: 1;
+      padding: 11px 14px;
+      border: none;
+      border-radius: 12px;
+      background: var(--primary);
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-secondary {
+      padding: 11px 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #0f172a;
+      color: #ffffff;
+      padding: 10px 16px;
+      border-radius: 12px;
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.2s ease;
+      z-index: 80;
+      max-width: 90%;
+      text-align: center;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <!-- شريط محاكاة عند التشغيل في المتصفح العادي فقط -->
+  <div id="sb-preview">
+    <span>9:41</span>
+    <span id="sb-preview-label">معاينة شريط الحالة</span>
+    <span>100% 5G</span>
+  </div>
+
+  <div class="app-shell">
+    <!-- شريط التحكم العلوي -->
+    <header class="browser-bar">
+      <form class="url-row" id="url-form">
+        <button type="button" class="icon-btn" id="btn-home" title="الرئيسية" aria-label="الرئيسية">
+          <svg viewBox="0 0 24 24"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/></svg>
+        </button>
+
+        <div class="url-box">
+          <button type="button" class="mini-btn" id="btn-bookmark" title="إضافة للمفضلة" aria-label="المفضلة">
+            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </button>
+          <input id="url-input" class="url-input" type="text" inputmode="url" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="أدخل رابط الموقع أو كلمة بحث...">
+          <button type="button" class="mini-btn" id="btn-clear" title="مسح" aria-label="مسح" style="display:none;">
+            <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+
+        <button type="submit" class="icon-btn accent" id="btn-go" title="دخول" aria-label="دخول">
+          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+      </form>
+
+      <div class="nav-row">
+        <div class="nav-group">
+          <button type="button" class="icon-btn" id="btn-back" title="رجوع" aria-label="رجوع">
+            <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+          <button type="button" class="icon-btn" id="btn-forward" title="تقدم" aria-label="تقدم">
+            <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <button type="button" class="icon-btn" id="btn-reload" title="تحديث" aria-label="تحديث">
+            <svg id="reload-icon" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          </button>
+        </div>
+
+        <div class="page-title-chip" id="page-title">جاهز للتصفح</div>
+
+        <div class="nav-group">
+          <button type="button" class="icon-btn" id="btn-fullscreen" title="ملء الشاشة" aria-label="ملء الشاشة">
+            <svg viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+          </button>
+          <button type="button" class="icon-btn" id="btn-bookmarks-modal" title="المفضلة والسجل" aria-label="المفضلة والسجل">
+            <svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          </button>
+          <button type="button" class="icon-btn" id="btn-sb-settings" title="إعدادات شريط الحالة" aria-label="إعدادات شريط الحالة">
+            <svg viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+    </header>
+
+    <!-- منطقة العرض -->
+    <main class="stage">
+      <!-- الحاوية التي يرتبط بها RosTrickWebView الحقيقي -->
+      <div id="webview-box"></div>
+
+      <!-- شاشة البداية -->
+      <section class="start-view" id="start-view">
+        <div class="hero-card">
+          <div class="hero-top">
+            <div>
+              <h1>متصفح صخر السريع</h1>
+              <p>اكتب أي رابط أو كلمة بحث في الحقل بالأعلى للدخول فوراً عبر WebView حقيقي.</p>
+            </div>
+          </div>
+          <div class="bridge-pill" id="wv-status-pill">
+            <span class="dot" id="wv-dot"></span>
+            <span id="wv-status-text">جارٍ التحقق من WebView...</span>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-head">
+            <h2>روابط سريعة</h2>
+            <button type="button" class="text-btn" id="btn-open-sb-card">تخصيص شريط الحالة</button>
+          </div>
+          <div class="quick-grid" id="quick-grid"></div>
+        </div>
+
+        <div class="card-box">
+          <div class="section-head">
+            <h2>آخر المواقع المفتوحة</h2>
+            <button type="button" class="text-btn" id="btn-clear-history">مسح السجل</button>
+          </div>
+          <div id="recent-history"></div>
+        </div>
+      </section>
+
+      <!-- بديل المعاينة خارج أندرويد -->
+      <div class="preview-wrap" id="preview-wrap">
+        <div class="preview-banner">
+          <span>وضع المعاينة: بعض المواقع تمنع iframe هنا، لكنها تعمل بالكامل داخل التطبيق عبر RosTrickWebView.</span>
+          <button type="button" class="text-btn" id="btn-preview-external">فتح بنافذة</button>
+        </div>
+        <iframe id="preview-iframe" title="معاينة الموقع"></iframe>
+      </div>
+    </main>
+  </div>
+
+  <!-- نافذة إعدادات شريط الحالة (StatusBar) -->
+  <div class="modal-backdrop" id="sb-modal">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <h3>تخصيص شريط الحالة (StatusBar)</h3>
+        <button type="button" class="close-btn" data-close="sb-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="setting-group">
+          <div class="setting-label">
+            <span>حالة الجسر والارتفاع</span>
+            <span class="setting-hint" id="sb-bridge-state">-</span>
+          </div>
+          <div class="seg-row">
+            <button type="button" class="seg-btn" id="btn-sb-show">إظهار</button>
+            <button type="button" class="seg-btn" id="btn-sb-hide">إخفاء</button>
+            <button type="button" class="seg-btn" id="btn-sb-peek">معاينة 3 ثوانٍ</button>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <div class="setting-label">
+            <span>لون الخلفية</span>
+            <span class="setting-hint" id="sb-color-text">#0f172a</span>
+          </div>
+          <div class="seg-row">
+            <button type="button" class="seg-btn" data-colormode="custom">مخصص</button>
+            <button type="button" class="seg-btn" data-colormode="transparent">شفاف</button>
+            <button type="button" class="seg-btn" data-colormode="theme">لون التطبيق</button>
+            <button type="button" class="seg-btn" data-colormode="page">لون الصفحة</button>
+          </div>
+          <div class="color-row">
+            <input type="color" class="color-picker" id="sb-color-picker" value="#0f172a">
+            <div class="swatch-list" id="sb-swatches">
+              <button type="button" class="swatch" data-color="#0f172a" style="background:#0f172a" title="كحلي داكن"></button>
+              <button type="button" class="swatch" data-color="#000000" style="background:#000000" title="أسود"></button>
+              <button type="button" class="swatch" data-color="#ffffff" style="background:#ffffff" title="أبيض"></button>
+              <button type="button" class="swatch" data-color="#2563eb" style="background:#2563eb" title="أزرق"></button>
+              <button type="button" class="swatch" data-color="#059669" style="background:#059669" title="أخضر"></button>
+              <button type="button" class="swatch" data-color="#7c3aed" style="background:#7c3aed" title="بنفسجي"></button>
+              <button type="button" class="swatch" data-color="#dc2626" style="background:#dc2626" title="أحمر"></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <div class="setting-label">لون الأيقونات والنصوص</div>
+          <div class="seg-row">
+            <button type="button" class="seg-btn" data-icons="auto">تلقائي</button>
+            <button type="button" class="seg-btn" data-icons="light">فاتح (أبيض)</button>
+            <button type="button" class="seg-btn" data-icons="dark">داكن (أسود)</button>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <div class="switch-row">
+            <div>
+              <div class="setting-label">الوضع المتراكب (Overlay)</div>
+              <div class="setting-hint">يمد الصفحة أسفل شريط الحالة مع ترك مسافة تلقائية</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="sb-overlay-toggle">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <div class="setting-label">
+            <span>سرعة الانتقال (Animation)</span>
+            <span class="setting-hint" id="sb-anim-label">250 ms</span>
+          </div>
+          <div class="seg-row">
+            <button type="button" class="seg-btn" data-anim="0">بدون</button>
+            <button type="button" class="seg-btn" data-anim="250">250ms</button>
+            <button type="button" class="seg-btn" data-anim="500">500ms</button>
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button type="button" class="btn-secondary" id="btn-sb-reset">استعادة الافتراضي</button>
+          <button type="button" class="btn-primary" data-close="sb-modal">حفظ وإغلاق</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- نافذة المفضلة والسجل -->
+  <div class="modal-backdrop" id="bm-modal">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <h3>المفضلة والسجل</h3>
+        <button type="button" class="close-btn" data-close="bm-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="setting-group">
+          <div class="setting-label">المواقع المحفوظة</div>
+          <div id="bookmarks-list"></div>
+        </div>
+        <div class="setting-group">
+          <div class="setting-label">
+            <span>سجل التصفح</span>
+            <button type="button" class="text-btn" id="btn-clear-history-modal">مسح الكل</button>
+          </div>
+          <div id="history-modal-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      const WV_ID_KEY = "rt_browser_main";
+      const LS_SB = "rt_browser_statusbar_v1";
+      const LS_BM = "rt_browser_bookmarks_v1";
+      const LS_HIST = "rt_browser_history_v1";
+
+      const DEFAULT_QUICK = [
+        { title: "جوجل", url: "https://www.google.com", icon: "G" },
+        { title: "يوتيوب", url: "https://m.youtube.com", icon: "▶" },
+        { title: "ويكيبيديا", url: "https://ar.wikipedia.org", icon: "W" },
+        { title: "GitHub", url: "https://github.com", icon: "⌘" }
+      ];
+
+      const DEFAULT_SB = {
+        visible: true,
+        color: "#0f172a",
+        colorMode: "custom",
+        icons: "light",
+        overlay: false,
+        anim: 250
+      };
+
+      let wvId = null;
+      let pageActive = false;
+      let isLoading = false;
+      let currentUrl = "";
+      let currentTitle = "";
+
+      let sbState = loadJson(LS_SB, { ...DEFAULT_SB });
+      let bookmarks = loadJson(LS_BM, DEFAULT_QUICK.slice(0, 2));
+      let historyList = loadJson(LS_HIST, []);
+
+      const $ = (id) => document.getElementById(id);
+      const urlForm = $("url-form");
+      const urlInput = $("url-input");
+      const btnClear = $("btn-clear");
+      const btnBookmark = $("btn-bookmark");
+      const btnHome = $("btn-home");
+      const btnBack = $("btn-back");
+      const btnForward = $("btn-forward");
+      const btnReload = $("btn-reload");
+      const btnFullscreen = $("btn-fullscreen");
+      const btnSbSettings = $("btn-sb-settings");
+      const btnBookmarksModal = $("btn-bookmarks-modal");
+      const pageTitleEl = $("page-title");
+      const progressFill = $("progress-fill");
+      const startView = $("start-view");
+      const previewWrap = $("preview-wrap");
+      const previewIframe = $("preview-iframe");
+      const sbPreview = $("sb-preview");
+      const toastEl = $("toast");
+
+      function loadJson(key, fallback) {
+        try {
+          const raw = localStorage.getItem(key);
+          return raw ? JSON.parse(raw) : fallback;
+        } catch (e) {
+          return fallback;
+        }
+      }
+
+      function saveJson(key, value) {
+        try {
+          localStorage.setItem(key, JSON.stringify(value));
+        } catch (e) {}
+      }
+
+      let toastTimer = null;
+      function showToast(msg) {
+        toastEl.textContent = msg;
+        toastEl.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toastEl.classList.remove("show"), 2500);
+      }
+
+      function normalizeUrl(raw) {
+        const s = (raw || "").trim();
+        if (!s) return "";
+        if (/^(https?|file|about):/i.test(s)) return s;
+        if (!/\s/.test(s) && (/^localhost(:\d+)?(\/|$)/i.test(s) || /^(\d{1,3}\.){3}\d{1,3}/.test(s) || /\.[a-z]{2,}/i.test(s))) {
+          return "https://" + s;
+        }
+        return "https://www.google.com/search?q=" + encodeURIComponent(s);
+      }
+
+      function extractVal(payload, keys) {
+        if (payload == null) return "";
+        if (typeof payload !== "object") return payload;
+        for (const k of keys) {
+          if (payload[k] !== undefined && payload[k] !== null) return payload[k];
+        }
+        return "";
+      }
+
+      function setProgress(pct) {
+        const num = Number(pct);
+        if (isNaN(num) || num <= 0) {
+          progressFill.style.width = "0%";
+          progressFill.classList.remove("active");
+          return;
+        }
+        if (num >= 100) {
+          progressFill.style.width = "100%";
+          setTimeout(() => {
+            progressFill.classList.remove("active");
+            progressFill.style.width = "0%";
+          }, 220);
+          return;
+        }
+        progressFill.classList.add("active");
+        progressFill.style.width = Math.max(8, Math.min(99, num)) + "%";
+      }
+
+      function updateLoadingUI(loading) {
+        isLoading = !!loading;
+        const svg = $("reload-icon");
+        if (isLoading) {
+          svg.innerHTML = '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>';
+          btnReload.title = "إيقاف";
+        } else {
+          svg.innerHTML = '<polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>';
+          btnReload.title = "تحديث";
+        }
+      }
+
+      function updateBookmarkIcon() {
+        const saved = currentUrl && bookmarks.some((b) => b.url === currentUrl);
+        btnBookmark.classList.toggle("starred", !!saved);
+      }
+
+      function addHistory(url, title) {
+        if (!url) return;
+        historyList = historyList.filter((item) => item.url !== url);
+        historyList.unshift({ url, title: title || url, at: Date.now() });
+        if (historyList.length > 30) historyList = historyList.slice(0, 30);
+        saveJson(LS_HIST, historyList);
+        renderLists();
+      }
+
+      function updateHistoryTitle(url, title) {
+        if (!url || !title) return;
+        const found = historyList.find((item) => item.url === url);
+        if (found) {
+          found.title = title;
+          saveJson(LS_HIST, historyList);
+          renderLists();
+        }
+      }
+
+      async function hideNativeWebView() {
+        if (wvId && window.RosTrickWebView) {
+          try { await window.RosTrickWebView.hide(wvId); } catch (e) {}
+        }
+      }
+
+      async function showNativeWebView() {
+        if (wvId && window.RosTrickWebView) {
+          try { await window.RosTrickWebView.show(wvId); } catch (e) {}
+        }
+      }
+
+      function bindWebViewEvents(id) {
+        const wv = window.RosTrickWebView;
+        if (!wv || typeof wv.on !== "function") return;
+
+        wv.on(id, "progress", (e) => {
+          const p = Number(extractVal(e, ["progress", "value", "pct"]));
+          setProgress(p);
+          updateLoadingUI(p > 0 && p < 100);
+        });
+
+        wv.on(id, "url", (e) => {
+          const u = String(extractVal(e, ["url", "value"]) || "");
+          if (u) {
+            currentUrl = u;
+            if (document.activeElement !== urlInput) {
+              urlInput.value = u;
+              btnClear.style.display = "inline-flex";
+            }
+            updateBookmarkIcon();
+            addHistory(u, currentTitle || u);
+          }
+        });
+
+        wv.on(id, "title", (e) => {
+          const t = String(extractVal(e, ["title", "value"]) || "");
+          if (t) {
+            currentTitle = t;
+            pageTitleEl.textContent = t;
+            updateHistoryTitle(currentUrl, t);
+          }
+        });
+
+        wv.on(id, "finish", () => {
+          setProgress(100);
+          updateLoadingUI(false);
+        });
+
+        wv.on(id, "error", (e) => {
+          setProgress(0);
+          updateLoadingUI(false);
+          const msg = extractVal(e, ["message", "description", "error"]) || "تعذر تحميل الصفحة";
+          showToast(String(msg));
+        });
+
+        wv.on(id, "download", (e) => {
+          const file = extractVal(e, ["filename", "url", "file"]);
+          showToast(file ? "بدأ تنزيل: " + file : "بدأ تنزيل الملف");
+        });
+      }
+
+      async function navigateTo(raw) {
+        const target = normalizeUrl(raw);
+        if (!target) {
+          showToast("أدخل رابطاً أو كلمة بحث");
+          urlInput.focus();
+          return;
+        }
+
+        currentUrl = target;
+        currentTitle = target;
+        urlInput.value = target;
+        urlInput.blur();
+        btnClear.style.display = "inline-flex";
+        pageTitleEl.textContent = target;
+        pageActive = true;
+        startView.style.display = "none";
+        updateBookmarkIcon();
+        addHistory(target, target);
+
+        if (window.RosTrickWebView) {
+          previewWrap.classList.remove("show");
+          updateLoadingUI(true);
+          setProgress(15);
+          try {
+            if (!wvId) {
+              wvId = await window.RosTrickWebView.create({
+                id: WV_ID_KEY,
+                url: target,
+                attach: "#webview-box",
+                persist: true,
+                handleBack: true
+              });
+              bindWebViewEvents(wvId);
+            } else {
+              await showNativeWebView();
+              await window.RosTrickWebView.load(wvId, target);
+            }
+          } catch (err) {
+            updateLoadingUI(false);
+            setProgress(0);
+            showToast("تعذر فتح الموقع في WebView");
+          }
+        } else {
+          previewWrap.classList.add("show");
+          previewIframe.src = target;
+        }
+      }
+
+      async function goHome() {
+        pageActive = false;
+        updateLoadingUI(false);
+        setProgress(0);
+        await hideNativeWebView();
+        previewWrap.classList.remove("show");
+        previewIframe.src = "about:blank";
+        startView.style.display = "flex";
+        pageTitleEl.textContent = "الصفحة الرئيسية";
+      }
+
+      /* أحداث شريط المتصفح */
+      urlForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        navigateTo(urlInput.value);
+      });
+
+      urlInput.addEventListener("input", () => {
+        btnClear.style.display = urlInput.value ? "inline-flex" : "none";
+      });
+
+      urlInput.addEventListener("focus", () => {
+        setTimeout(() => urlInput.select(), 40);
+      });
+
+      btnClear.addEventListener("click", () => {
+        urlInput.value = "";
+        btnClear.style.display = "none";
+        urlInput.focus();
+      });
+
+      btnHome.addEventListener("click", goHome);
+
+      btnBack.addEventListener("click", async () => {
+        if (window.RosTrickWebView && wvId && pageActive) {
+          try { await window.RosTrickWebView.back(wvId); } catch (e) {}
+        } else {
+          showToast("زر الرجوع متاح أثناء التصفح");
+        }
+      });
+
+      btnForward.addEventListener("click", async () => {
+        if (window.RosTrickWebView && wvId && pageActive) {
+          try { await window.RosTrickWebView.forward(wvId); } catch (e) {}
+        } else {
+          showToast("زر التقدم متاح أثناء التصفح");
+        }
+      });
+
+      btnReload.addEventListener("click", async () => {
+        if (window.RosTrickWebView && wvId && pageActive) {
+          try {
+            if (isLoading) {
+              await window.RosTrickWebView.stop(wvId);
+              updateLoadingUI(false);
+              setProgress(0);
+            } else {
+              updateLoadingUI(true);
+              setProgress(15);
+              await window.RosTrickWebView.reload(wvId);
+            }
+          } catch (e) {}
+        } else if (currentUrl) {
+          navigateTo(currentUrl);
+        }
+      });
+
+      btnFullscreen.addEventListener("click", () => {
+        const target = currentUrl || normalizeUrl(urlInput.value) || "https://www.google.com";
+        if (window.RosTrickWebView && typeof window.RosTrickWebView.openFullscreen === "function") {
+          window.RosTrickWebView.openFullscreen(target, {
+            barColor: sbState.colorMode === "custom" ? sbState.color : "#0f172a",
+            textColor: sbState.icons === "dark" ? "#0f172a" : "#ffffff"
+          });
+        } else {
+          window.open(target, "_blank", "noopener");
+        }
+      });
+
+      btnBookmark.addEventListener("click", () => {
+        if (!currentUrl) {
+          showToast("افتح موقعاً أولاً لإضافته للمفضلة");
+          return;
+        }
+        const idx = bookmarks.findIndex((b) => b.url === currentUrl);
+        if (idx >= 0) {
+          bookmarks.splice(idx, 1);
+          showToast("تمت إزالة الموقع من المفضلة");
+        } else {
+          bookmarks.unshift({ title: currentTitle || currentUrl, url: currentUrl, icon: "★" });
+          showToast("تم حفظ الموقع في المفضلة");
+        }
+        saveJson(LS_BM, bookmarks);
+        updateBookmarkIcon();
+        renderLists();
+      });
+
+      $("btn-preview-external").addEventListener("click", () => {
+        if (currentUrl) window.open(currentUrl, "_blank", "noopener");
+      });
+
+      /* إدارة النوافذ المنبثقة مع إخفاء WebView عند الفتح */
+      async function openModal(id) {
+        await hideNativeWebView();
+        $(id).classList.add("open");
+        if (id === "bm-modal") renderLists();
+        if (id === "sb-modal") syncStatusBarUI();
+      }
+
+      async function closeModal(id) {
+        $(id).classList.remove("open");
+        const anyOpen = document.querySelector(".modal-backdrop.open");
+        if (!anyOpen && pageActive) {
+          await showNativeWebView();
+        }
+      }
+
+      btnSbSettings.addEventListener("click", () => openModal("sb-modal"));
+      $("btn-open-sb-card").addEventListener("click", () => openModal("sb-modal"));
+      btnBookmarksModal.addEventListener("click", () => openModal("bm-modal"));
+
+      document.querySelectorAll("[data-close]").forEach((el) => {
+        el.addEventListener("click", () => closeModal(el.getAttribute("data-close")));
+      });
+
+      document.querySelectorAll(".modal-backdrop").forEach((backdrop) => {
+        backdrop.addEventListener("click", (e) => {
+          if (e.target === backdrop) closeModal(backdrop.id);
+        });
+      });
+
+      /* رسم القوائم السريعة والسجل والمفضلة */
+      function renderQuickGrid() {
+        const grid = $("quick-grid");
+        grid.innerHTML = "";
+        DEFAULT_QUICK.forEach((item) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "quick-item";
+          const badge = document.createElement("div");
+          badge.className = "quick-badge";
+          badge.textContent = item.icon;
+          const label = document.createElement("span");
+          label.textContent = item.title;
+          btn.appendChild(badge);
+          btn.appendChild(label);
+          btn.addEventListener("click", () => navigateTo(item.url));
+          grid.appendChild(btn);
+        });
+      }
+
+      function makeRow(item, onRemove) {
+        const row = document.createElement("div");
+        row.className = "list-item";
+        const meta = document.createElement("div");
+        meta.className = "list-meta";
+        const title = document.createElement("div");
+        title.className = "list-title";
+        title.textContent = item.title || item.url;
+        const url = document.createElement("div");
+        url.className = "list-url";
+        url.textContent = item.url;
+        meta.appendChild(title);
+        meta.appendChild(url);
+        row.appendChild(meta);
+
+        meta.addEventListener("click", () => {
+          closeModal("bm-modal");
+          navigateTo(item.url);
+        });
+
+        if (onRemove) {
+          const del = document.createElement("button");
+          del.type = "button";
+          del.className = "text-btn";
+          del.style.color = "#dc2626";
+          del.textContent = "حذف";
+          del.addEventListener("click", (e) => {
+            e.stopPropagation();
+            onRemove();
+          });
+          row.appendChild(del);
+        }
+        return row;
+      }
+
+      function renderLists() {
+        const recentEl = $("recent-history");
+        const bmEl = $("bookmarks-list");
+        const histEl = $("history-modal-list");
+
+        recentEl.innerHTML = "";
+        if (!historyList.length) {
+          recentEl.innerHTML = '<div style="font-size:12px;color:#64748b;padding:8px 0;">لا يوجد سجل تصفح بعد</div>';
+        } else {
+          historyList.slice(0, 5).forEach((item) => recentEl.appendChild(makeRow(item)));
+        }
+
+        bmEl.innerHTML = "";
+        if (!bookmarks.length) {
+          bmEl.innerHTML = '<div style="font-size:12px;color:#64748b;">لا توجد مواقع مفضلة</div>';
+        } else {
+          bookmarks.forEach((item, idx) => {
+            bmEl.appendChild(makeRow(item, () => {
+              bookmarks.splice(idx, 1);
+              saveJson(LS_BM, bookmarks);
+              updateBookmarkIcon();
+              renderLists();
+            }));
+          });
+        }
+
+        histEl.innerHTML = "";
+        if (!historyList.length) {
+          histEl.innerHTML = '<div style="font-size:12px;color:#64748b;">السجل فارغ</div>';
+        } else {
+          historyList.forEach((item, idx) => {
+            histEl.appendChild(makeRow(item, () => {
+              historyList.splice(idx, 1);
+              saveJson(LS_HIST, historyList);
+              renderLists();
+            }));
+          });
+        }
+      }
+
+      function clearHistory() {
+        historyList = [];
+        saveJson(LS_HIST, []);
+        renderLists();
+        showToast("تم مسح السجل");
+      }
+      $("btn-clear-history").addEventListener("click", clearHistory);
+      $("btn-clear-history-modal").addEventListener("click", clearHistory);
+
+      /* إعدادات StatusBar */
+      function applyStatusBar(save = true) {
+        if (save) saveJson(LS_SB, sbState);
+        const effectiveColor = sbState.colorMode === "custom" ? sbState.color : sbState.colorMode;
+
+        document.documentElement.classList.toggle("sb-overlay", !!sbState.overlay);
+
+        if (window.RosTrickStatusBar) {
+          try {
+            window.RosTrickStatusBar.set({
+              color: effectiveColor,
+              icons: sbState.icons,
+              overlay: !!sbState.overlay,
+              anim: Number(sbState.anim) || 0
+            });
+            if (sbState.visible) {
+              window.RosTrickStatusBar.show();
+            } else {
+              window.RosTrickStatusBar.hide();
+            }
+          } catch (e) {}
+        } else {
+          document.documentElement.classList.add("preview-mode");
+          sbPreview.classList.add("show");
+          sbPreview.classList.toggle("is-hidden", !sbState.visible);
+          sbPreview.classList.toggle("is-overlay", !!sbState.overlay);
+          let bg = effectiveColor;
+          if (bg === "transparent") bg = "rgba(15, 23, 42, 0.35)";
+          if (bg === "theme" || bg === "page") bg = "#0f172a";
+          sbPreview.style.background = bg;
+          const lightIcons = sbState.icons === "light" || (sbState.icons === "auto" && (bg === "#0f172a" || bg === "#000000" || bg === "#2563eb" || bg === "#059669" || bg === "#7c3aed" || bg === "#dc2626"));
+          sbPreview.style.color = sbState.icons === "dark" ? "#0f172a" : (lightIcons ? "#ffffff" : "#0f172a");
+          $("sb-preview-label").textContent = "معاينة StatusBar (" + effectiveColor + ")";
+        }
+
+        syncStatusBarUI();
+      }
+
+      function syncStatusBarUI() {
+        $("btn-sb-show").classList.toggle("active", !!sbState.visible);
+        $("btn-sb-hide").classList.toggle("active", !sbState.visible);
+
+        document.querySelectorAll("[data-colormode]").forEach((b) => {
+          b.classList.toggle("active", b.getAttribute("data-colormode") === sbState.colorMode);
+        });
+        document.querySelectorAll("[data-icons]").forEach((b) => {
+          b.classList.toggle("active", b.getAttribute("data-icons") === sbState.icons);
+        });
+        document.querySelectorAll("[data-anim]").forEach((b) => {
+          b.classList.toggle("active", Number(b.getAttribute("data-anim")) === Number(sbState.anim));
+        });
+        document.querySelectorAll("#sb-swatches .swatch").forEach((s) => {
+          s.classList.toggle("active", sbState.colorMode === "custom" && s.getAttribute("data-color").toLowerCase() === sbState.color.toLowerCase());
+        });
+
+        $("sb-color-picker").value = /^#[0-9a-f]{6}$/i.test(sbState.color) ? sbState.color : "#0f172a";
+        $("sb-color-text").textContent = sbState.colorMode === "custom" ? sbState.color : sbState.colorMode;
+        $("sb-overlay-toggle").checked = !!sbState.overlay;
+        $("sb-anim-label").textContent = (Number(sbState.anim) || 0) + " ms";
+
+        if (window.RosTrickStatusBar) {
+          const h = window.RosTrickStatusBar.height;
+          $("sb-bridge-state").textContent = "متصل" + (h !== undefined ? " • الارتفاع: " + h + "px" : "");
+        } else {
+          $("sb-bridge-state").textContent = "وضع المعاينة";
+        }
+      }
+
+      $("btn-sb-show").addEventListener("click", () => {
+        sbState.visible = true;
+        applyStatusBar();
+      });
+
+      $("btn-sb-hide").addEventListener("click", () => {
+        sbState.visible = false;
+        applyStatusBar();
+      });
+
+      $("btn-sb-peek").addEventListener("click", () => {
+        if (window.RosTrickStatusBar && typeof window.RosTrickStatusBar.peek === "function") {
+          window.RosTrickStatusBar.peek(3000);
+          showToast("سيظهر شريط الحالة لمدة 3 ثوانٍ");
+        } else {
+          sbPreview.classList.remove("is-hidden");
+          setTimeout(() => { if (!sbState.visible) sbPreview.classList.add("is-hidden"); }, 3000);
+        }
+      });
+
+      document.querySelectorAll("[data-colormode]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          sbState.colorMode = btn.getAttribute("data-colormode");
+          applyStatusBar();
+        });
+      });
+
+      $("sb-color-picker").addEventListener("input", (e) => {
+        sbState.colorMode = "custom";
+        sbState.color = e.target.value;
+        applyStatusBar();
+      });
+
+      document.querySelectorAll("#sb-swatches .swatch").forEach((sw) => {
+        sw.addEventListener("click", () => {
+          sbState.colorMode = "custom";
+          sbState.color = sw.getAttribute("data-color");
+          applyStatusBar();
+        });
+      });
+
+      document.querySelectorAll("[data-icons]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          sbState.icons = btn.getAttribute("data-icons");
+          applyStatusBar();
+        });
+      });
+
+      $("sb-overlay-toggle").addEventListener("change", (e) => {
+        sbState.overlay = !!e.target.checked;
+        applyStatusBar();
+      });
+
+      document.querySelectorAll("[data-anim]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          sbState.anim = Number(btn.getAttribute("data-anim")) || 0;
+          applyStatusBar();
+        });
+      });
+
+      $("btn-sb-reset").addEventListener("click", () => {
+        sbState = { ...DEFAULT_SB };
+        if (window.RosTrickStatusBar && typeof window.RosTrickStatusBar.reset === "function") {
+          try { window.RosTrickStatusBar.reset(); } catch (e) {}
+        }
+        applyStatusBar();
+        showToast("تمت استعادة الإعدادات الافتراضية");
+      });
+
+      /* التهيئة الأولية */
+      function init() {
+        const hasWv = !!window.RosTrickWebView;
+        $("wv-dot").classList.toggle("off", !hasWv);
+        $("wv-status-text").textContent = hasWv
+          ? "RosTrickWebView الحقيقي نشط وجاهز"
+          : "وضع المعاينة (سيعمل WebView الحقيقي داخل التطبيق)";
+
+        renderQuickGrid();
+        renderLists();
+        applyStatusBar(false);
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>
