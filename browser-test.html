@@ -141,7 +141,7 @@
     #webview-container {
       flex: 1;
       position: relative;
-      background: #000000;
+      background: var(--bg-dark);
       overflow: hidden;
     }
 
@@ -961,11 +961,14 @@
         try {
           const id = await window.RosTrickWebView.create({
             id: nativeWebViewId,
-            url: 'about:blank',
+            url: 'https://www.google.com',
             attach: '#webview-container',
-            persist: false,
+            persist: true,
             handleBack: true
           });
+
+          // إخفاء الويب فيو عند البدء ليظهر الشاشة الافتراضية
+          window.RosTrickWebView.hide(nativeWebViewId);
 
           window.RosTrickWebView.on(nativeWebViewId, 'title', (e) => {
             currentTitle = e.title || currentTitle;
@@ -1033,6 +1036,7 @@
           // Web preview fallback
           fallbackFrame.style.display = 'block';
           fallbackFrame.src = targetUrl;
+          homeView.style.display = 'none';
           setTimeout(() => {
             progressFill.style.width = '100%';
             setTimeout(() => { progressFill.style.width = '0%'; isLoading = false; lblRefresh.textContent = 'تحديث'; }, 300);
