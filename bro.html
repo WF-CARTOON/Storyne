@@ -145,6 +145,51 @@ body.fs #top,body.fs #find{display:none}
 #dlg .acts{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
 #dlg .acts .btn{margin-top:0;height:38px}
 .chk{display:flex;align-items:center;gap:10px;padding:8px 0}.chk input{width:20px;height:20px;accent-color:var(--accent)}
+/* ===== العارض: مشغّل وصور ونصوص ===== */
+#p-viewer{background:#000;color:#fff;padding-inline:env(safe-area-inset-left) env(safe-area-inset-right)}
+.vw{position:relative;flex:1;min-height:0;overflow:hidden;background:#000;touch-action:none;user-select:none;-webkit-user-select:none}
+.vw video,.vw .vimgw{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000}
+.vgest{position:absolute;inset:0;touch-action:none}
+.vctl{position:absolute;inset:0;pointer-events:none;display:flex;flex-direction:column;justify-content:space-between;direction:ltr;transition:opacity .2s;z-index:2}
+.vctl.off{opacity:0}.vctl.off *{pointer-events:none!important}
+.vtop,.vbot{pointer-events:auto;display:flex;align-items:center;gap:2px;padding:6px 8px}
+.vtop{background:linear-gradient(rgba(0,0,0,.7),transparent)}
+.vbot{flex-direction:column;align-items:stretch;background:linear-gradient(transparent,rgba(0,0,0,.75));padding:10px 10px 8px}
+.vtitle{flex:1;min-width:0;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;direction:auto;text-align:start;padding:0 6px}
+.vib{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;position:relative;flex:none}
+.vib:active{background:rgba(255,255,255,.22)}.vib svg{width:24px;height:24px}.vib.on{color:#8ab4f8}
+.vib b{position:absolute;font-size:9px;font-weight:700;top:50%;left:50%;transform:translate(-50%,-42%)}
+.vib.big{width:62px;height:62px}.vib.big svg{width:36px;height:36px}
+.vtx{min-width:44px;height:36px;padding:0 8px;border-radius:18px;font-size:13px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center}
+.vtx:active{background:rgba(255,255,255,.22)}.vtx.on{color:#8ab4f8}
+.vrow{display:flex;align-items:center;justify-content:center;gap:4px}
+.vseekrow{display:flex;align-items:center;gap:8px;font-size:12px;font-variant-numeric:tabular-nums}
+.vseekrow span{min-width:42px;text-align:center}
+#vseek{flex:1;-webkit-appearance:none;appearance:none;height:30px;background:transparent;margin:0}
+#vseek::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:linear-gradient(to right,#8ab4f8 var(--p,0%),rgba(255,255,255,.3) var(--p,0%))}
+#vseek::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;margin-top:-6px;box-shadow:0 0 4px rgba(0,0,0,.6)}
+.vhud{position:absolute;top:16%;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);padding:10px 18px;border-radius:16px;display:none;flex-direction:column;align-items:center;gap:6px;min-width:130px;pointer-events:none;direction:ltr;z-index:3;font-weight:700}
+.vhud.on{display:flex}.vhud svg{width:26px;height:26px}.vhud .bar{width:110px;height:5px;background:rgba(255,255,255,.25);border-radius:3px;overflow:hidden}.vhud .bar i{display:block;height:100%;background:#fff}
+#vsub{position:absolute;inset-inline:6%;bottom:16%;text-align:center;font-size:var(--subsz,18px);line-height:1.55;text-shadow:0 0 4px #000,0 0 3px #000;pointer-events:none;white-space:pre-line;z-index:1}
+#vsub span{background:rgba(0,0,0,.5);padding:1px 8px;border-radius:5px}
+.vmenu{position:absolute;inset-inline:0;bottom:0;max-height:72%;overflow:auto;background:#1e1f22;color:#fff;border-radius:18px 18px 0 0;z-index:6;padding:6px 0 14px;direction:rtl;box-shadow:0 -4px 20px rgba(0,0,0,.6)}
+.vmenu h4{margin:12px 18px 4px;font-size:13px;color:#9aa0a6;font-weight:600}
+.vmenu button{display:flex;width:100%;align-items:center;gap:12px;padding:12px 18px;text-align:start;color:#fff}.vmenu button:active{background:rgba(255,255,255,.1)}.vmenu button.on{color:#8ab4f8;font-weight:700}
+.vmenu .stp{display:flex;align-items:center;justify-content:space-between;padding:6px 18px}.vmenu .stp .vtx{border:1px solid #3c4043}
+.vunlock{position:absolute;inset-inline-start:16px;top:50%;margin-top:-26px;width:52px;height:52px;border-radius:50%;background:rgba(0,0,0,.6);z-index:4;display:none;align-items:center;justify-content:center}
+.vunlock.on{display:flex}
+.vspin{position:absolute;inset:0;display:none;align-items:center;justify-content:center;pointer-events:none;z-index:1;flex-direction:column;gap:10px;font-size:13px}
+.vspin.on{display:flex}.vspin i{width:42px;height:42px;border-radius:50%;border:4px solid rgba(255,255,255,.25);border-top-color:#fff;animation:vsp .8s linear infinite}
+@keyframes vsp{to{transform:rotate(360deg)}}
+.verr{position:absolute;inset:0;z-index:5;background:#000;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:30px;text-align:center;line-height:1.8}
+.verr.on{display:flex}
+.vcover{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:70px 24px 190px;text-align:center}
+.vcover .disc{width:min(52vw,230px);height:min(52vw,230px);border-radius:50%;background:radial-gradient(circle at 30% 30%,#3a4a7a,#141a2e);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 30px rgba(0,0,0,.6)}
+.vcover .disc svg{width:38%;height:38%;color:#8ab4f8}.vcover b{font-size:18px;direction:auto;word-break:break-word}.vcover small{color:#9aa0a6}
+.vtxt{position:absolute;inset:0;overflow:auto;background:#101114;padding:64px 14px 24px;font:var(--tfs,14px)/1.7 ui-monospace,Menlo,Consolas,monospace;direction:ltr;text-align:left;-webkit-user-select:text;user-select:text}
+.vtxt pre{margin:0;white-space:pre-wrap;word-break:break-word}.vtxt.nw pre{white-space:pre;word-break:normal}
+.vimgw{touch-action:none;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.vimgw img{max-width:100%;max-height:100%;transform-origin:center;will-change:transform;-webkit-user-drag:none}
 #nonat{position:absolute;inset:0;z-index:50;background:var(--bg);display:none;align-items:center;justify-content:center;text-align:center;padding:30px;line-height:2}
 #nonat.on{display:flex}
 </style>
@@ -190,6 +235,7 @@ body.fs #top,body.fs #find{display:none}
   <section class="panel" id="p-bookmarks"></section>
   <section class="panel" id="p-downloads"></section>
   <section class="panel" id="p-settings"></section>
+  <section class="panel" id="p-viewer"></section>
   <div id="dlg"><div class="box" id="dlgBox"></div></div>
   <div id="nonat"><div><div style="font-size:20px;font-weight:700">يعمل داخل تطبيق RosTrick فقط</div><div style="color:var(--muted)">هذه الصفحة تعتمد على WebView أصلي وعلى التحكم بشريط الحالة، وهما متوفران فقط داخل التطبيق المبني من القالب الحديث.</div></div></div>
 </div>
@@ -236,7 +282,7 @@ function toHex(c) { try { cv.fillStyle = "#000"; cv.fillStyle = String(c).trim()
 function lum(hex) { var n = parseInt(hex.slice(1), 16), r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255; return (0.299 * r + 0.587 * g + 0.114 * b) / 255; }
 
 /* ============================ الحالة والإعدادات ============================ */
-var DEF = { live: 5, engine: "google", custom: "", home: "", desktop: false, js: true, zoom: 100, theme: "auto", follow: true, saveHistory: true,
+var DEF = { openMode: "ask", resume: true, autoNext: true, live: 5, engine: "google", custom: "", home: "", desktop: false, js: true, zoom: 100, theme: "auto", follow: true, saveHistory: true,
   sb: { mode: "auto", color: "#1a73e8", icons: "auto", anim: 250, hideInFs: true } };
 var S = store.get("settings", {}); S = Object.assign({}, DEF, S); S.sb = Object.assign({}, DEF.sb, S.sb || {});
 var ENGINES = { google: ["Google", "https://www.google.com/search?q=%s"], ddg: ["DuckDuckGo", "https://duckduckgo.com/?q=%s"], bing: ["Bing", "https://www.bing.com/search?q=%s"], brave: ["Brave", "https://search.brave.com/search?q=%s"], custom: ["مخصص", ""] };
@@ -244,7 +290,7 @@ var hist = store.get("history", []), books = store.get("bookmarks", []), downs =
 var tabs = [], curId = null, tseq = 0, byVid = {};
 function maxLive() { return Math.max(2, Math.min(8, S.live | 0 || 5)); }
 var openPanels = [], omniFocus = false, dialogOn = false, fs = false, findOn = false, sheetOn = false, tickKey = "";
-var WV = null, SB = null;
+var WV = null, SB = null, DL = null, privDl = {};
 function saveSettings() { store.set("settings", S); }
 function cur() { for (var i = 0; i < tabs.length; i++) if (tabs[i].id === curId) return tabs[i]; return null; }
 function tabById(id) { for (var i = 0; i < tabs.length; i++) if (tabs[i].id === id) return tabs[i]; return null; }
@@ -382,7 +428,8 @@ function addHistory(t) {
   store.set("history", hist);
 }
 function addDownload(d, t) {
-  if (t.priv) return; // التبويب بدون سجل لا يسجّل التنزيلات (التنزيل نفسه يتم عبر التطبيق)
+  if (t.priv) { privDl[d.url] = 1; return; } // التبويب بدون سجل لا يظهر تنزيله في القائمة (التنزيل نفسه يتم عبر التطبيق)
+  if (DL) return; // سجل التنزيلات الأصلي (RosTrickDownloads) يتتبّع التنزيل ويرسل أحداثه
   var name = "";
   try { var m = /filename\*?=(?:UTF-8'')?"?([^";]+)"?/i.exec(d.disposition || ""); if (m) name = decodeURIComponent(m[1]); } catch (e) {}
   if (!name) { try { name = decodeURIComponent(new URL(d.url).pathname.split("/").pop()); } catch (e) {} }
@@ -426,7 +473,7 @@ function chrome() {
   var mt = document.querySelector('meta[name="theme-color"]'); if (mt) mt.content = bar;
 }
 function applySB(bar) {
-  var s = S.sb, hide = s.mode === "hidden" || (fs && s.hideInFs), overlay = s.mode === "overlay";
+  var s = S.sb, hide = s.mode === "hidden" || playerFs() || (fs && s.hideInFs), overlay = s.mode === "overlay";
   var color = s.mode === "color" ? s.color : overlay ? "transparent" : bar;
   if (SB) { try { SB.set({ mode: hide ? "hidden" : "visible", color: color, icons: s.icons, overlay: overlay, anim: s.anim }); } catch (e) {} }
   document.documentElement.style.setProperty("--sbpad", (hide || overlay) ? "var(--rt-statusbar-height, 0px)" : "0px");
@@ -525,7 +572,7 @@ function openPanel(name) {
 }
 function closePanel(name) {
   name = name || openPanels[openPanels.length - 1]; if (!name) return false;
-  var i = openPanels.indexOf(name); if (i > -1) openPanels.splice(i, 1); $("p-" + name).classList.remove("on"); syncNative(); render(); return true;
+  var i = openPanels.indexOf(name); if (i > -1) openPanels.splice(i, 1); $("p-" + name).classList.remove("on"); if (name === "viewer") endViewer(); syncNative(); render(); return true;
 }
 var tabsPriv = false;
 function renderTabs() {
@@ -550,10 +597,29 @@ function renderBooks(q) {
   if (!$("p-bookmarks").firstChild) $("p-bookmarks").innerHTML = panelHead("المفضلة") + '<div class="search">' + I("search") + '<input id="bq" type="text" placeholder="بحث في المفضلة"></div><div class="pb" id="blist"></div>';
   $("blist").innerHTML = rows.map(function (b) { return '<div class="row"><button class="rowb" data-act="open" data-url="' + esc(b.url) + '">' + fav(b.url, b.title) + '<span class="t"><b>' + esc(b.title || host(b.url)) + "</b><small>" + esc(b.url) + '</small></span></button><button class="ib" data-act="bedit" data-url="' + esc(b.url) + '" aria-label="تعديل">' + I("txt") + '</button><button class="ib" data-act="bdel" data-url="' + esc(b.url) + '" aria-label="حذف">' + I("x") + "</button></div>"; }).join("") || '<div class="empty">' + I("star") + "لا توجد مفضلة بعد<br>اضغط النجمة في شريط العنوان لإضافة الصفحة</div>";
 }
+var DSTATE = { pending: "بانتظار البدء", running: "جارٍ التنزيل", paused: "متوقف مؤقتًا", done: "اكتمل", failed: "فشل التنزيل", removed: "حُذف الملف" };
+function nativeDowns() { try { return DL.list().filter(function (d) { return !privDl[d.url]; }); } catch (e) { return []; } }
 function renderDowns() {
-  $("p-downloads").innerHTML = panelHead("التنزيلات", '<button class="ib" data-act="dopen" aria-label="فتح مجلد التنزيلات">' + I("folder") + '</button><button class="ib" data-act="dclear" aria-label="مسح القائمة">' + I("trash") + "</button>") + '<div class="pb"><div style="padding:10px 16px 2px"><button class="btn" data-act="dopen" style="margin:0;width:100%">' + I("folder") + " فتح مجلد التنزيلات</button></div>" + (downs.map(function (d, i) {
-    return '<div class="row"><button class="rowb" data-act="dopen"><span class="fav" style="width:40px;height:40px;border-radius:50%">' + I("dl", "") + '</span><span class="t"><b>' + esc(d.name) + "</b><small>" + esc(host(d.url)) + " · " + esc(fsize(d.size)) + " · " + ago(d.ts) + " " + hm(d.ts) + '</small></span></button><button class="ib" data-act="dcopy" data-i="' + i + '" aria-label="نسخ الرابط">' + I("copy") + "</button></div>";
-  }).join("") || '<div class="empty">' + I("dl") + "لا توجد تنزيلات<br>تُحفظ الملفات في مجلد التنزيلات بالجهاز</div>") + '<div class="empty" style="padding-top:10px;font-size:12px">يتولى التطبيق التنزيل نفسه ويحفظ الملف في مجلد التنزيلات بالجهاز. اضغط على أي عنصر (أو زر المجلد) لفتح تطبيق التنزيلات في الجهاز ومنه تفتح الملف، أو اضغط إشعار «اكتمل التنزيل» بعد انتهائه.</div></div>';
+  var head = panelHead("التنزيلات", '<button class="ib" data-act="dopen" aria-label="فتح مجلد التنزيلات">' + I("folder") + '</button><button class="ib" data-act="dclear" aria-label="مسح القائمة">' + I("trash") + "</button>");
+  var body;
+  if (DL) {
+    var list = nativeDowns();
+    body = list.map(function (d) {
+      var pct = d.total > 0 ? Math.min(100, Math.round(d.bytes * 100 / d.total)) : 0, act = d.state === "pending" || d.state === "running" || d.state === "paused";
+      var sub = (DSTATE[d.state] || d.state) + (act && d.total > 0 ? " " + pct + "%" : "") + (d.total > 0 ? " · " + fsize(d.total) : "") + " · " + ago(d.ts) + " " + hm(d.ts);
+      var btns = d.state === "done" ? '<button class="ib" data-act="dshare" data-id="' + esc(d.id) + '" aria-label="مشاركة">' + I("share") + '</button><button class="ib" data-act="ddel" data-id="' + esc(d.id) + '" aria-label="حذف">' + I("trash") + "</button>"
+        : act ? '<button class="ib" data-act="dcancel" data-id="' + esc(d.id) + '" aria-label="إلغاء">' + I("x") + "</button>"
+        : '<button class="ib" data-act="dgone" data-id="' + esc(d.id) + '" aria-label="إزالة من القائمة">' + I("x") + "</button>";
+      return '<div class="row"><button class="rowb" data-act="dfile" data-id="' + esc(d.id) + '"><span class="fav" style="width:40px;height:40px;border-radius:50%">' + I(d.state === "failed" || d.state === "removed" ? "warn" : "dl", "") + '</span><span class="t"><b>' + esc(d.name || host(d.url)) + "</b><small>" + esc(sub) + "</small>" +
+        (act ? '<div style="height:4px;border-radius:2px;background:var(--field);margin-top:6px;overflow:hidden"><i style="display:block;height:100%;width:' + (d.total > 0 ? pct : 30) + '%;background:var(--accent)"></i></div>' : "") + "</span></button>" + btns + "</div>";
+    }).join("") || '<div class="empty">' + I("dl") + "لا توجد تنزيلات<br>تُحفظ الملفات في مجلد التنزيلات بالجهاز</div>";
+    body += '<div class="empty" style="padding-top:10px;font-size:12px">اضغط على الملف المكتمل لفتحه، أو استعمل زر المشاركة.</div>';
+  } else {
+    body = '<div style="padding:10px 16px 2px"><button class="btn" data-act="dopen" style="margin:0;width:100%">' + I("folder") + " فتح مجلد التنزيلات</button></div>" + (downs.map(function (d, i) {
+      return '<div class="row"><button class="rowb" data-act="dopen"><span class="fav" style="width:40px;height:40px;border-radius:50%">' + I("dl", "") + '</span><span class="t"><b>' + esc(d.name) + "</b><small>" + esc(host(d.url)) + " · " + esc(fsize(d.size)) + " · " + ago(d.ts) + " " + hm(d.ts) + '</small></span></button><button class="ib" data-act="dcopy" data-i="' + i + '" aria-label="نسخ الرابط">' + I("copy") + "</button></div>";
+    }).join("") || '<div class="empty">' + I("dl") + "لا توجد تنزيلات<br>تُحفظ الملفات في مجلد التنزيلات بالجهاز</div>") + '<div class="empty" style="padding-top:10px;font-size:12px">هذا الإصدار من التطبيق لا يوفّر فتح الملفات من الصفحة؛ اضغط زر المجلد لفتح تطبيق التنزيلات في الجهاز.</div>';
+  }
+  $("p-downloads").innerHTML = head + '<div class="pb">' + body + "</div>";
 }
 function sw(on, act, key) { return '<button class="sw ' + (on ? "on" : "") + '" data-act="' + act + '"' + (key ? ' data-k="' + key + '"' : "") + ' role="switch" aria-checked="' + !!on + '"></button>'; }
 function renderSettings() {
@@ -568,6 +634,7 @@ function renderSettings() {
     '<div class="set"><div class="t"><b>تفعيل جافاسكربت</b><small>إيقافه قد يعطّل كثيرًا من المواقع</small></div>' + sw(S.js, "tg", "js") + "</div>" +
     '<div class="set"><div class="t"><b>حجم النص</b></div><input type="range" min="50" max="200" step="10" value="' + S.zoom + '" data-act="zoomr"><b id="zr" style="min-width:42px;text-align:center">' + S.zoom + "%</b></div>" +
     '<div class="set"><div class="t"><b>التبويبات النشطة</b><small>عدد التبويبات التي تبقى شغّالة في الذاكرة، والباقي ينام ويُحمَّل عند الدخول عليه (بلا حد لعدد التبويبات)</small></div><input type="range" min="2" max="8" step="1" value="' + maxLive() + '" data-act="liver"><b id="lv" style="min-width:26px;text-align:center">' + maxLive() + "</b></div>" +
+    (DL ? '<div class="sec">الملفات المحمّلة</div><div class="set"><div class="t"><b>طريقة فتح الملف</b><small>الفيديو والصوت والصور والنصوص تُعرض داخل التطبيق بمشغّل متقدم، وغيرها (PDF وAPK…) بتطبيق الجهاز</small></div></div><div style="padding:0 18px 8px;overflow-x:auto">' + segs("openMode", S.openMode, [["ask", "اسألني"], ["browser", "داخل التطبيق"], ["system", "تطبيق الجهاز"]]) + '</div><div class="set"><div class="t"><b>استكمال التشغيل من آخر موضع</b></div>' + sw(S.resume, "tg", "resume") + '</div><div class="set"><div class="t"><b>تشغيل الملف التالي تلقائيًا</b></div>' + sw(S.autoNext, "tg", "autoNext") + '</div><div class="btnrow"><button class="btn ghost" data-act="clrview">' + I("trash") + " مسح النسخ المؤقتة للعرض (" + fsize(DL.cacheSize() || 0) + (DL.cacheSize() ? "" : "0 B") + ")</button></div>" : "") +
     '<div class="sec">المظهر</div><div class="set"><div class="t"><b>السمة</b></div>' + segs("theme", S.theme, [["auto", "تلقائي"], ["light", "فاتح"], ["dark", "داكن"]]) + "</div>" +
     '<div class="set"><div class="t"><b>تلوين الأدوات بلون الموقع</b><small>مثل كروم: يأخذ اللون من الوسم theme-color في الموقع</small></div>' + sw(S.follow, "tg", "follow") + "</div>" +
     '<div class="sec">شريط الحالة (تحكم كامل)</div>' +
@@ -640,8 +707,13 @@ var ACT = {
   hdel: function (el) { var ts = +el.dataset.ts; hist = hist.filter(function (h) { return h.ts !== ts; }); store.set("history", hist); renderHistory($("hq") ? $("hq").value : ""); },
   hclear: function () { dialog("<h3>مسح السجل؟</h3><p>سيُحذف كل سجل التصفح من هذا الجهاز.</p>", function () { hist = []; store.set("history", hist); renderHistory(""); }, "مسح", true); },
   bdel: function (el) { books = books.filter(function (b) { return b.url !== el.dataset.url; }); store.set("bookmarks", books); renderBooks($("bq") ? $("bq").value : ""); render(); },
-  bedit: function (el) { editBookmark(el.dataset.url); }, dclear: function () { downs = []; store.set("downloads", downs); renderDowns(); },
-  dopen: function () { openDownloadsApp(); },
+  bedit: function (el) { editBookmark(el.dataset.url); }, dclear: function () { if (DL) DL.clear(); downs = []; store.set("downloads", downs); renderDowns(); },
+  dopen: function () { if (DL) DL.openFolder(); else openDownloadsApp(); },
+  dfile: function (el) { openDownload(el.dataset.id); },
+  dshare: function (el) { if (DL) DL.share(el.dataset.id); },
+  dcancel: function (el) { if (DL) { DL.cancel(el.dataset.id); renderDowns(); } },
+  dgone: function (el) { if (DL) { DL.remove(el.dataset.id, false); renderDowns(); } },
+  ddel: function (el) { var id = el.dataset.id; dialog("<h3>حذف الملف؟</h3><p>سيُحذف الملف من الجهاز نهائيًا.</p>", function () { if (DL) DL.remove(id, true); renderDowns(); }, "حذف", true); },
   dcopy: function (el) { var d = downs[+el.dataset.i]; if (d) copyText(d.url).then(function (ok) { snack(ok ? "نُسخ رابط التنزيل" : "تعذّر النسخ"); }); },
   home: function () { closeSheet(); goHome(); },
   share: function () { var t = cur(); closeSheet(); if (navigator.share) navigator.share({ title: t.title, url: t.url }).catch(function () {}); else copyText(t.url).then(function () { snack("المشاركة غير متاحة، نُسخ الرابط"); }); },
@@ -653,11 +725,359 @@ var ACT = {
   fsenter: function () { fsSet(true); }, fsexit: function () { fsSet(false); },
   dno: function () { closeDialog(); }, dyes: function () { var f = dialog.ok; closeDialog(); if (f) f(); },
   tg: function (el) { var k = el.dataset.k; if (k === "sbfs") S.sb.hideInFs = !S.sb.hideInFs; else S[k] = !S[k]; saveSettings(); if (k === "js") tabs.forEach(function (t) { if (t.vid) WV.javascript(t.vid, S.js); }); renderSettings(); chrome(); },
-  setseg: function (el) { var k = el.dataset.k, v = el.dataset.v; if (k === "theme") S.theme = v; else if (k === "sbmode") S.sb.mode = v; else if (k === "sbicons") S.sb.icons = v; saveSettings(); renderSettings(); chrome(); },
+  setseg: function (el) { var k = el.dataset.k, v = el.dataset.v; if (k === "openMode") S.openMode = v; else if (k === "theme") S.theme = v; else if (k === "sbmode") S.sb.mode = v; else if (k === "sbicons") S.sb.icons = v; saveSettings(); renderSettings(); chrome(); },
   sbpeek: function () { try { SB.peek(2500); } catch (e) {} }, sbreset: function () { S.sb = Object.assign({}, DEF.sb); saveSettings(); try { SB.reset(); } catch (e) {} renderSettings(); chrome(); },
-  cleardata: function () { clearData(); }
+  cleardata: function () { clearData(); },
+  clrview: function () { if (DL) { DL.clearCache(); snack("تم مسح النسخ المؤقتة"); renderSettings(); } }
 };
-function closeAllPanels() { openPanels.slice().forEach(function (n) { $("p-" + n).classList.remove("on"); }); openPanels = []; syncNative(); render(); }
+function closeAllPanels() { var had = openPanels.indexOf("viewer") > -1; openPanels.slice().forEach(function (n) { $("p-" + n).classList.remove("on"); }); openPanels = []; if (had) endViewer(); syncNative(); render(); }
+
+/* ============================ العارض: مشغّل فيديو/صوت متقدم + صور + نصوص ============================ */
+Object.assign(P, {
+  play: "M5 3l14 9-14 9V3z", pause: "M6 4h4v16H6zM14 4h4v16h-4z", prevt: "M19 20L9 12l10-8v16zM5 19V5", nextt: "M5 4l10 8-10 8V4zM19 5v14",
+  rew: "M1 4v6h6M3.51 15a9 9 0 1 0 2.13-9.36L1 10", ffw: "M23 4v6h-6M20.49 15a9 9 0 1 1-2.13-9.36L23 10",
+  unlock: "M5 11h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2zM7 11V7a5 5 0 0 1 9.9-1",
+  sun: "M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10zM12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42",
+  vol: "M11 5L6 9H2v6h4l5 4V5zM19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07", volx: "M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6",
+  phone: "M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zM12 18h.01", cc: "M4 5h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zM10 10a2 2 0 0 0-2-1 2 2 0 0 0-2 2v2a2 2 0 0 0 2 2 2 2 0 0 0 2-1M18 10a2 2 0 0 0-2-1 2 2 0 0 0-2 2v2a2 2 0 0 0 2 2 2 2 0 0 0 2-1",
+  repeat: "M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3", shuffle: "M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5",
+  music: "M9 18V5l12-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM21 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z", more: "M12 5h.01M12 12h.01M12 19h.01", timer: "M12 22a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 8v5l3 2M9 1h6", loop: "M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3"
+});
+var EXT = { video: "mp4 m4v mkv webm mov 3gp ogv", audio: "mp3 m4a aac ogg oga opus wav flac amr mka", image: "jpg jpeg png gif webp bmp svg avif ico", text: "txt md json csv log xml srt vtt ini yml yaml js css html htm" };
+function kindOf(it) {
+  var n = String(it.name || "").toLowerCase(), e = n.indexOf(".") > -1 ? n.split(".").pop() : "", m = String(it.mime || "").toLowerCase();
+  for (var k in EXT) if (EXT[k].split(" ").indexOf(e) > -1) return k;
+  if (/^video\//.test(m)) return "video"; if (/^audio\//.test(m)) return "audio"; if (/^image\//.test(m)) return "image"; if (/^text\/|json|xml/.test(m)) return "text";
+  return null;
+}
+function dev() { return window.RosTrickDevice || null; }
+function fmtT(s) { s = Math.max(0, Math.floor(s || 0)); var h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60; return (h ? h + ":" + ("0" + m).slice(-2) : m) + ":" + ("0" + x).slice(-2); }
+function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+var VW = null;
+function playerFs() { return !!(VW && VW.kind === "video" && openPanels.indexOf("viewer") > -1); }
+
+/* ---- فتح ملف محمّل: مسار النظام أو مسار المتصفح (مثل كروم) ---- */
+function openDownload(id, force) {
+  if (!DL) return;
+  var it = DL.get(id); if (!it) return;
+  if (it.state !== "done") { snack(DSTATE[it.state] || "الملف غير جاهز"); return; }
+  var k = kindOf(it);
+  if (!k) { DL.open(id); return; } // PDF/APK/ZIP/مستندات… بتطبيق النظام
+  var mode = force || S.openMode;
+  if (mode === "system") { DL.open(id); return; }
+  if (mode === "browser") { showViewer(it, k); return; }
+  $("dlgBox").innerHTML = "<h3>" + esc(it.name) + "</h3><p>كيف تريد فتح الملف؟</p><div style='display:flex;flex-direction:column;gap:8px;margin-top:8px'>" +
+    "<button class='btn' data-act='openbro' data-id='" + esc(id) + "' style='margin:0'>" + I(k === "image" ? "full" : k === "text" ? "txt" : "play").replace("<svg", "<svg style='width:20px;height:20px'") + " " + (k === "video" || k === "audio" ? "تشغيل هنا (مشغّل متقدم)" : "عرض هنا") + "</button>" +
+    "<button class='btn ghost' data-act='opensys' data-id='" + esc(id) + "' style='margin:0'>" + I("ext").replace("<svg", "<svg style='width:20px;height:20px'") + " فتح بتطبيق من الجهاز</button></div>" +
+    "<label class='chk' style='margin-top:6px'><input type='checkbox' id='rememberOpen'> تذكّر اختياري دائمًا</label><div class='acts'><button class='btn ghost' data-act='dno'>إلغاء</button></div>";
+  dialogOn = true; $("dlg").classList.add("on"); dialog.ok = null; syncNative();
+}
+function pickOpen(mode, id) {
+  var rem = $("rememberOpen") && $("rememberOpen").checked; closeDialog();
+  if (rem) { S.openMode = mode; saveSettings(); }
+  openDownload(id, mode);
+}
+
+/* ---- الجلسة ---- */
+function showViewer(it, k) {
+  VW = { kind: k, it: it, list: [], idx: 0, fit: "contain", zoom: 1, locked: false, cues: null, subOff: 0, subSz: 18, rate: 1, ab: [null, null], repeat: "off", shuffle: false, token: 0, ctlOn: true, t: {}, off: [], dragSeek: false };
+  VW.list = DL.list().filter(function (d) { return d.state === "done" && kindOf(d) === k && !privDl[d.url]; });
+  VW.idx = Math.max(0, VW.list.map(function (d) { return d.id; }).indexOf(it.id));
+  if (!VW.list.length) VW.list = [it];
+  openPanel("viewer");
+  var D = dev();
+  if (D) {
+    if (k === "video" || k === "image") D.orientation.set("auto");
+    if (k === "video" || k === "audio") D.volume.keys("music");
+    VW.off.push(D.on("volume", function (d) { if (VW && VW.kind === "video" && d.stream === "music") hud("vol", Math.round(d.percent * 100) + "%", d.percent); }));
+  }
+  try { if (navigator.wakeLock && (k === "video")) navigator.wakeLock.request("screen").then(function (l) { if (VW) VW.wl = l; else l.release(); }, function () {}); } catch (e) {}
+  loadCurrent();
+}
+function endViewer() {
+  var v = VW; if (!v) return; savePos();
+  Object.keys(v.t).forEach(function (k) { clearTimeout(v.t[k]); clearInterval(v.t[k]); });
+  v.off.forEach(function (f) { try { f(); } catch (e) {} });
+  var m = $("vmedia"); if (m) { try { m.pause(); m.removeAttribute("src"); m.load(); } catch (e) {} }
+  try { if (v.wl) v.wl.release(); } catch (e) {}
+  var D = dev(); if (D) { D.brightness.reset(); D.orientation.set("unlock"); D.volume.keys("auto"); }
+  VW = null; $("p-viewer").innerHTML = ""; chrome();
+}
+function posKey(it) { return (it.name || "") + "|" + (it.total || it.size || 0); }
+function savePos() {
+  if (!VW || !S.resume) return; var m = $("vmedia"); if (!m || !(m.duration > 0) || VW.kind === "image") return;
+  var o = store.get("pos", {}), k = posKey(VW.it), t = m.currentTime;
+  if (t > 5 && t < m.duration - 8) o[k] = Math.floor(t); else delete o[k];
+  var ks = Object.keys(o); if (ks.length > 200) delete o[ks[0]]; store.set("pos", o);
+}
+
+/* ---- الهيكل ---- */
+function ctlRow() {
+  var v = VW.kind === "video";
+  return '<div class="vrow">' + (v ? '<button class="vib" data-act="vlock" aria-label="قفل">' + I("lock") + "</button>" : '<button class="vib" data-act="vshuf" id="vshuf" aria-label="عشوائي">' + I("shuffle") + "</button>") +
+    '<button class="vib" data-act="vprev" aria-label="السابق">' + I("prevt") + '</button><button class="vib" data-act="vskip" data-s="-10" aria-label="للخلف">' + I("rew") + "<b>10</b></button>" +
+    '<button class="vib big" data-act="vplay" id="vplay" aria-label="تشغيل">' + I("play", "fill") + '</button><button class="vib" data-act="vskip" data-s="10" aria-label="للأمام">' + I("ffw") + "<b>10</b></button>" +
+    '<button class="vib" data-act="vnext" aria-label="التالي">' + I("nextt") + "</button>" +
+    (v ? '<button class="vib" data-act="vfit" aria-label="الأبعاد">' + I("full") + '</button><button class="vib" data-act="vrot" aria-label="تدوير">' + I("phone") + "</button>" : '<button class="vib" data-act="vrep" id="vrep" aria-label="تكرار">' + I("repeat") + "</button>") + "</div>";
+}
+function renderViewer() {
+  var V = VW, k = V.kind, h = "";
+  var top = '<div class="vtop"><button class="vib" data-act="pclose" aria-label="رجوع"><svg class="flip" viewBox="0 0 24 24"><path d="' + P.back + '"/></svg></button><div class="vtitle" id="vtitle"></div>';
+  if (k === "video" || k === "audio") top += '<button class="vtx" data-act="vsubs" id="vccb">' + I("cc").replace("<svg", '<svg style="width:22px;height:22px"') + '</button><button class="vtx" data-act="vspeed" id="vspd">1x</button>';
+  if (k === "text") top += '<button class="vtx" data-act="tfs" data-d="-1">A-</button><button class="vtx" data-act="tfs" data-d="1">A+</button><button class="vtx" data-act="twrap">⏎</button>';
+  top += '<button class="vib" data-act="vmore" aria-label="المزيد">' + I("more") + "</button></div>";
+  if (k === "video") {
+    h = '<div class="vw" id="vw"><video id="vmedia" playsinline webkit-playsinline preload="auto"></video><div id="vdim" style="position:absolute;inset:0;background:#000;opacity:0;pointer-events:none"></div><div id="vsub"></div><div class="vgest" id="vgest"></div>' +
+      '<div class="vhud" id="vhud"></div><div class="vspin" id="vspin"><i></i><span id="vspt"></span></div><div class="vctl" id="vctl">' + top + '<div class="vbot"><div class="vseekrow"><span id="vcur">0:00</span><input type="range" id="vseek" min="0" max="1000" value="0"><span id="vdur">0:00</span></div>' + ctlRow() + "</div></div>" +
+      '<button class="vunlock" id="vunlock" data-act="vunlock" aria-label="فتح القفل">' + I("lock") + '</button><div class="vmenu hide" id="vmenu"></div><div class="verr" id="verr"></div></div>';
+  } else if (k === "audio") {
+    h = '<div class="vw" id="vw"><audio id="vmedia" preload="auto"></audio><div class="vcover"><div class="disc">' + I("music") + '</div><b id="vtitle2"></b><small id="vsubt"></small><div id="vsub" style="position:static;font-size:16px;color:#c8d4ff;min-height:50px"></div></div><div class="vspin" id="vspin"><i></i><span id="vspt"></span></div><div class="vctl" id="vctl">' + top + '<div class="vbot" style="background:rgba(0,0,0,.45)"><div class="vseekrow"><span id="vcur">0:00</span><input type="range" id="vseek" min="0" max="1000" value="0"><span id="vdur">0:00</span></div>' + ctlRow() + '</div></div><div class="vhud" id="vhud"></div><div class="vmenu hide" id="vmenu"></div><div class="verr" id="verr"></div></div>';
+  } else if (k === "image") {
+    h = '<div class="vw" id="vw"><div class="vimgw" id="vimgw"><img id="vimg" alt=""></div><div class="vspin" id="vspin"><i></i><span id="vspt"></span></div><div class="vctl" id="vctl">' + top + '<div class="vbot"><div class="vrow"><button class="vib" data-act="vprev">' + I("prevt") + '</button><span id="vcount" style="min-width:60px;text-align:center;font-size:13px"></span><button class="vib" data-act="vnext">' + I("nextt") + '</button></div></div></div><div class="vmenu hide" id="vmenu"></div><div class="verr" id="verr"></div></div>';
+  } else {
+    h = '<div class="vw" id="vw"><div class="vtxt" id="vtxt"><pre id="vpre"></pre></div><div class="vspin" id="vspin"><i></i><span id="vspt"></span></div><div class="vctl" id="vctl" style="pointer-events:none">' + top + '<div></div></div><div class="vmenu hide" id="vmenu"></div><div class="verr" id="verr"></div></div>';
+  }
+  $("p-viewer").innerHTML = h + '<input type="file" id="vsubfile" accept=".srt,.vtt,.txt,text/*" class="hide">';
+  bindViewer();
+}
+RENDER.viewer = function () { if (VW) renderViewer(); };
+
+function setLoading(on, pct) { var s = $("vspin"); if (!s) return; s.classList.toggle("on", !!on); var t = $("vspt"); if (t) t.textContent = on && pct >= 0 && VW && VW.copying ? "جارٍ تجهيز الملف… " + pct + "%" : ""; }
+function vError(msg) {
+  var e = $("verr"); if (!e || !VW) return;
+  e.innerHTML = '<div style="color:#f28b82">' + I("warn").replace("<svg", '<svg style="width:44px;height:44px"') + "</div><div>" + esc(msg) + '</div><div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center"><button class="btn" data-act="vsys" style="margin:0">فتح بتطبيق آخر</button><button class="btn ghost" data-act="pclose" style="margin:0">إغلاق</button></div>';
+  e.classList.add("on"); setLoading(false);
+}
+function loadCurrent() {
+  var it = VW.list[VW.idx] || VW.it; VW.it = it; VW.ready = false; VW.cues = VW.cues && VW.keepSubs ? VW.cues : null; VW.keepSubs = false;
+  var tt = $("vtitle"); if (tt) tt.textContent = it.name || ""; var t2 = $("vtitle2"); if (t2) t2.textContent = it.name || "";
+  var ve = $("verr"); if (ve) ve.classList.remove("on");
+  var cn = $("vcount"); if (cn) cn.textContent = (VW.idx + 1) + " / " + VW.list.length;
+  var tk = ++VW.token; VW.copying = true; setLoading(true, 0);
+  DL.localFile(it.id, { onProgress: function (b, t) { if (VW && VW.token === tk) setLoading(true, t > 0 ? Math.round(b * 100 / t) : 0); } }).then(function (r) {
+    if (!VW || VW.token !== tk) return; VW.copying = false;
+    if (!r.ok) { vError(r.error === "notdone" ? "لم يكتمل تنزيل الملف بعد" : "تعذّر تجهيز الملف للعرض"); return; }
+    VW.url = r.url; VW.res = r; mountMedia(r);
+  });
+}
+function mountMedia(r) {
+  var k = VW.kind;
+  if (k === "video" || k === "audio") {
+    var m = $("vmedia"); m.src = r.url; m.playbackRate = VW.rate; m.loop = VW.repeat === "one"; m.load(); VW.ab = [null, null]; setLoading(true, 0);
+    var p = m.play(); if (p && p.catch) p.catch(function () {});
+  } else if (k === "image") {
+    var im = $("vimg"); im.onload = function () { setLoading(false); }; im.onerror = function () { vError("تعذّر عرض الصورة"); }; im.src = r.url; VW.z = 1; VW.px = 0; VW.py = 0; applyImg();
+  } else {
+    var x = new XMLHttpRequest(); x.open("GET", r.url, true); x.responseType = "arraybuffer";
+    x.onload = function () { if (!VW) return; var buf = x.response, txt = ""; setLoading(false);
+      try { txt = new TextDecoder("utf-8", { fatal: true }).decode(buf.byteLength > 3e6 ? buf.slice(0, 3e6) : buf); } catch (e) { try { txt = new TextDecoder("windows-1256").decode(buf.byteLength > 3e6 ? buf.slice(0, 3e6) : buf); } catch (e2) { txt = "تعذّر قراءة الملف كنص"; } }
+      if (/json/i.test(r.mime || "") || /\.json$/i.test(r.name || "")) { try { txt = JSON.stringify(JSON.parse(txt), null, 2); } catch (e) {} }
+      $("vpre").textContent = txt + (buf.byteLength > 3e6 ? "\n\n… (عُرض أول 3 ميغابايت فقط)" : ""); };
+    x.onerror = function () { vError("تعذّر قراءة الملف"); }; x.send();
+  }
+}
+
+/* ---- الأحداث والإيماءات ---- */
+function hud(ic, text, frac) {
+  var h = $("vhud"); if (!h) return;
+  h.innerHTML = I(ic) + "<span>" + esc(text) + "</span>" + (frac != null ? '<div class="bar"><i style="width:' + Math.round(clamp(frac, 0, 1) * 100) + '%"></i></div>' : "");
+  h.classList.add("on"); clearTimeout(VW.t.hud); VW.t.hud = setTimeout(function () { h.classList.remove("on"); }, 800);
+}
+function showCtl(on) {
+  var c = $("vctl"); if (!c || !VW) return; VW.ctlOn = on; c.classList.toggle("off", !on);
+  clearTimeout(VW.t.hide);
+  var m = $("vmedia"); if (on && VW.kind === "video" && m && !m.paused && !VW.menuOn) VW.t.hide = setTimeout(function () { showCtl(false); }, 3500);
+}
+function updSeek() {
+  var m = $("vmedia"), s = $("vseek"); if (!m || !s || VW.dragSeek) return;
+  var d = m.duration > 0 && isFinite(m.duration) ? m.duration : 0, p = d ? m.currentTime / d * 1000 : 0;
+  s.value = p; s.style.setProperty("--p", (p / 10) + "%"); $("vcur").textContent = fmtT(m.currentTime); $("vdur").textContent = d ? fmtT(d) : "--:--";
+}
+function updSub() {
+  var el = $("vsub"), m = $("vmedia"); if (!el || !m) return;
+  if (!VW.cues) { if (el.firstChild) el.textContent = ""; return; }
+  var t = m.currentTime - VW.subOff, c = null, a = VW.cues;
+  for (var i = 0; i < a.length; i++) if (t >= a[i].s && t <= a[i].e) { c = a[i]; break; }
+  var txt = c ? c.t : ""; if ((el.dataset.t || "") !== txt) { el.dataset.t = txt; el.textContent = ""; if (txt) { var sp = document.createElement("span"); sp.textContent = txt; el.appendChild(sp); } }
+}
+function applyFit() {
+  var m = $("vmedia"); if (!m || VW.kind !== "video") return; m.style.objectFit = VW.fit; m.style.transform = VW.zoom !== 1 ? "scale(" + VW.zoom + ")" : "";
+}
+function bindViewer() {
+  var V = VW, m = $("vmedia");
+  if (m) {
+    m.addEventListener("loadedmetadata", function () {
+      if (!VW) return; setLoading(false); updSeek();
+      var o = store.get("pos", {}), p = o[posKey(VW.it)];
+      if (S.resume && p > 5 && p < m.duration - 8) { m.currentTime = p; hud("play", "استكمال من " + fmtT(p)); }
+      if (VW.kind === "video") showCtl(true);
+    });
+    m.addEventListener("timeupdate", function () {
+      updSeek();
+      if (VW && VW.ab[1] != null && m.currentTime >= VW.ab[1]) m.currentTime = VW.ab[0] || 0;
+      if (VW && (Date.now() - (VW.lastSave || 0)) > 5000) { VW.lastSave = Date.now(); savePos(); }
+    });
+    m.addEventListener("play", function () { var b = $("vplay"); if (b) b.innerHTML = I("pause", "fill"); showCtl(true); });
+    m.addEventListener("pause", function () { var b = $("vplay"); if (b) b.innerHTML = I("play", "fill"); showCtl(true); savePos(); });
+    m.addEventListener("waiting", function () { if (VW) setLoading(true, 0); }); m.addEventListener("playing", function () { setLoading(false); });
+    m.addEventListener("canplay", function () { setLoading(false); });
+    m.addEventListener("ended", function () { if (!VW) return; if (VW.repeat === "one") return; if (S.autoNext && (VW.idx < VW.list.length - 1 || VW.repeat === "all" || VW.shuffle)) nextItem(1); else showCtl(true); });
+    m.addEventListener("error", function () { if (VW && m.getAttribute("src")) vError("تعذّر تشغيل هذا الملف داخل التطبيق (الصيغة أو الترميز غير مدعوم). جرّب فتحه بتطبيق آخر."); });
+    var s = $("vseek");
+    s.addEventListener("input", function () { VW.dragSeek = true; var d = m.duration || 0; $("vcur").textContent = fmtT(s.value / 1000 * d); s.style.setProperty("--p", (s.value / 10) + "%"); clearTimeout(VW.t.hide); });
+    s.addEventListener("change", function () { var d = m.duration || 0; m.currentTime = s.value / 1000 * d; VW.dragSeek = false; showCtl(true); });
+    VW.t.sub = setInterval(updSub, 150);
+  }
+  var f = $("vsubfile"); if (f) f.addEventListener("change", function () { var file = f.files && f.files[0]; if (!file) return; var fr = new FileReader(); fr.onload = function () { loadSubs(fr.result, file.name); f.value = ""; }; fr.readAsArrayBuffer(file); });
+  if (V.kind === "video") bindGestures($("vgest"), m);
+  if (V.kind === "image") bindImage($("vimgw"));
+  if (V.kind !== "video") { $("vctl").addEventListener("click", function () {}); }
+  if (V.kind === "image" || V.kind === "text") $("vw").addEventListener("click", function (e) { if (e.target.closest(".vtop,.vbot,.vmenu,.verr")) return; showCtl(!VW.ctlOn); });
+  applyFit();
+}
+function bindGestures(g, m) {
+  var pts = {}, st = null, lastTap = 0, tapT = 0, D = dev();
+  function d2() { var k = Object.keys(pts); if (k.length < 2) return 0; var a = pts[k[0]], b = pts[k[1]]; return Math.hypot(a.x - b.x, a.y - b.y); }
+  function brGet() { if (!D) return VW.dim == null ? 1 : VW.dim; var b = D.brightness.get(); return b.window >= 0 ? b.window : (b.system >= 0 ? b.system : 0.5); }
+  function brSet(v) { v = clamp(v, 0.02, 1); if (D) D.brightness.set(v); else { VW.dim = v; $("vdim").style.opacity = 1 - v; } return v; }
+  function volGet() { return D ? D.volume.get("music").percent : m.volume; }
+  function volSet(v) { v = clamp(v, 0, 1); if (D) D.volume.set("music", v); else m.volume = v; return v; }
+  g.addEventListener("pointerdown", function (e) {
+    try { g.setPointerCapture(e.pointerId); } catch (x) {}
+    pts[e.pointerId] = { x: e.clientX, y: e.clientY };
+    if (VW.locked) { st = { type: "locked" }; return; }
+    if (Object.keys(pts).length === 2) { clearTimeout(VW.t.hold); st = { type: "pinch", d0: d2(), f0: VW.fit, z0: VW.zoom }; return; }
+    var r = g.getBoundingClientRect();
+    st = { type: "pending", x0: e.clientX, y0: e.clientY, side: (e.clientX - r.left) < r.width / 2 ? "L" : "R", w: r.width, h: r.height, tx: e.clientX - r.left, t0: m.currentTime };
+    clearTimeout(VW.t.hold);
+    VW.t.hold = setTimeout(function () { if (st && st.type === "pending") { st.type = "hold"; st.rate = m.playbackRate; m.playbackRate = 2; hud("ffw", "2x سرعة"); if (D) D.haptic("tick"); } }, 450);
+  });
+  g.addEventListener("pointermove", function (e) {
+    if (!pts[e.pointerId]) return; pts[e.pointerId] = { x: e.clientX, y: e.clientY };
+    if (!st || st.type === "locked") return;
+    if (st.type === "pinch") { var r = d2() / (st.d0 || 1); if (r > 1.15 && VW.fit !== "cover") { VW.fit = "cover"; applyFit(); hud("full", "تعبئة الشاشة"); } else if (r < 0.87 && VW.fit !== "contain") { VW.fit = "contain"; applyFit(); hud("full", "ملاءمة الشاشة"); } return; }
+    var dx = e.clientX - st.x0, dy = e.clientY - st.y0;
+    if (st.type === "pending" && (Math.abs(dx) > 14 || Math.abs(dy) > 14)) {
+      clearTimeout(VW.t.hold);
+      if (Math.abs(dy) > Math.abs(dx)) { st.type = st.side === "L" ? "bri" : "vol"; st.v0 = st.type === "bri" ? brGet() : volGet(); }
+      else { st.type = "seek"; st.dur = m.duration || 0; if (!VW.wasPaused) VW.wasPaused = m.paused; }
+    }
+    if (st.type === "bri") { var b = brSet(st.v0 - dy / (st.h * 0.7)); hud("sun", Math.round(b * 100) + "%", b); }
+    else if (st.type === "vol") { var v = volSet(st.v0 - dy / (st.h * 0.7)); hud(v <= 0 ? "volx" : "vol", Math.round(v * 100) + "%", v); }
+    else if (st.type === "seek" && st.dur) { var delta = dx / st.w * 120; st.target = clamp(st.t0 + delta, 0, st.dur); hud(delta >= 0 ? "ffw" : "rew", fmtT(st.target) + " (" + (delta >= 0 ? "+" : "−") + Math.abs(Math.round(delta)) + "ث)", st.target / st.dur); }
+  });
+  function end(e) {
+    var had = pts[e.pointerId]; delete pts[e.pointerId]; if (!had || !st) return;
+    clearTimeout(VW.t.hold); var s = st;
+    if (Object.keys(pts).length) return; st = null;
+    if (s.type === "hold") { m.playbackRate = s.rate || VW.rate; return; }
+    if (s.type === "seek" && s.target != null) { m.currentTime = s.target; return; }
+    if (s.type === "locked") { var u = $("vunlock"); u.classList.add("on"); clearTimeout(VW.t.ul); VW.t.ul = setTimeout(function () { u.classList.remove("on"); }, 2500); return; }
+    if (s.type !== "pending") return;
+    var now = Date.now();
+    if (now - lastTap < 300) { // نقر مزدوج
+      clearTimeout(tapT); lastTap = 0; var third = s.tx / s.w;
+      if (third < 0.34) { skip(-10); } else if (third > 0.66) { skip(10); } else { togglePlay(); }
+    } else { lastTap = now; clearTimeout(tapT); tapT = setTimeout(function () { showCtl(!VW.ctlOn); }, 300); }
+  }
+  g.addEventListener("pointerup", end); g.addEventListener("pointercancel", end);
+}
+function bindImage(w) {
+  var pts = {}, st = null, img = $("vimg"), last = 0, D = dev();
+  w.addEventListener("pointerdown", function (e) { try { w.setPointerCapture(e.pointerId); } catch (x) {} pts[e.pointerId] = { x: e.clientX, y: e.clientY };
+    var ks = Object.keys(pts); if (ks.length === 2) { var a = pts[ks[0]], b = pts[ks[1]]; st = { t: "pinch", d0: Math.hypot(a.x - b.x, a.y - b.y), z0: VW.z }; } else st = { t: "pan", x0: e.clientX, y0: e.clientY, px: VW.px, py: VW.py, moved: false }; });
+  w.addEventListener("pointermove", function (e) { if (!pts[e.pointerId] || !st) return; pts[e.pointerId] = { x: e.clientX, y: e.clientY };
+    if (st.t === "pinch") { var ks = Object.keys(pts); if (ks.length < 2) return; var a = pts[ks[0]], b = pts[ks[1]]; VW.z = clamp(st.z0 * Math.hypot(a.x - b.x, a.y - b.y) / st.d0, 1, 6); applyImg(); }
+    else { var dx = e.clientX - st.x0, dy = e.clientY - st.y0; if (Math.abs(dx) + Math.abs(dy) > 8) st.moved = true; if (VW.z > 1) { VW.px = st.px + dx; VW.py = st.py + dy; applyImg(); } } });
+  function up(e) { var s = st; delete pts[e.pointerId]; if (Object.keys(pts).length) return; st = null; if (!s) return;
+    if (s.t === "pan" && !s.moved) { var n = Date.now(); if (n - last < 300) { last = 0; VW.z = VW.z > 1 ? 1 : 2.5; VW.px = VW.py = 0; applyImg(); } else last = n; }
+    else if (s.t === "pan" && s.moved && VW.z <= 1) { var dx = e.clientX - s.x0; if (Math.abs(dx) > 70 && VW.list.length > 1) nextItem(dx < 0 ? 1 : -1); } if (VW.z <= 1) { VW.px = VW.py = 0; applyImg(); } }
+  w.addEventListener("pointerup", up); w.addEventListener("pointercancel", up);
+}
+function applyImg() { var i = $("vimg"); if (i) i.style.transform = "translate(" + VW.px + "px," + VW.py + "px) scale(" + VW.z + ")"; }
+
+/* ---- أوامر ---- */
+function togglePlay() { var m = $("vmedia"); if (!m) return; if (m.paused) { var p = m.play(); if (p && p.catch) p.catch(function () {}); hud("play", "تشغيل"); } else { m.pause(); hud("pause", "إيقاف مؤقت"); } }
+function skip(s) { var m = $("vmedia"); if (!m) return; m.currentTime = clamp(m.currentTime + s, 0, m.duration || 1e9); hud(s > 0 ? "ffw" : "rew", (s > 0 ? "+" : "−") + Math.abs(s) + " ث"); var D = dev(); if (D) D.haptic("tick"); }
+function nextItem(dir) {
+  if (!VW || VW.list.length < 2 && VW.repeat !== "all") { if (VW && VW.kind !== "video") { var m = $("vmedia"); if (m) { m.currentTime = 0; } } return; }
+  var n = VW.list.length, i = VW.idx;
+  if (VW.shuffle && dir > 0 && VW.kind === "audio") i = Math.floor(Math.random() * n); else i = (i + dir + n) % n;
+  if (VW.kind === "audio" || VW.kind === "video") savePos();
+  VW.idx = i; VW.cues = null; VW.keepSubs = false; loadCurrent();
+}
+function menu(title, rows) {
+  var el = $("vmenu"); if (!el) return; VW.menuOn = true; showCtl(true);
+  el.innerHTML = (title ? "<h4>" + esc(title) + "</h4>" : "") + rows.map(function (r, i) {
+    if (r.step) return '<div class="stp"><span>' + esc(r.label) + '</span><span style="display:flex;gap:6px;align-items:center"><button class="vtx" data-i="' + i + '" data-d="-1">−</button><b style="min-width:54px;text-align:center">' + esc(r.val()) + '</b><button class="vtx" data-i="' + i + '" data-d="1">+</button></span></div>';
+    return '<button data-i="' + i + '" class="' + (r.on ? "on" : "") + '">' + (r.icon ? I(r.icon).replace("<svg", '<svg style="width:22px;height:22px"') : "") + "<span>" + esc(r.label) + "</span>" + (r.on ? '<span style="margin-inline-start:auto">' + I("chk").replace("<svg", '<svg style="width:20px;height:20px"') + "</span>" : "") + "</button>";
+  }).join("");
+  el.classList.remove("hide"); el.scrollTop = 0; VW.menuRows = rows;
+}
+function menuClose() { var el = $("vmenu"); if (el) el.classList.add("hide"); if (VW) { VW.menuOn = false; VW.menuRows = null; showCtl(true); } }
+function speedMenu() { var rates = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3]; menu("سرعة التشغيل", rates.map(function (r) { return { label: r + "x" + (r === 1 ? " (عادي)" : ""), on: VW.rate === r, fn: function () { VW.rate = r; $("vmedia").playbackRate = r; $("vspd").textContent = r + "x"; menuClose(); } }; })); }
+function subsMenu() {
+  var rows = [{ icon: "cc", label: VW.cues ? "تغيير ملف الترجمة…" : "إضافة ملف ترجمة (SRT / VTT)…", fn: function () { menuClose(); $("vsubfile").click(); } }];
+  if (VW.cues) {
+    rows.push({ label: "إخفاء الترجمة", fn: function () { VW.cues = null; updSub(); $("vccb").classList.remove("on"); menuClose(); } });
+    rows.push({ step: 1, label: "تأخير/تقديم الترجمة", val: function () { return (VW.subOff > 0 ? "+" : "") + VW.subOff.toFixed(1) + "ث"; }, fn: function (d) { VW.subOff = Math.round((VW.subOff + d * 0.5) * 10) / 10; } });
+    rows.push({ step: 1, label: "حجم الخط", val: function () { return VW.subSz + "px"; }, fn: function (d) { VW.subSz = clamp(VW.subSz + d * 2, 10, 40); $("vw").style.setProperty("--subsz", VW.subSz + "px"); } });
+  }
+  menu("الترجمة", rows);
+}
+function parseSubs(txt) {
+  txt = String(txt).replace(/\r/g, "").replace(/^﻿/, ""); var out = [];
+  txt.split(/\n\n+/).forEach(function (b) {
+    var L = b.split("\n").filter(function (x) { return x.trim() !== ""; }), i = 0; while (i < L.length && L[i].indexOf("-->") < 0) i++; if (i >= L.length) return;
+    var m = L[i].match(/(?:(\d+):)?(\d+):(\d+)[,.](\d+)\s*-->\s*(?:(\d+):)?(\d+):(\d+)[,.](\d+)/); if (!m) return;
+    var s = (+m[1] || 0) * 3600 + (+m[2]) * 60 + (+m[3]) + (+("0." + m[4])), e = (+m[5] || 0) * 3600 + (+m[6]) * 60 + (+m[7]) + (+("0." + m[8]));
+    var t = L.slice(i + 1).join("\n").replace(/<[^>]*>/g, "").replace(/\{\\[^}]*\}/g, "").trim(); if (t) out.push({ s: s, e: e, t: t });
+  });
+  return out;
+}
+function loadSubs(buf, name) {
+  var txt; try { txt = new TextDecoder("utf-8", { fatal: true }).decode(buf); } catch (e) { try { txt = new TextDecoder("windows-1256").decode(buf); } catch (e2) { txt = ""; } }
+  var c = parseSubs(txt); if (!c.length) { snack("تعذّر قراءة ملف الترجمة"); return; }
+  VW.cues = c; VW.keepSubs = true; VW.subOff = 0; var b = $("vccb"); if (b) b.classList.add("on"); hud("cc", "تم تحميل الترجمة (" + c.length + " سطرًا)"); updSub();
+}
+function moreMenu() {
+  var m = $("vmedia"), k = VW.kind, it = VW.it, D = dev(), rows = [];
+  if (k === "video" || k === "audio") {
+    rows.push({ icon: "loop", label: VW.ab[0] == null ? "تكرار مقطع A-B: حدّد البداية" : VW.ab[1] == null ? "حدّد النهاية (البداية " + fmtT(VW.ab[0]) + ")" : "إلغاء تكرار المقطع", on: VW.ab[1] != null, fn: function () { if (VW.ab[0] == null) VW.ab[0] = m.currentTime; else if (VW.ab[1] == null) { VW.ab[1] = Math.max(m.currentTime, VW.ab[0] + 0.5); } else VW.ab = [null, null]; menuClose(); } });
+    rows.push({ icon: "timer", label: VW.sleep ? "مؤقت النوم: " + VW.sleep + " د (اضغط للتغيير)" : "مؤقت النوم", on: !!VW.sleep, fn: function () { sleepMenu(); } });
+    rows.push({ icon: "volx", label: m.muted ? "إلغاء كتم الصوت" : "كتم الصوت", fn: function () { m.muted = !m.muted; menuClose(); } });
+    if (k === "video") rows.push({ icon: "phone", label: "تثبيت الاتجاه الحالي", fn: function () { if (D) D.orientation.set("lock"); menuClose(); hud("phone", "تم تثبيت الاتجاه"); } });
+  }
+  if (k === "image") rows.push({ icon: "full", label: "أصل الحجم / ملاءمة", fn: function () { VW.z = VW.z > 1 ? 1 : 2.5; VW.px = VW.py = 0; applyImg(); menuClose(); } });
+  rows.push({ icon: "share", label: "مشاركة الملف", fn: function () { DL.share(it.id); menuClose(); } });
+  rows.push({ icon: "ext", label: "فتح بتطبيق آخر", fn: function () { DL.open(it.id); menuClose(); } });
+  rows.push({ icon: "info", label: "التفاصيل", fn: function () {
+    var line = [it.name, fsize(VW.res && VW.res.size || it.total), VW.res && VW.res.mime]; if (k === "video" && m.videoWidth) line.push(m.videoWidth + "×" + m.videoHeight); if (m && m.duration) line.push(fmtT(m.duration));
+    menuClose(); dialog("<h3>التفاصيل</h3><p style='direction:ltr;text-align:left;word-break:break-all'>" + esc(line.filter(Boolean).join("\n")).replace(/\n/g, "<br>") + "</p>", null, "حسنًا"); $("dlgBox").querySelector("[data-act=dno]").style.display = "none"; } });
+  menu("خيارات", rows);
+}
+function sleepMenu() {
+  menu("مؤقت النوم", [0, 10, 20, 30, 45, 60, 90].map(function (n) { return { label: n ? n + " دقيقة" : "إيقاف المؤقت", on: VW.sleep === n || (!VW.sleep && !n), fn: function () { clearTimeout(VW.t.sleep); VW.sleep = n; if (n) VW.t.sleep = setTimeout(function () { var m = $("vmedia"); if (m) m.pause(); if (VW) { VW.sleep = 0; hud("timer", "انتهى مؤقت النوم"); } }, n * 60000); menuClose(); if (n) hud("timer", "سيتوقف بعد " + n + " د"); } }; }));
+}
+Object.assign(ACT, {
+  openbro: function (el) { pickOpen("browser", el.dataset.id); }, opensys: function (el) { pickOpen("system", el.dataset.id); },
+  vplay: togglePlay, vskip: function (el) { skip(+el.dataset.s); }, vprev: function () { var m = $("vmedia"); if (m && VW.kind !== "image" && m.currentTime > 4) { m.currentTime = 0; } else nextItem(-1); }, vnext: function () { nextItem(1); },
+  vspeed: speedMenu, vsubs: subsMenu, vmore: moreMenu, vsys: function () { if (VW) DL.open(VW.it.id); },
+  vlock: function () { VW.locked = true; showCtl(false); hud("lock", "تم القفل"); var u = $("vunlock"); u.classList.add("on"); clearTimeout(VW.t.ul); VW.t.ul = setTimeout(function () { u.classList.remove("on"); }, 2500); },
+  vunlock: function () { VW.locked = false; $("vunlock").classList.remove("on"); showCtl(true); hud("unlock", "تم فتح القفل"); },
+  vfit: function () { var order = ["contain", "cover", "fill"], names = { contain: "ملاءمة", cover: "تعبئة (قص)", fill: "تمديد" }; VW.fit = order[(order.indexOf(VW.fit) + 1) % 3]; VW.zoom = 1; applyFit(); hud("full", names[VW.fit]); },
+  vrot: function () { var D = dev(); if (!D) { snack("التحكم بالاتجاه غير متوفر"); return; } var cur = D.orientation.get(), nx = cur === "landscape" ? "portrait" : "landscape"; D.orientation.set(nx); hud("phone", nx === "landscape" ? "أفقي" : "عمودي"); },
+  vshuf: function () { VW.shuffle = !VW.shuffle; $("vshuf").classList.toggle("on", VW.shuffle); hud("shuffle", VW.shuffle ? "عشوائي: تشغيل" : "عشوائي: إيقاف"); },
+  vrep: function () { var o = ["off", "all", "one"], n = { off: "بدون تكرار", all: "تكرار الكل", one: "تكرار الملف" }; VW.repeat = o[(o.indexOf(VW.repeat) + 1) % 3]; $("vmedia").loop = VW.repeat === "one"; $("vrep").classList.toggle("on", VW.repeat !== "off"); hud("repeat", n[VW.repeat]); },
+  tfs: function (el) { var cs = getComputedStyle($("vtxt")), cur = parseFloat(cs.fontSize) || 14; $("vtxt").style.setProperty("--tfs", clamp(cur + (+el.dataset.d) * 2, 9, 36) + "px"); },
+  twrap: function () { $("vtxt").classList.toggle("nw"); }
+});
+document.addEventListener("click", function (e) {
+  var mb = e.target.closest("#vmenu button, #vmenu .vtx"); if (!mb || !VW || !VW.menuRows) { if (VW && VW.menuOn && !e.target.closest("#vmenu, [data-act=vmore], [data-act=vspeed], [data-act=vsubs]")) menuClose(); return; }
+  var r = VW.menuRows[+mb.dataset.i]; if (!r) return;
+  if (r.step) { r.fn(+mb.dataset.d); var b = mb.parentNode.querySelector("b"); if (b) b.textContent = r.val(); return; }
+  r.fn();
+});
 
 /* ============================ ربط الأحداث ============================ */
 document.addEventListener("click", function (e) {
@@ -721,6 +1141,14 @@ function boot() {
   WV = window.RosTrickWebView; SB = window.RosTrickStatusBar;
   if (!WV) { $("nonat").classList.add("on"); return; }
   WV.on(onWv);
+  DL = window.RosTrickDownloads || null;
+  if (DL) DL.on(function (it, type) {
+    if (privDl[it.url]) return;
+    if (type === "start") snack("بدأ التنزيل: " + (it.name || host(it.url)), 3500, "التنزيلات", function () { openPanel("downloads"); });
+    else if (type === "done") snack("اكتمل التنزيل: " + it.name, 6000, "فتح", function () { openDownload(it.id); });
+    else if (type === "failed") snack("فشل التنزيل: " + (it.name || ""), 3500);
+    if (openPanels.indexOf("downloads") > -1) renderDowns();
+  });
   var ses = store.get("session", null), restored = false;
   if (ses && ses.tabs && ses.tabs.length) {
     ses.tabs.forEach(function (x) { tabs.push({ id: x.id, url: x.url || "", title: x.title || "", vid: null, loading: false, progress: 0, canBack: false, canFwd: false, priv: false, desktop: !!x.desktop, err: null, theme: null, parent: null, last: 0, shown: false, scroll: null, creating: null }); tseq++; });
@@ -735,7 +1163,7 @@ function boot() {
 var started = false, tries = 0;
 function start() { if (started) return; started = true; boot(); }
 if (window.RosTrickWebView) start();
-else { window.addEventListener("rtnative-ready", start); window.addEventListener("rtwebview-ready", start); (function w() { if (started) return; if (window.RosTrickWebView) return start(); if (++tries > 30) return start(); setTimeout(w, 100); })(); }
+else { window.addEventListener("rtnative-ready", start); (function w() { if (started) return; if (window.RosTrickWebView) return start(); if (++tries > 30) return start(); setTimeout(w, 100); })(); }
 })();
 </script>
 </body>
