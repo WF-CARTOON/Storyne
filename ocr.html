@@ -87,6 +87,15 @@
   .step.ok{border-color:var(--ok)}.step.bad .st small{color:var(--bad)}
   #fl-go.stop{background:var(--bad);border-color:var(--bad);color:#fff}
   #fl-hint{font-size:13px;color:var(--mut);margin:2px 2px 0}
+  .fld{display:flex;flex-direction:column;font-size:13px;color:var(--mut);flex:1 1 150px;min-width:130px;padding-left:8px;margin:0 0 8px}
+  .fld input[type=text],.fld input[type=number],.fld input[type=url],.fld input[type=password]{font:inherit;color:var(--tx);background:var(--card);border:1px solid var(--line);border-radius:10px;min-height:42px;padding:6px 8px;margin-top:4px;width:100%;box-sizing:border-box}
+  .fld input[type=range]{margin-top:10px;width:100%}
+  .fld input[type=color]{height:42px;width:100%;border:1px solid var(--line);border-radius:10px;background:var(--card);margin-top:4px;padding:2px}
+  .grp{font-size:13px;font-weight:700;color:var(--tx);margin:12px 0 6px;padding-top:8px;border-top:1px solid var(--line)}
+  .grp:first-of-type{border-top:0;margin-top:2px;padding-top:0}
+  .nt{color:var(--mut);font-size:13px;margin:0 0 10px}
+  #sub-prev{box-sizing:border-box;margin:4px 0 10px;padding:10px 14px;min-height:56px;display:flex;align-items:center;justify-content:center;direction:rtl}
+  #sub-prev span{display:block;width:100%;line-height:1.45;word-break:break-word}
   .hide,[hidden]{display:none!important}
   .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 </style>
@@ -134,6 +143,8 @@
     <label>نمط القراءة<select id="psm"><option value="3">تلقائي (صفحة كاملة)</option><option value="6">كتلة نص واحدة</option><option value="7">سطر واحد</option><option value="11">نص متناثر</option></select></label>
     <label>الصور الداكنة<select id="invert"><option value="auto">تلقائي</option><option value="true">اعكس دائماً</option><option value="false">لا تعكس</option></select></label>
   </div>
+  <div class="row"><label class="fld">جودة القراءة<select id="ocr-q"><option value="acc">دقيق (الأفضل جودة، أبطأ)</option><option value="lite">مخفف (أسرع وأخف على الجهاز)</option></select></label></div>
+  <p class="nt" id="ocr-q-note">المخفف يقرأ بلغة واحدة (الأولى من اللغات المختارة) وبنمط كتلة نص ودون عكس الألوان، فيكون أسرع لكنه أقل دقة في الخطوط الصعبة والخلفيات الداكنة. جودة نموذج التعرف نفسه ثابتة وقت بناء التطبيق ولا تتغير من هنا.</p>
   <label class="chk"><input type="checkbox" id="auto-copy"><span>النسخ المباشر عند التحديد<small>ينسخ السطر أو النص المحدد فور تحديده دون الضغط على زر النسخ (في الصفحة وفي النافذة العائمة).</small></span></label>
   <label class="chk"><input type="checkbox" id="auto-run" checked><span>قراءة تلقائية عند استلام صورة<small>عند فتح صورة بهذا التطبيق من تطبيق آخر.</small></span></label>
 </div>
@@ -161,9 +172,10 @@
 <div class="card" id="tr-card">
   <h2><svg class="i" viewBox="0 0 24 24"><path d="M4 5h9M8.5 3v2M6 5c0 4 3 7 7 8M12 5c0 4-3 7-7 8M13 21l4-10 4 10M14.5 18h5"/></svg>الترجمة</h2>
   <p class="note" style="color:var(--mut);font-size:13px;margin:0 0 10px">تترجم النص المقروء إلى لغتك وتعرف لغته تلقائياً. القراءة تعمل دون إنترنت، أما الترجمة فتحتاج اتصالاً بالإنترنت.</p>
-  <div class="row"><label style="display:flex;flex-direction:column;font-size:13px;color:var(--mut);flex:1 1 150px;margin:0 0 8px">الترجمة إلى<select id="tr-lang"></select></label></div>
+  <div class="row"><label class="fld">الترجمة إلى<select id="tr-lang"></select></label><label class="fld">لغة النص الأصلي<select id="tr-src"></select></label><label class="fld">خدمة الترجمة<select id="tr-prov"><option value="auto">تلقائي (Google ثم MyMemory ثم خادمك)</option><option value="google">Google فقط</option><option value="mymemory">MyMemory فقط</option><option value="libre">خادم LibreTranslate خاص بي</option></select></label></div>
+  <div id="tr-lib" hidden><div class="row"><label class="fld">عنوان الخادم<input type="url" id="tr-lib-url" dir="ltr" placeholder="http://192.168.1.5:5000" autocomplete="off"></label><label class="fld">مفتاح API (إن وُجد)<input type="password" id="tr-lib-key" dir="ltr" autocomplete="off"></label></div><p class="nt">يُستعمل مع «تلقائي» كملاذ أخير إن كتبت عنوانه هنا. يمكنك تشغيله على جهازك أو شبكتك المحلية.</p></div>
   <label class="chk"><input type="checkbox" id="tr-on"><span>ترجمة تلقائية للنص المقروء<small>تُترجم كل قراءة جديدة، وفي الوضع العائم تظهر الترجمة في النافذة.</small></span></label>
-  <div class="row" style="margin-top:6px"><button type="button" class="btn sm" id="tr-now">ترجم الآن</button><button type="button" class="btn sm" id="tr-copy" disabled>نسخ الترجمة</button></div>
+  <div class="row" style="margin-top:6px"><button type="button" class="btn sm" id="tr-now">ترجم الآن</button><button type="button" class="btn sm" id="tr-copy" disabled>نسخ الترجمة</button><button type="button" class="btn sm" id="tr-test">اختبار الاتصال بالخدمة</button></div>
   <div id="tr-status" role="status" aria-live="polite" style="min-height:22px;font-size:14px;color:var(--mut)"></div>
   <div id="tr-out" dir="auto" hidden style="white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px;margin-top:6px;line-height:1.8"></div>
 </div>
@@ -191,28 +203,64 @@
 
 <div class="card" id="sub-card">
   <h2><svg class="i" viewBox="0 0 24 24"><path d="M3 6h18a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1zM6 12h4M12 12h6M6 15h7"/></svg>إعدادات الترجمة السطرية</h2>
-  <p class="note" style="color:var(--mut);font-size:13px;margin:0 0 10px">تحدّد المنطقة مرة واحدة وتُحفظ. بعدها يكفي الضغط على الزر العائم الصغير لتحديث الترجمة فوراً، والضغط المطوّل عليه يفتح قائمة (تحديث تلقائي، منطقة جديدة، إخفاء، نسخ، إيقاف).</p>
-  <div class="step" id="fl-s-reg"><div class="st"><b>منطقة الترجمة</b><small id="sub-region-st"></small></div><button type="button" class="btn sm" id="sub-region-clear">تحديد منطقة جديدة</button></div>
+  <p class="nt">تحدّد المنطقة مرة واحدة وتُحفظ. بعدها يكفي الضغط على الزر العائم الصغير لتحديث الترجمة فوراً، والضغط المطوّل عليه يفتح قائمة (تحديث تلقائي، منطقة جديدة، إخفاء، نسخ، إيقاف).</p>
+  <div class="step" id="fl-s-reg"><div class="st"><b>منطقة القراءة</b><small id="sub-region-st"></small></div><button type="button" class="btn sm" id="sub-region-clear">تحديد منطقة جديدة</button></div>
   <div class="row">
-    <label style="display:flex;flex-direction:column;font-size:13px;color:var(--mut);flex:1 1 150px;min-width:130px;padding-left:8px;margin:0 0 8px">مدة التحديث التلقائي<select id="sub-int"><option value="0">يدوي فقط (بالزر)</option><option value="1">كل ثانية</option><option value="2">كل ثانيتين</option><option value="3">كل 3 ثوانٍ</option><option value="5">كل 5 ثوانٍ</option><option value="10">كل 10 ثوانٍ</option></select></label>
-    <label style="display:flex;flex-direction:column;font-size:13px;color:var(--mut);flex:1 1 150px;min-width:130px;padding-left:8px;margin:0 0 8px">حجم الخط<select id="sub-size"><option value="s">صغير</option><option value="m">متوسط</option><option value="l">كبير</option></select></label>
-    <label style="display:flex;flex-direction:column;font-size:13px;color:var(--mut);flex:1 1 150px;min-width:130px;padding-left:8px;margin:0 0 8px">موضع الترجمة<select id="sub-pos"><option value="auto">تلقائي (تحت المنطقة)</option><option value="top">أعلى الشاشة</option><option value="bottom">أسفل الشاشة</option></select></label>
-    <label style="display:flex;flex-direction:column;font-size:13px;color:var(--mut);flex:1 1 150px;min-width:130px;padding-left:8px;margin:0 0 8px">خلفية الترجمة<select id="sub-bg"><option value="low">شفافة</option><option value="mid">متوسطة</option><option value="high">داكنة</option></select></label>
+    <label class="fld">سرعة التحديث التلقائي<select id="sub-int"><option value="0">يدوي فقط (بالزر)</option><option value="0.1">كل 0.1 ثانية</option><option value="0.3">كل 0.3 ثانية</option><option value="0.5">كل 0.5 ثانية</option><option value="1">كل ثانية</option><option value="2">كل ثانيتين</option><option value="3">كل 3 ثوانٍ</option><option value="5">كل 5 ثوانٍ</option><option value="10">كل 10 ثوانٍ</option></select></label>
+    <label class="fld">حساسية تغيّر النص<select id="sub-sens"><option value="low">منخفضة (تتجاهل التغييرات الصغيرة)</option><option value="mid">متوسطة</option><option value="high">عالية (تتبع أي تغيير)</option></select></label>
   </div>
+  <label class="chk"><input type="checkbox" id="sub-gate"><span>تثبيت: لا تقرأ إن لم تتغير الصورة<small>يلتقط صورة صغيرة ويقارنها، ولا يشغّل القراءة إلا إذا تغيّرت المنطقة. عند تغيّرها يتحدّث النص مباشرة. يوفّر الجهد ويمنع الوميض.</small></span></label>
+  <p class="nt" id="sub-int-note">الفترة هي أقصر مدة بين قراءتين؛ الزمن الفعلي يعتمد على سرعة جهازك (تظهر آخر مدة قراءة في قائمة الزر). مع التغطية (الإخفاء المؤقت للنافذة عند الالتقاط) لا تقل الفترة عن ثانية لتفادي الوميض.</p>
   <label class="chk"><input type="checkbox" id="sub-tr"><span>ترجمة النص<small>إن أُطفئت يظهر النص الأصلي كما قُرئ.</small></span></label>
   <label class="chk"><input type="checkbox" id="sub-orig"><span>إظهار النص الأصلي بخط صغير تحت الترجمة</span></label>
   <label class="chk"><input type="checkbox" id="sub-outline"><span>إظهار إطار حول المنطقة<small>إطار منقّط خارج المنطقة بقليل، لا يدخل في القراءة.</small></span></label>
+</div>
+
+<div class="card" id="subst-card">
+  <h2><svg class="i" viewBox="0 0 24 24"><path d="M4 7V5h16v2M9 19h6M12 5v14"/></svg>شكل الترجمة</h2>
+  <div id="sub-prev" aria-label="معاينة الترجمة" role="img"><span>مرحباً بالعالم، هذه معاينة لشكل الترجمة</span></div>
+  <div class="row">
+    <label class="fld">حجم الخط<input type="range" id="sub-px" min="12" max="40" step="1"></label>
+    <label class="fld">لون الخط<input type="color" id="sub-color"></label>
+    <label class="fld">لون الخلفية<input type="color" id="sub-bgcolor"></label>
+    <label class="fld">كثافة الخلفية<input type="range" id="sub-bga" min="0" max="100" step="5"></label>
+    <label class="fld">استدارة الحواف<input type="range" id="sub-rad" min="0" max="24" step="1"></label>
+    <label class="fld">محاذاة النص<select id="sub-align"><option value="center">وسط</option><option value="right">يمين</option><option value="left">يسار</option></select></label>
+    <label class="fld">العرض (للأوضاع التلقائية)<input type="range" id="sub-w" min="30" max="100" step="5"></label>
+  </div>
+  <label class="chk"><input type="checkbox" id="sub-bold"><span>خط عريض</span></label>
+  <label class="chk"><input type="checkbox" id="sub-shadow"><span>ظلّ خلف الحروف لسهولة القراءة</span></label>
+</div>
+
+<div class="card" id="subpos-card">
+  <h2><svg class="i" viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M12 3l-3 3M12 3l3 3M12 21l-3-3M12 21l3-3M3 12l3-3M3 12l3 3M21 12l-3-3M21 12l-3 3"/></svg>مكان الترجمة</h2>
+  <div class="row">
+    <label class="fld">الموضع<select id="sub-pos"><option value="auto">تلقائي (تحت المنطقة)</option><option value="top">أعلى الشاشة</option><option value="bottom">أسفل الشاشة</option><option value="region">فوق المنطقة نفسها (تغطي النص الأصلي)</option><option value="custom">مكان وحجم أحدّدهما بنفسي</option></select></label>
+  </div>
+  <label class="chk" id="sub-cover-row"><input type="checkbox" id="sub-cover"><span>تغطية النص الأصلي بخلفية معتمة<small>يجعل الخلفية كاملة الكثافة فلا يظهر النص الأصلي تحتها.</small></span></label>
+  <p class="nt" id="sub-cover-note" hidden>عند وضع الترجمة فوق المنطقة تُخفى النافذة لحظة كل قراءة حتى لا تقرأ ترجمتها هي، فيظهر وميض خفيف، ولذلك لا تُجرى القراءة أسرع من مرة كل ثانية.</p>
+  <div id="sub-xy" hidden>
+    <div class="row">
+      <label class="fld">X (من اليسار)<input type="number" id="sub-x" inputmode="numeric"></label>
+      <label class="fld">Y (من الأعلى)<input type="number" id="sub-y" inputmode="numeric"></label>
+      <label class="fld">العرض<input type="number" id="sub-wd" inputmode="numeric"></label>
+      <label class="fld">الارتفاع<input type="number" id="sub-ht" inputmode="numeric"></label>
+    </div>
+    <p class="nt">القياس بوحدة dp (نقاط الشاشة). اتركها فارغة لتبدأ من مكان المنطقة نفسها.</p>
+  </div>
+  <button type="button" class="btn sm" id="sub-edit">تحريك وتغيير حجم الترجمة على الشاشة</button>
 </div>
 
 <div class="card" id="ic-card">
   <h2><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg>شكل الزر العائم</h2>
   <div class="row" style="margin-bottom:8px"><div id="ic-prev" aria-label="معاينة الزر" role="img"></div><span style="color:var(--mut);font-size:13px">معاينة، وتُطبَّق التغييرات على الزر فوراً إن كان ظاهراً.</span></div>
   <div class="row">
-    <label style="display:flex;flex-direction:column;font-size:13px;color:var(--mut);flex:1 1 150px;min-width:130px;padding-left:8px;margin:0 0 8px">الأيقونة<select id="ic-kind"><option value="translate">ترجمة</option><option value="subtitle">ترجمة سطرية</option><option value="scan">مسح</option><option value="eye">عين</option><option value="chat">محادثة</option><option value="globe">كرة أرضية</option></select></label>
-    <label style="display:flex;flex-direction:column;font-size:13px;color:var(--mut);flex:1 1 150px;min-width:130px;padding-left:8px;margin:0 0 8px">اللون<input type="color" id="ic-color" value="#1f6feb" style="height:42px;width:100%;border:1px solid var(--line);border-radius:10px;background:var(--card);margin-top:4px;padding:2px"></label>
-    <label style="display:flex;flex-direction:column;font-size:13px;color:var(--mut);flex:1 1 150px;min-width:130px;padding-left:8px;margin:0 0 8px">الحجم<select id="ic-size"><option value="40">صغير</option><option value="48">متوسط</option><option value="56">كبير</option></select></label>
-    <label style="display:flex;flex-direction:column;font-size:13px;color:var(--mut);flex:1 1 150px;min-width:130px;padding-left:8px;margin:0 0 8px">الشفافية<select id="ic-op"><option value="100">معتم</option><option value="70">شبه شفاف</option><option value="45">شفاف</option></select></label>
+    <label class="fld">الأيقونة<select id="ic-kind"><option value="translate">ترجمة</option><option value="subtitle">ترجمة سطرية</option><option value="scan">مسح</option><option value="eye">عين</option><option value="chat">محادثة</option><option value="globe">كرة أرضية</option></select></label>
+    <label class="fld">اللون<input type="color" id="ic-color" value="#1f6feb"></label>
+    <label class="fld">الحجم<select id="ic-size"><option value="40">صغير</option><option value="48">متوسط</option><option value="56">كبير</option></select></label>
+    <label class="fld">الشفافية<select id="ic-op"><option value="100">معتم</option><option value="70">شبه شفاف</option><option value="45">شفاف</option></select></label>
   </div>
+  <label class="chk"><input type="checkbox" id="ic-close"><span>علامة إغلاق (×) صغيرة على الزر<small>اضغطها لإيقاف الأداة وإزالة الزر في أي وقت. تُزال أيضاً من «إيقاف الأداة العائمة» أعلاه ومن قائمة الضغط المطوّل.</small></span></label>
   <div class="row"><label class="btn sm" for="ic-img" style="margin-bottom:6px">صورة خاصة بدل الأيقونة</label><input id="ic-img" class="vh" type="file" accept="image/*" aria-label="اختيار صورة للزر العائم"><button type="button" class="btn sm" id="ic-img-clear">إزالة الصورة</button></div>
 </div>
 
@@ -244,7 +292,23 @@ var ZOOMS = [0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4];
 
 var S = { img: null, lines: [], sel: {}, mode: "lines", region: null, zoom: 1, busy: false, thumbs: [], thumbOn: -1, undo: [], loadTok: 0, autoKey: "" };
 var opt = LS.get("ocr_opts_v1", {});
-opt = { lang: opt.lang || "", psm: String(opt.psm || "3"), invert: String(opt.invert || "auto"), autoCopy: !!opt.autoCopy, autoRun: opt.autoRun !== false, trOn: !!opt.trOn, trLang: String(opt.trLang || "ar"), mode: opt.mode === "win" ? "win" : "sub", subInt: String(opt.subInt != null ? opt.subInt : "2"), subSize: String(opt.subSize || "m"), subPos: String(opt.subPos || "auto"), subBg: String(opt.subBg || "mid"), subOrig: !!opt.subOrig, subOutline: !!opt.subOutline, icKind: String(opt.icKind || "translate"), icColor: String(opt.icColor || "#1f6feb"), icSize: String(opt.icSize || "48"), icOp: String(opt.icOp || "100") };
+function oNum(v, d, a, b) { v = parseFloat(v); return isFinite(v) ? Math.max(a, Math.min(b, v)) : d; }
+function oHex(v, d) { return /^#[0-9a-fA-F]{6}$/.test(String(v)) ? String(v) : d; }
+function oPick(v, list, d) { v = String(v); return list.indexOf(v) >= 0 ? v : d; }
+var SUB_INTS = ["0", "0.1", "0.3", "0.5", "1", "2", "3", "5", "10"];
+opt = {
+  lang: opt.lang || "", psm: String(opt.psm || "3"), invert: String(opt.invert || "auto"), ocrQ: opt.ocrQ === "lite" ? "lite" : "acc",
+  autoCopy: !!opt.autoCopy, autoRun: opt.autoRun !== false,
+  trOn: !!opt.trOn, trLang: String(opt.trLang || "ar"), trProv: oPick(opt.trProv || "auto", ["auto", "google", "mymemory", "libre"], "auto"), trSrc: String(opt.trSrc || "auto"), trLibUrl: String(opt.trLibUrl || ""), trLibKey: String(opt.trLibKey || ""),
+  mode: opt.mode === "win" ? "win" : "sub", subInt: oPick(opt.subInt != null ? opt.subInt : "2", SUB_INTS, "2"), subGate: opt.subGate !== false, subSens: oPick(opt.subSens || "mid", ["low", "mid", "high"], "mid"),
+  subPx: String(oNum(opt.subPx != null ? opt.subPx : ({ s: 16, m: 20, l: 26 })[opt.subSize], 20, 12, 40)), subColor: oHex(opt.subColor, "#ffffff"), subBgColor: oHex(opt.subBgColor, "#000000"),
+  subBgA: String(oNum(opt.subBgA != null ? opt.subBgA : ({ low: 35, mid: 60, high: 85 })[opt.subBg], 60, 0, 100)), subRad: String(oNum(opt.subRad, 12, 0, 24)), subBold: opt.subBold !== false, subShadow: opt.subShadow !== false,
+  subAlign: oPick(opt.subAlign || "center", ["center", "right", "left"], "center"), subW: String(oNum(opt.subW, 100, 30, 100)),
+  subPos: oPick(opt.subPos || "auto", ["auto", "top", "bottom", "region", "custom"], "auto"), subCover: !!opt.subCover,
+  subX: opt.subX == null ? "" : String(opt.subX), subY: opt.subY == null ? "" : String(opt.subY), subWd: opt.subWd == null ? "" : String(opt.subWd), subHt: opt.subHt == null ? "" : String(opt.subHt),
+  subOrig: !!opt.subOrig, subOutline: !!opt.subOutline,
+  icKind: String(opt.icKind || "translate"), icColor: String(opt.icColor || "#1f6feb"), icSize: String(opt.icSize || "48"), icOp: String(opt.icOp || "100"), icClose: opt.icClose !== false
+};
 function saveOpt() { LS.set("ocr_opts_v1", opt); }
 
 /* ---------- أدوات صغيرة ---------- */
@@ -506,12 +570,22 @@ function errMsg(e) {
   if (code === "ocr_disabled") return "القراءة (OCR) غير مفعّلة في هذا التطبيق.";
   return "تعذّرت القراءة (" + code + ").";
 }
+function ocrBase(forPage) {
+  var psm = parseInt(opt.psm, 10) || 3, o;
+  if (opt.ocrQ === "lite") {
+    o = { psm: psm === 7 ? 7 : 6, invert: false, boxes: !!forPage, scale: 1 };
+    var l1 = String(opt.lang || "").split("+")[0]; if (l1) o.lang = l1;
+  } else {
+    o = { psm: psm, invert: opt.invert === "true" ? true : (opt.invert === "false" ? false : "auto"), boxes: true };
+    if (opt.lang) o.lang = opt.lang;
+  }
+  return o;
+}
 function langLabel(v) { return v.split("+").map(function (p) { return LANG_NAMES[p] || p; }).join(" + "); }
 function run() {
   if (S.busy || !S.img || !ocrOk()) return;
   S.busy = true; $("run").disabled = true; setStatus("جاري القراءة…", "", true);
-  var o = { psm: parseInt(opt.psm, 10) || 3, invert: opt.invert === "true" ? true : (opt.invert === "false" ? false : "auto"), boxes: true };
-  if (opt.lang) o.lang = opt.lang;
+  var o = ocrBase(true);
   var off = { x: 0, y: 0 };
   if (S.region) {
     o.region = { x: Math.round(S.region.x), y: Math.round(S.region.y), w: Math.round(S.region.w), h: Math.round(S.region.h) };
@@ -594,9 +668,9 @@ function onIntent(d) {
 }
 
 
-/* ---------- الترجمة (تحتاج إنترنت): مزوّدان احتياطيان + ذاكرة مؤقتة ---------- */
+/* ---------- الترجمة (تحتاج إنترنت): ثلاث خدمات اختيارية + ذاكرة مؤقتة + إلغاء الطلبات القديمة ---------- */
 var TR_LANGS = [["ar", "العربية"], ["en", "English"], ["fr", "Français"], ["de", "Deutsch"], ["es", "Español"], ["it", "Italiano"], ["pt", "Português"], ["tr", "Türkçe"], ["ru", "Русский"], ["fa", "فارسی"], ["ur", "اردو"], ["hi", "हिन्दी"], ["id", "Indonesia"], ["zh-CN", "中文"], ["ja", "日本語"], ["ko", "한국어"]];
-var trCache = {}, trCacheN = 0, TR_G = 1500, TR_M = 450;
+var trCache = {}, trCacheN = 0, TR_G = 1500, TR_M = 450, TR_VIA = { google: "Google", mymemory: "MyMemory", libre: "LibreTranslate" };
 function trSameLang(text, to) {
   if (to !== "ar") return false;
   var letters = text.match(/[A-Za-zÀ-ɏЀ-ӿ؀-ۿݐ-ݿ぀-ヿ一-鿿가-힯]/g) || [];
@@ -617,51 +691,111 @@ function trChunks(text, max) {
   });
   push(); return out;
 }
-function trFetchJson(url, ms) {
+/* تنظيف ما تُخطئ فيه القراءة: رموز زائدة في طرفي السطر ومسافات مكررة وأسطر فارغة */
+function trClean(t) {
+  return String(t == null ? "" : t).split("\n").map(function (l) {
+    return l.replace(/[ \t ]+/g, " ").replace(/^[\s|_~`\\\/]+/, "").replace(/[\s|_~`\\\/]+$/, "");
+  }).filter(function (l) { return l; }).join("\n");
+}
+function trErr(why, code) { var e = new Error(why); e.tr = { why: why, code: code }; return e; }
+function trCtl() { return { aborted: false, subs: [] }; }
+function trAbort(c) { if (!c) return; c.aborted = true; c.subs.forEach(function (a) { try { a.abort(); } catch (e) {} }); c.subs = []; }
+function trFetchJson(url, ms, init, ctl) {
   return new Promise(function (res, rej) {
-    var done = false, t = setTimeout(function () { if (!done) { done = true; rej(new Error("timeout")); } }, ms || 9000);
-    fetch(url).then(function (r) { if (!r.ok) throw new Error("http " + r.status); return r.json(); })
-      .then(function (j) { if (!done) { done = true; clearTimeout(t); res(j); } }, function (e) { if (!done) { done = true; clearTimeout(t); rej(e); } });
+    if (ctl && ctl.aborted) { rej(trErr("abort")); return; }
+    var done = false, ac = null, o = {}, k, t = 0;
+    for (k in (init || {})) o[k] = init[k];
+    try { if (window.AbortController) { ac = new AbortController(); o.signal = ac.signal; if (ctl) ctl.subs.push(ac); } } catch (e) {}
+    var fin = function (f, v) { if (done) return; done = true; clearTimeout(t); f(v); };
+    t = setTimeout(function () { if (!done) { try { if (ac) ac.abort(); } catch (e) {} fin(rej, trErr("timeout")); } }, ms || 8000);
+    fetch(url, o).then(function (r) { if (!r.ok) throw trErr("http", r.status); return r.json(); })
+      .then(function (j) { fin(res, j); }, function (e) {
+        if (e && e.tr) return fin(rej, e);
+        if (ctl && ctl.aborted) return fin(rej, trErr("abort"));
+        if (e && e.name === "AbortError") return fin(rej, trErr("timeout"));
+        fin(rej, trErr(navigator.onLine === false ? "offline" : "net"));
+      });
   });
 }
-function trGoogle(chunk, to) {
-  var u = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=" + encodeURIComponent(to) + "&dt=t&dj=1&q=" + encodeURIComponent(chunk);
-  return trFetchJson(u).then(function (j) {
-    var out = "", src = "";
-    if (j && j.sentences) { out = j.sentences.map(function (s) { return s.trans || ""; }).join(""); src = j.src || ""; }
-    else if (j && j[0] && Array.isArray(j[0])) { out = j[0].map(function (s) { return s[0] || ""; }).join(""); src = j[2] || ""; }
-    if (!out) throw new Error("empty");
-    return { text: out.replace(/\n$/, ""), from: src };
+function trGoogle(chunk, to, src, ctl) {
+  var u = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=" + encodeURIComponent(src || "auto") + "&tl=" + encodeURIComponent(to) + "&dt=t&dj=1&q=" + encodeURIComponent(chunk);
+  return trFetchJson(u, 8000, {}, ctl).then(function (j) {
+    var out = "", from = "";
+    if (j && j.sentences) { out = j.sentences.map(function (s) { return s.trans || ""; }).join(""); from = j.src || ""; }
+    else if (j && j[0] && Array.isArray(j[0])) { out = j[0].map(function (s) { return s[0] || ""; }).join(""); from = j[2] || ""; }
+    if (!out) throw trErr("empty");
+    return { text: out.replace(/\n$/, ""), from: from };
   });
 }
-function trMyMemory(chunk, to) {
-  var parts = trChunks(chunk, TR_M), i = 0, outs = [];
+function trMyMemory(chunk, to, src, ctl) {
+  var parts = trChunks(chunk, TR_M), i = 0, outs = [], lp = (src && src !== "auto" ? src : "Autodetect") + "|" + to;
   var next = function () {
     if (i >= parts.length) return Promise.resolve({ text: outs.join("\n"), from: "" });
-    var u = "https://api.mymemory.translated.net/get?q=" + encodeURIComponent(parts[i++]) + "&langpair=" + encodeURIComponent("Autodetect|" + to);
-    return trFetchJson(u).then(function (j) {
-      if (!j || String(j.responseStatus) !== "200" || !j.responseData || !j.responseData.translatedText) throw new Error("mm");
+    var u = "https://api.mymemory.translated.net/get?q=" + encodeURIComponent(parts[i++]) + "&langpair=" + encodeURIComponent(lp);
+    return trFetchJson(u, 8000, {}, ctl).then(function (j) {
+      var st = j ? parseInt(j.responseStatus, 10) : 0;
+      if (st && st !== 200) throw trErr("http", st);
+      if (!j || !j.responseData || !j.responseData.translatedText) throw trErr("empty");
       outs.push(j.responseData.translatedText); return next();
     });
   };
   return next();
 }
-function trChunk(chunk, to) { return trGoogle(chunk, to).catch(function () { return trMyMemory(chunk, to); }); }
-function translateText(text, to) {
-  text = String(text || "").trim(); to = to || "ar";
+function trLibre(chunk, to, src, ctl) {
+  var base = String(opt.trLibUrl || "").trim().replace(/\/+$/, "");
+  if (!/^https?:\/\//i.test(base)) return Promise.reject(trErr("nolib"));
+  var body = { q: chunk, source: src || "auto", target: to === "zh-CN" ? "zh" : to, format: "text" };
+  if (opt.trLibKey) body.api_key = opt.trLibKey;
+  return trFetchJson(base + "/translate", 10000, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }, ctl).then(function (j) {
+    if (!j || !j.translatedText) throw trErr("empty");
+    return { text: String(j.translatedText), from: (j.detectedLanguage && j.detectedLanguage.language) || "" };
+  });
+}
+var TR_FN = { google: trGoogle, mymemory: trMyMemory, libre: trLibre };
+function trOrder() {
+  var p = opt.trProv;
+  if (p === "google" || p === "mymemory" || p === "libre") return [p];
+  var a = ["google", "mymemory"]; if (/^https?:\/\//i.test(String(opt.trLibUrl || "").trim())) a.push("libre");
+  return a;
+}
+function trChunk(chunk, to, src, ctl) {
+  var order = trOrder(), i = 0, last = null;
+  var next = function () {
+    if (i >= order.length) return Promise.reject(last || trErr("net"));
+    var p = order[i++];
+    return TR_FN[p](chunk, to, src, ctl).then(function (r) { r.via = p; return r; }, function (e) {
+      if (e && e.tr && e.tr.why === "abort") throw e;
+      last = e; return next();
+    });
+  };
+  return next();
+}
+function translateText(text, to, o) {
+  o = o || {}; text = trClean(text); to = to || "ar";
+  var src = o.src != null ? o.src : (opt.trSrc && opt.trSrc !== "auto" ? opt.trSrc : "");
   if (!text) return Promise.resolve({ text: "", same: true });
-  if (trSameLang(text, to)) return Promise.resolve({ text: text, same: true });
-  var key = to + "\u0001" + text; if (trCache[key]) return Promise.resolve(trCache[key]);
-  var parts = trChunks(text, TR_G), outs = [], from = "", i = 0;
+  if (src && src.split("-")[0] === to.split("-")[0]) return Promise.resolve({ text: text, same: true });
+  if (!src && trSameLang(text, to)) return Promise.resolve({ text: text, same: true });
+  var key = [opt.trProv, src, to].join("|") + "\u0001" + text; if (!o.nocache && trCache[key]) return Promise.resolve(trCache[key]);
+  var parts = trChunks(text, TR_G), outs = [], from = "", via = "", i = 0;
   var next = function () {
     if (i >= parts.length) return Promise.resolve();
-    return trChunk(parts[i++], to).then(function (r) { outs.push(r.text); if (r.from && !from) from = r.from; return next(); });
+    return trChunk(parts[i++], to, src, o.ctl).then(function (r) { outs.push(r.text); if (r.from && !from) from = r.from; via = r.via; return next(); });
   };
   return next().then(function () {
-    var res = { text: outs.join("\n"), same: !!from && from.split("-")[0] === to.split("-")[0] };
-    if (trCacheN > 150) { trCache = {}; trCacheN = 0; }
-    trCache[key] = res; trCacheN++; return res;
+    var res = { text: outs.join("\n"), same: !!from && from.split("-")[0] === to.split("-")[0], via: via };
+    if (!o.nocache) { if (trCacheN > 150) { trCache = {}; trCacheN = 0; } trCache[key] = res; trCacheN++; }
+    return res;
   });
+}
+function trWhyText(t) {
+  var w = t && t.why;
+  if (w === "offline") return "لا يوجد اتصال بالإنترنت.";
+  if (w === "timeout") return "انتهت مهلة خدمة الترجمة.";
+  if (w === "http") return "رفضت الخدمة الطلب (رمز " + ((t && t.code) || "؟") + ").";
+  if (w === "nolib") return "لم تُدخل عنوان خادم LibreTranslate.";
+  if (w === "empty") return "لم تُرجع الخدمة ترجمة.";
+  return "تعذّر الوصول إلى خدمة الترجمة. تحتاج الترجمة إلى اتصال بالإنترنت.";
 }
 var trTok = 0;
 function trMain(text) {
@@ -671,25 +805,43 @@ function trMain(text) {
   return translateText(text, opt.trLang).then(function (r) {
     if (my !== trTok) return;
     if (r.same) { out.hidden = true; out.textContent = ""; st.textContent = "النص بلغة الهدف نفسها، لا حاجة للترجمة."; return; }
-    out.hidden = false; out.textContent = r.text; $("tr-copy").disabled = false; st.className = "ok"; st.textContent = "تمت الترجمة إلى " + trLabel(opt.trLang) + ".";
-  }, function () { if (my !== trTok) return; st.className = "bad"; st.textContent = "تعذّرت الترجمة. تحتاج الترجمة إلى اتصال بالإنترنت."; });
+    out.hidden = false; out.textContent = r.text; $("tr-copy").disabled = false; st.className = "ok"; st.textContent = "تمت الترجمة إلى " + trLabel(opt.trLang) + (r.via ? " (" + TR_VIA[r.via] + ")" : "") + ".";
+  }, function (e) { if (my !== trTok) return; st.className = "bad"; st.textContent = "تعذّرت الترجمة. " + trWhyText(e && e.tr); });
+}
+function trTest() {
+  var st = $("tr-status"), my = ++trTok, t0 = Date.now(), to = opt.trLang === "en" ? "ar" : opt.trLang;
+  st.className = ""; st.textContent = "جارٍ اختبار الاتصال…";
+  return translateText("Hello", to, { nocache: true, src: "" }).then(function (r) {
+    if (my !== trTok) return;
+    st.className = "ok"; st.textContent = "تم الاتصال عبر " + (TR_VIA[r.via] || "الخدمة") + " (" + (Date.now() - t0) + " مللي ثانية).";
+  }, function (e) { if (my !== trTok) return; st.className = "bad"; st.textContent = "فشل الاتصال: " + trWhyText(e && e.tr); });
 }
 function trLabel(c) { for (var i = 0; i < TR_LANGS.length; i++) if (TR_LANGS[i][0] === c) return TR_LANGS[i][1]; return c; }
 function trNow() {
   var ta = $("result"), s = ta.selectionStart, e = ta.selectionEnd, v = ta.value;
   return trMain(e > s ? v.slice(s, e) : v);
 }
+function trLibVis() { $("tr-lib").hidden = opt.trProv !== "libre"; }
 function bindTr() {
   var sel = $("tr-lang"); TR_LANGS.forEach(function (l) { var o = document.createElement("option"); o.value = l[0]; o.textContent = l[1]; sel.appendChild(o); });
   sel.value = opt.trLang; if (sel.value !== opt.trLang) { opt.trLang = "ar"; sel.value = "ar"; }
   sel.onchange = function () { opt.trLang = this.value; saveOpt(); };
+  var src = $("tr-src"), a = document.createElement("option"); a.value = "auto"; a.textContent = "تلقائي (يُكتشف)"; src.appendChild(a);
+  TR_LANGS.forEach(function (l) { var o = document.createElement("option"); o.value = l[0]; o.textContent = l[1]; src.appendChild(o); });
+  src.value = opt.trSrc; if (src.value !== opt.trSrc) { opt.trSrc = "auto"; src.value = "auto"; }
+  src.onchange = function () { opt.trSrc = this.value; saveOpt(); };
+  var pv = $("tr-prov"); pv.value = opt.trProv; pv.onchange = function () { opt.trProv = this.value; saveOpt(); trLibVis(); };
+  $("tr-lib-url").value = opt.trLibUrl; $("tr-lib-key").value = opt.trLibKey;
+  $("tr-lib-url").onchange = function () { opt.trLibUrl = this.value.trim(); saveOpt(); };
+  $("tr-lib-key").onchange = function () { opt.trLibKey = this.value.trim(); saveOpt(); };
+  trLibVis();
   $("tr-on").checked = opt.trOn; $("tr-on").onchange = function () { opt.trOn = this.checked; saveOpt(); toast(opt.trOn ? "الترجمة التلقائية مفعّلة." : "الترجمة التلقائية متوقفة."); };
-  $("tr-now").onclick = trNow;
+  $("tr-now").onclick = trNow; $("tr-test").onclick = trTest;
   $("tr-copy").onclick = function () { var t = $("tr-out").textContent; if (t) copyWithToast(t, "نُسخت الترجمة."); };
 }
 
 /* ---------- الوضع العائم: زر فوق التطبيقات الأخرى + التقاط الشاشة + قراءة ---------- */
-var FL = { on: false, busy: false, last: null, sel: [], offs: [], selOff: null, autoT: 0, seq: 0, trTok: 0, trText: "", trState: null, live: null, ids: { b: "ocr-bubble", s: "ocr-sel", r: "ocr-res", sub: "ocr-sub", m: "ocr-menu", fr: "ocr-frame" } };
+var FL = { on: false, busy: false, last: null, sel: [], offs: [], selOff: null, autoT: 0, seq: 0, trTok: 0, trText: "", trState: null, live: null, ids: { b: "ocr-bubble", s: "ocr-sel", r: "ocr-res", sub: "ocr-sub", m: "ocr-menu", fr: "ocr-frame", e: "ocr-edit" }, trCtl: null, edOff: null };
 var ICONS = { translate: "M4 5h9M8.5 3v2M6 5c0 4 3 7 7 8M12 5c0 4-3 7-7 8M13 21l4-10 4 10M14.5 18h5", subtitle: "M3 6h18a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1zM6 12h4M12 12h6M6 15h7", scan: "M4 7V5a1 1 0 0 1 1-1h2M17 4h2a1 1 0 0 1 1 1v2M20 17v2a1 1 0 0 1-1 1h-2M7 20H5a1 1 0 0 1-1-1v-2M4 12h16", eye: "M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z", chat: "M21 12a8 8 0 0 1-11.5 7.2L4 20l1-4.5A8 8 0 1 1 21 12zM8 11h8M8 14h5", globe: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18" };
 var SUB_SZ = { s: 16, m: 20, l: 26 }, SUB_BG = { low: 0.35, mid: 0.6, high: 0.85 };
 var SUBREG = LS.get("ocr_sub_region_v1", null);
@@ -697,16 +849,18 @@ if (!(SUBREG && SUBREG.w >= 10 && SUBREG.h >= 10 && isFinite(SUBREG.x) && isFini
 function icImg() { var v = LS.get("ocr_ic_img_v1", ""); return (typeof v === "string" && /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+\/=]+$/.test(v)) ? v : ""; }
 function icColor() { return /^#[0-9a-fA-F]{6}$/.test(opt.icColor) ? opt.icColor : "#1f6feb"; }
 function bubbleHtml() {
-  var size = Number(opt.icSize) || 48, op = Number(opt.icOp) || 100, img = icImg();
+  var size = Number(opt.icSize) || 48, op = Number(opt.icOp) || 100, img = icImg(), cl = !!opt.icClose, m = cl ? 7 : 2;
   var inner = img ? '<img src="' + img + '">' : '<svg viewBox="0 0 24 24"><path d="' + (ICONS[opt.icKind] || ICONS.translate) + '"/></svg>';
   return ['<html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>',
     'html,body{margin:0;height:100%;background:transparent;overflow:hidden}',
-    '#b{width:' + size + 'px;height:' + size + 'px;margin:2px;border-radius:50%;background:' + icColor() + ';box-shadow:0 2px 8px rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;touch-action:none;overflow:hidden;opacity:' + String(op / 100).replace(/^0\./, ".") + '}',
+    '#b{width:' + size + 'px;height:' + size + 'px;margin:' + m + 'px;border-radius:50%;background:' + icColor() + ';box-shadow:0 2px 8px rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;touch-action:none;overflow:hidden;opacity:' + String(op / 100).replace(/^0\./, ".") + '}',
     'svg{width:55%;height:55%;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}img{width:100%;height:100%;object-fit:cover;border-radius:50%}',
+    '#cl{position:absolute;top:0;right:0;width:22px;height:22px;border-radius:50%;background:#1b2430;border:1.5px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:0}#cl svg{width:12px;height:12px;stroke-width:3}',
     '#b.busy{background:#b26a00}#b.busy svg,#b.busy img{-webkit-animation:sp 1s linear infinite;animation:sp 1s linear infinite}@-webkit-keyframes sp{to{-webkit-transform:rotate(360deg)}}@keyframes sp{to{transform:rotate(360deg)}}',
-    '</style></head><body><div id="b">' + inner + '</div><script>',
+    '</style></head><body><div id="b">' + inner + '</div>' + (cl ? '<div id="cl" role="button" aria-label="إغلاق"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></div>' : '') + '<script>',
     'var lp=0,sx=0,sy=0,did=false;',
-    'function go(){var b=document.getElementById("b");',
+    'function go(){var b=document.getElementById("b"),c=document.getElementById("cl");',
+    'if(c)c.addEventListener("click",function(e){e.stopPropagation();RosTrickOverlay.post({type:"close"})});',
     'b.addEventListener("touchstart",function(e){var t=e.touches[0];sx=t.screenX;sy=t.screenY;did=false;clearTimeout(lp);lp=setTimeout(function(){did=true;RosTrickOverlay.post({type:"menu"})},650)},{passive:true});',
     'b.addEventListener("touchmove",function(e){var t=e.touches[0];if(Math.abs(t.screenX-sx)>8||Math.abs(t.screenY-sy)>8)clearTimeout(lp)},{passive:true});',
     'b.addEventListener("touchend",function(){clearTimeout(lp)},{passive:true});b.addEventListener("touchcancel",function(){clearTimeout(lp)},{passive:true});',
@@ -768,11 +922,12 @@ var OV_RES = ['<html><head><meta name="viewport" content="width=device-width,ini
   'var t=document.createElement("span");t.className="t";t.dir="auto";t.textContent=l.t;var c=document.createElement("span");c.className="cf";c.textContent=l.c+"%";',
   'd.appendChild(t);d.appendChild(c);d.onclick=function(){tog(i)};ls.appendChild(d)})}',
   'document.getElementById("mt").textContent=L.length?(D.conf+"% · "+D.lang):"";paint()}',
+  'function why(t){var w=t&&t.why;if(w==="offline")return"لا يوجد اتصال بالإنترنت.";if(w==="timeout")return"انتهت مهلة خدمة الترجمة.";if(w==="http")return"رفضت الخدمة الطلب (رمز "+(t.code||"?")+").";if(w==="nolib")return"لم يُدخل عنوان خادم الترجمة.";return"تحتاج الترجمة إلى اتصال بالإنترنت."}',
   'function setTr(t){if(!t){return}',
   'tb.hidden=false;tb.className="";',
   'if(t.state==="ok"){tb.dir="auto";tb.textContent=t.text||""}',
   'else if(t.state==="same"){tb.className="w";tb.dir="rtl";tb.textContent="النص بلغة الهدف نفسها."}',
-  'else if(t.state==="err"){tb.className="e";tb.dir="rtl";tb.textContent="تعذّرت الترجمة. تحتاج الترجمة إلى اتصال بالإنترنت."}',
+  'else if(t.state==="err"){tb.className="e";tb.dir="rtl";tb.textContent="تعذّرت الترجمة. "+why(t)}',
   'else{tb.className="w";tb.dir="rtl";tb.textContent="جارٍ الترجمة…"}}',
   'function go(){build();',
   'if(D.trOn||D.tr){setTr(D.tr||{state:"pending"})}',
@@ -792,23 +947,28 @@ var OV_RES = ['<html><head><meta name="viewport" content="width=device-width,ini
   'if(window.RosTrickOverlay)go();else window.addEventListener("rtoverlay-ready",go);<\/script></body></html>'].join("");
 var OV_SUB = ['<html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>',
   'html,body{margin:0;height:100%;background:transparent;overflow:hidden;font-family:system-ui,sans-serif;direction:rtl}',
-  '#box{box-sizing:border-box;margin:0;padding:8px 14px 9px;border-radius:12px;color:#fff;text-align:center;display:none}',
-  '#tr{font-weight:700;line-height:1.45;text-shadow:0 1px 3px rgba(0,0,0,.85);word-break:break-word}',
+  '#box{box-sizing:border-box;margin:0;padding:8px 14px 9px;color:#fff;text-align:center;display:none;overflow:hidden}',
+  '#box.fx{width:100%;height:100%;flex-direction:column;justify-content:center}',
+  '#tr{line-height:1.45;word-break:break-word}',
   '#og{font-size:12px;opacity:.72;margin-top:3px;line-height:1.4;word-break:break-word;display:none}',
   '#er{font-size:11px;color:#fca5a5;margin-top:2px;display:none}',
-  '</style></head><body><div id="box"><div id="tr"></div><div id="og"></div><div id="er"></div></div><script>',
-  'var D=window.__D||{},O=D.orig||"",T=D.tr||null,prev="",seq=D.seq||0,SZ={s:16,m:20,l:26},box=document.getElementById("box"),tr=document.getElementById("tr"),og=document.getElementById("og"),er=document.getElementById("er");',
+  '</style></head><body><div id="box"><div id="in"><div id="tr"></div><div id="og"></div><div id="er"></div></div></div><script>',
+  'var D=window.__D||{},O=D.orig||"",T=D.tr||null,prev="",seq=D.seq||0,box=document.getElementById("box"),inn=document.getElementById("in"),tr=document.getElementById("tr"),og=document.getElementById("og"),er=document.getElementById("er"),BASE=D.px||20;',
   'function post(m){RosTrickOverlay.post(m)}',
-  'function rep(z){setTimeout(function(){post({type:"size",h:z===0?0:Math.ceil(box.offsetHeight)+4})},30)}',
+  'function why(t){var w=t&&t.why;if(w==="offline")return"لا يوجد اتصال بالإنترنت";if(w==="timeout")return"انتهت مهلة خدمة الترجمة";if(w==="http")return"رفضت الخدمة الطلب (رمز "+(t.code||"?")+")";if(w==="nolib")return"لم يُدخل عنوان خادم الترجمة";return"تعذّرت الترجمة (تحتاج إنترنت)"}',
+  'function fit(){if(!D.fixed)return;var H=window.innerHeight,sz=BASE;tr.style.fontSize=sz+"px";og.style.fontSize=Math.max(9,Math.round(sz*.6))+"px";while(inn.offsetHeight+17>H&&sz>10){sz-=1;tr.style.fontSize=sz+"px";og.style.fontSize=Math.max(9,Math.round(sz*.6))+"px"}}',
+  'function rep(z){if(D.fixed)return;setTimeout(function(){post({type:"size",h:z===0?0:Math.ceil(box.offsetHeight)+4})},30)}',
   'function render(){if(!O){box.style.display="none";rep(0);return}',
-  'box.style.display="block";var main=O,sub="",dim=false,note="";',
+  'box.style.display=D.fixed?"flex":"block";var main=O,sub="",dim=false,note="";',
   'if(D.trOn){if(T&&T.state==="ok"){main=T.text;prev=T.text;if(D.showOrig)sub=O}',
   'else if(T&&T.state==="same"){main=O}',
-  'else if(T&&T.state==="err"){main=O;note="تعذّرت الترجمة (تحتاج إنترنت)"}',
+  'else if(T&&T.state==="err"){main=O;note=why(T)}',
   'else{main=prev||"…";dim=!!prev}}',
   'tr.textContent=main;tr.dir="auto";tr.style.opacity=dim?".55":"1";',
-  'og.textContent=sub;og.dir="auto";og.style.display=sub?"block":"none";er.textContent=note;er.style.display=note?"block":"none";rep()}',
-  'function go(){tr.style.fontSize=(SZ[D.size]||20)+"px";box.style.background="rgba(0,0,0,"+(D.bg||0.6)+")";render();',
+  'og.textContent=sub;og.dir="auto";og.style.display=sub?"block":"none";er.textContent=note;er.style.display=note?"block":"none";fit();rep()}',
+  'function rgb(h){h=/^#[0-9a-fA-F]{6}$/.test(h)?h:"#000000";return parseInt(h.substr(1,2),16)+","+parseInt(h.substr(3,2),16)+","+parseInt(h.substr(5,2),16)}',
+  'function go(){tr.style.fontSize=BASE+"px";tr.style.fontWeight=D.bold===false?"400":"700";tr.style.textShadow=D.shadow===false?"none":"0 1px 3px rgba(0,0,0,.85)";',
+  'box.style.background="rgba("+rgb(D.bgc)+","+(D.bga==null?0.6:D.bga)+")";box.style.borderRadius=(D.rad==null?12:D.rad)+"px";box.style.textAlign=D.align||"center";box.style.color=D.color||"#fff";if(D.fixed)box.className="fx";render();',
   'RosTrickOverlay.onMessage(function(d){if(!d)return;',
   'if(d.sub){if(d.sub.seq&&d.sub.seq<=seq)return;seq=d.sub.seq||seq;O=d.sub.orig||"";T=null;render()}',
   'if(d.tr){T=d.tr;render()}})}',
@@ -819,13 +979,32 @@ var OV_MENU = ['<html><head><meta name="viewport" content="width=device-width,in
   '#pn{width:78%;max-width:320px;background:#17202b;border:1px solid #263341;border-radius:16px;padding:8px;box-shadow:0 6px 24px rgba(0,0,0,.6)}',
   '#pn button{display:block;width:100%;min-height:46px;margin:4px 0;border:0;border-radius:12px;background:#243242;color:#e8edf4;font:inherit;font-size:15px;font-weight:700;text-align:right;padding:0 14px}',
   '#pn #m-stop{background:#7f1d1d}#pn #m-close{background:transparent;color:#93a1b3;text-align:center}',
-  '</style></head><body><div id="bd"><div id="pn"><button type="button" id="m-auto"></button><button type="button" id="m-region">تحديد منطقة جديدة</button><button type="button" id="m-copy">نسخ الترجمة</button><button type="button" id="m-show"></button><button type="button" id="m-stop">إيقاف الأداة</button><button type="button" id="m-close">إغلاق</button></div></div><script>',
+  '#m-info{color:#93a1b3;font-size:12px;padding:2px 6px 6px;text-align:center}',
+  '</style></head><body><div id="bd"><div id="pn"><div id="m-info"></div><button type="button" id="m-auto"></button><button type="button" id="m-region">تحديد منطقة جديدة</button><button type="button" id="m-copy">نسخ الترجمة</button><button type="button" id="m-show"></button><button type="button" id="m-stop">إيقاف الأداة وإزالة الزر</button><button type="button" id="m-close">إغلاق</button></div></div><script>',
   'var D=window.__D||{};',
   'function post(t){RosTrickOverlay.post({type:t})}',
   'function go(){document.getElementById("m-auto").textContent=D.auto?("التحديث التلقائي: مفعّل (كل "+D.iv+" ث)"):"التحديث التلقائي: متوقف";',
+  'document.getElementById("m-info").textContent=D.ms?("آخر قراءة: "+D.ms+" مللي ثانية"):"";',
   'document.getElementById("m-show").textContent=D.hidden?"إظهار الترجمة":"إخفاء الترجمة";',
   '[["m-auto","auto"],["m-region","region"],["m-copy","copy"],["m-show","toggle"],["m-stop","stop"],["m-close","close"]].forEach(function(a){document.getElementById(a[0]).onclick=function(){post(a[1])}});',
   'document.getElementById("bd").onclick=function(e){if(e.target===this)post("close")}}',
+  'if(window.RosTrickOverlay)go();else window.addEventListener("rtoverlay-ready",go);<\/script></body></html>'].join("");
+var OV_EDIT = ['<html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>',
+  'html,body{margin:0;height:100%;overflow:hidden;font-family:system-ui,sans-serif;direction:rtl;background:transparent}',
+  '#bx{box-sizing:border-box;position:absolute;left:0;top:0;right:0;bottom:0;border:2px dashed #fff;border-radius:10px;background:rgba(31,111,235,.55);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;touch-action:none;padding:6px}',
+  '#tx{font-size:14px;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,.8)}#hn{font-size:11px;opacity:.9;margin-top:2px}',
+  '.k{margin:8px 4px 0;padding:8px 16px;border-radius:18px;border:0;font:inherit;font-size:14px;font-weight:700;background:#fff;color:#14202e}.k.p{background:#16a34a;color:#fff}',
+  '#rz{position:absolute;right:-1px;bottom:-1px;width:34px;height:34px;border-radius:8px 0 10px 0;background:#fff;touch-action:none}#rz:after{content:"";position:absolute;right:7px;bottom:7px;width:14px;height:14px;border-right:3px solid #1f6feb;border-bottom:3px solid #1f6feb}',
+  '</style></head><body><div id="bx"><div id="tx">مكان الترجمة وحجمها</div><div id="hn">اسحب الصندوق لتحريكه، واسحب الزاوية البيضاء لتغيير الحجم</div><div><button type="button" class="k p" id="ok">تم</button><button type="button" class="k" id="no">إلغاء</button></div><div id="rz"></div></div><script>',
+  'function pt(e){var t=(e.touches&&e.touches[0])||(e.changedTouches&&e.changedTouches[0])||e;return{x:t.screenX,y:t.screenY}}',
+  'function go(){var R=RosTrickOverlay,rz=document.getElementById("rz"),s=null,b0=null;',
+  'R.drag(document.getElementById("bx"),{});',
+  'function dn(e){var p=pt(e);s=p;b0=R.info();e.stopPropagation()}',
+  'function mv(e){if(!s)return;var p=pt(e),w=Math.max(60,Math.round((b0.w||200)+(p.x-s.x))),h=Math.max(30,Math.round((b0.h||80)+(p.y-s.y)));R.resize(w,h);if(e.cancelable)e.preventDefault();e.stopPropagation()}',
+  'function up(e){s=null;e.stopPropagation()}',
+  'rz.addEventListener("touchstart",dn,{passive:true});rz.addEventListener("touchmove",mv,{passive:false});rz.addEventListener("touchend",up);rz.addEventListener("touchcancel",function(){s=null});',
+  'document.getElementById("ok").onclick=function(){var i=R.info();R.post({type:"done",rect:{x:Math.round(i.x),y:Math.round(i.y),w:Math.round(i.w),h:Math.round(i.h)}})};',
+  'document.getElementById("no").onclick=function(){R.post({type:"cancel"})}}',
   'if(window.RosTrickOverlay)go();else window.addEventListener("rtoverlay-ready",go);<\/script></body></html>'].join("");
 var OV_FRAME = '<html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body{margin:0;height:100%;background:transparent;overflow:hidden}#f{box-sizing:border-box;width:100%;height:100%;border:3px dashed rgba(255,255,255,.9);border-radius:6px;box-shadow:0 0 0 1px rgba(0,0,0,.55)}</style></head><body><div id="f"></div></body></html>';
 function injectData(tpl, data) {
@@ -862,16 +1041,27 @@ function renderFloat() {
   else hint = "اضغط الزر العائم في أي تطبيق ثم حدّد المنطقة.";
   $("fl-hint").textContent = hint;
 }
-function flUnlisten() { FL.offs.forEach(function (f) { try { f(); } catch (e) {} }); FL.offs = []; if (FL.selOff) { try { FL.selOff(); } catch (e) {} FL.selOff = null; } clearTimeout(FL.autoT); }
-function flDestroyAll() { var o = OVB(); if (!o) return; [FL.ids.b, FL.ids.s, FL.ids.r, FL.ids.sub, FL.ids.m, FL.ids.fr].forEach(function (id) { try { o.destroy(id); } catch (e) {} }); }
-function flStop() { flSubStop(true); FL.on = false; FL.busy = false; flUnlisten(); flDestroyAll(); renderFloat(); }
-function flBubbleOpts() { var o = OVB(), sc = {}; try { sc = o.screen() || {}; } catch (e) {} var sz = (Number(opt.icSize) || 48) + 4; return { id: FL.ids.b, html: bubbleHtml(), x: 0, y: Math.round((sc.dpH || 700) * 0.3), w: sz, h: sz, keep: true }; }
+function flOurIds() { var a = [], k; for (k in FL.ids) a.push(FL.ids[k]); return a; }
+function flSweep() {
+  var o = OVB(); if (!o) return; var ours = flOurIds(), l = [];
+  try { l = o.list() || []; } catch (e) {}
+  l.forEach(function (w) { if (w && ours.indexOf(w.id) >= 0) { try { o.destroy(w.id); } catch (e) {} } });
+}
+function flUnlisten() { FL.offs.forEach(function (f) { try { f(); } catch (e) {} }); FL.offs = []; if (FL.selOff) { try { FL.selOff(); } catch (e) {} FL.selOff = null; } if (FL.edOff) { try { FL.edOff(); } catch (e) {} FL.edOff = null; } clearTimeout(FL.autoT); }
+function flDestroyAll() { var o = OVB(); if (!o) return; flOurIds().forEach(function (id) { try { o.destroy(id); } catch (e) {} }); flSweep(); }
+function flStop() { flSubStop(true); FL.on = false; FL.busy = false; trAbort(FL.trCtl); flUnlisten(); flDestroyAll(); renderFloat(); }
+function flBubbleOpts() { var o = OVB(), sc = {}; try { sc = o.screen() || {}; } catch (e) {} var sz = (Number(opt.icSize) || 48) + (opt.icClose ? 14 : 4); return { id: FL.ids.b, html: bubbleHtml(), x: 0, y: Math.round((sc.dpH || 700) * 0.3), w: sz, h: sz }; }
 function flStart() {
   var o = OVB(); if (!o) return;
-  return o.create(flBubbleOpts()).then(function () {
+  flSweep();
+  var fail = function (e) { FL.on = false; renderFloat(); $("fl-hint").textContent = "تعذّر إنشاء الزر العائم (" + ((e && e.code) || e) + ")."; };
+  return o.create(flBubbleOpts()).then(null, function (e) {
+    if (e && e.code === "exists") { try { o.destroy(FL.ids.b); } catch (x) {} return o.create(flBubbleOpts()); }
+    throw e;
+  }).then(function () {
     FL.on = true; flListen(); renderFloat(); flFrame();
     try { var B = W("RosTrickBack"); if (B) { B.exitMode("minimize"); B.minimize(); } } catch (e) {}
-  }, function (e) { FL.on = false; renderFloat(); $("fl-hint").textContent = "تعذّر إنشاء الزر العائم (" + ((e && e.code) || e) + ")."; });
+  }, fail);
 }
 function flRebuildBubble() {
   var o = OVB(); if (!o || !FL.on) return;
@@ -881,11 +1071,11 @@ function flRebuildBubble() {
 }
 function flListen() {
   flUnlisten(); var o = OVB(); if (!o) return;
-  FL.offs.push(o.onMessage(FL.ids.b, function (d) { if (d && d.type === "tap") flBubbleTap(); else if (d && d.type === "menu") flOpenMenu(); }));
+  FL.offs.push(o.onMessage(FL.ids.b, function (d) { if (d && d.type === "tap") flBubbleTap(); else if (d && d.type === "menu") flOpenMenu(); else if (d && d.type === "close") flStop(); }));
   FL.offs.push(o.onMessage(FL.ids.r, flResMsg));
   FL.offs.push(o.onMessage(FL.ids.m, flMenuMsg));
   FL.offs.push(o.onMessage(FL.ids.sub, function (d) { if (d && d.type === "size") flSubSize(d.h); }));
-  FL.offs.push(o.on("closed", function (d) { if (d && d.id === FL.ids.b && FL.on) { FL.on = false; flSubStop(true); flUnlisten(); renderFloat(); } }));
+  FL.offs.push(o.on("closed", function (d) { if (d && d.id === FL.ids.b && FL.on) flStop(); }));
   var s = SCB(); if (s) { var off = s.on("stopped", function () { if (FL.on) flStop(); else renderFloat(); }); if (typeof off === "function") FL.offs.push(off); }
 }
 function flBubbleTap() {
@@ -918,8 +1108,8 @@ function flMapLines(r) {
   return lines;
 }
 function flOpts(rect, noHide) {
-  var op = { region: { x: Math.round(rect.x), y: Math.round(rect.y), w: Math.round(rect.w), h: Math.round(rect.h) }, unit: "dp", psm: parseInt(opt.psm, 10) || 3, invert: opt.invert === "true" ? true : (opt.invert === "false" ? false : "auto"), boxes: true };
-  if (opt.lang) op.lang = opt.lang;
+  var op = ocrBase(false);
+  op.region = { x: Math.round(rect.x), y: Math.round(rect.y), w: Math.round(rect.w), h: Math.round(rect.h) }; op.unit = "dp";
   if (noHide) op.hideOverlays = false;
   return op;
 }
@@ -955,7 +1145,7 @@ function flShow(rect, data) {
   var o = OVB(); if (!o) return;
   var pl = flPlace(rect);
   var make = function () {
-    var p = o.create({ id: FL.ids.r, html: resHtml(data), x: pl.x, y: pl.y, w: pl.w, h: pl.h, keep: true });
+    var p = o.create({ id: FL.ids.r, html: resHtml(data), x: pl.x, y: pl.y, w: pl.w, h: pl.h });
     setTimeout(flResync, 900);
     return p;
   };
@@ -976,12 +1166,16 @@ function flCopy(auto) {
 }
 function flPostTr(st) { FL.trState = st; var o = OVB(); if (o) o.post(FL.live ? FL.ids.sub : FL.ids.r, { tr: st }); }
 function flTranslate(text, seq) {
-  var tok = ++FL.trTok; FL.trText = ""; flPostTr({ state: "pending" });
-  return translateText(text, opt.trLang).then(function (r) {
+  var tok = ++FL.trTok; FL.trText = ""; trAbort(FL.trCtl); var ctl = FL.trCtl = trCtl(); flPostTr({ state: "pending" });
+  return translateText(text, opt.trLang, { ctl: ctl }).then(function (r) {
     if (tok !== FL.trTok || seq !== FL.seq) return;
     if (r.same) { flPostTr({ state: "same" }); return; }
     FL.trText = r.text; flPostTr({ state: "ok", text: r.text });
-  }, function () { if (tok === FL.trTok && seq === FL.seq) flPostTr({ state: "err" }); });
+  }, function (e) {
+    if (tok !== FL.trTok || seq !== FL.seq) return;
+    var t = (e && e.tr) || { why: "net" }; if (t.why === "abort") return;
+    flPostTr({ state: "err", why: t.why, code: t.code });
+  });
 }
 function flResMsg(d) {
   if (!d || !FL.on) return;
@@ -1019,32 +1213,47 @@ function flFrame() {
   var o = OVB(); if (!o || !FL.on) return;
   var d; try { d = o.destroy(FL.ids.fr); } catch (e) {}
   if (!(opt.subOutline && SUBREG && opt.mode === "sub")) return;
-  var make = function () { return o.create({ id: FL.ids.fr, html: OV_FRAME, x: SUBREG.x - 4, y: SUBREG.y - 4, w: SUBREG.w + 8, h: SUBREG.h + 8, touchable: false, focusable: false, keep: true }); };
+  var make = function () { return o.create({ id: FL.ids.fr, html: OV_FRAME, x: SUBREG.x - 4, y: SUBREG.y - 4, w: SUBREG.w + 8, h: SUBREG.h + 8, touchable: false, focusable: false }); };
   return Promise.resolve(d).then(make, make);
 }
-function flSubEst() { return Math.round((SUB_SZ[opt.subSize] || 20) * 2.4) + 16; }
-function flSubPlace(h) {
-  var s = flScreen(), dw = s.w, dh = s.h, r = SUBREG || { x: 0, y: 0, w: 0, h: 0 }, w = Math.min(dw - 24, 560), x = Math.round((dw - w) / 2), y;
-  if (opt.subPos === "top") y = 40;
-  else if (opt.subPos === "bottom") y = dh - h - 64;
-  else { y = r.y + r.h + 8; if (y + h > dh - 8) y = r.y - h - 8; }
-  y = Math.round(Math.max(0, Math.min(y, dh - h)));
-  var ov = !(x + w <= r.x || x >= r.x + r.w || y + h <= r.y || y >= r.y + r.h);
-  return { x: x, y: y, w: w, h: h, overlap: ov };
+function optN(v, d) { if (v === "" || v == null) return d; var n = parseFloat(v); return isFinite(n) ? n : d; }
+function flSubEst() { return Math.round((Number(opt.subPx) || 20) * 2.4) + 16; }
+function flSubRect() {
+  var s = flScreen(), r = SUBREG || { x: 20, y: 200, w: 300, h: 80 };
+  var w = clamp(Math.round(optN(opt.subWd, r.w)), 40, s.w), h = clamp(Math.round(optN(opt.subHt, r.h)), 24, s.h);
+  return { x: Math.round(clamp(optN(opt.subX, r.x), 0, s.w - w)), y: Math.round(clamp(optN(opt.subY, r.y), 0, s.h - h)), w: w, h: h };
 }
-function flSubData() {
+function flSubPlace(h) {
+  var s = flScreen(), dw = s.w, dh = s.h, r = SUBREG || { x: 0, y: 0, w: 0, h: 0 }, pl;
+  if (opt.subPos === "region" && SUBREG) {
+    var rw = clamp(r.w, 40, dw), rh = clamp(r.h, 24, dh);
+    pl = { x: Math.round(clamp(r.x, 0, dw - rw)), y: Math.round(clamp(r.y, 0, dh - rh)), w: rw, h: rh, fixed: true };
+  } else if (opt.subPos === "custom") {
+    pl = flSubRect(); pl.fixed = true;
+  } else {
+    var w = Math.round(Math.min(dw - 24, 560) * (Number(opt.subW) || 100) / 100), x = Math.round((dw - w) / 2), y;
+    if (opt.subPos === "top") y = 40;
+    else if (opt.subPos === "bottom") y = dh - h - 64;
+    else { y = r.y + r.h + 8; if (y + h > dh - 8) y = r.y - h - 8; }
+    pl = { x: x, y: Math.round(Math.max(0, Math.min(y, dh - h))), w: w, h: h, fixed: false };
+  }
+  pl.overlap = !(pl.x + pl.w <= r.x || pl.x >= r.x + r.w || pl.y + pl.h <= r.y || pl.y >= r.y + r.h);
+  return pl;
+}
+function flSubCover() { return (opt.subPos === "region" || opt.subPos === "custom") && !!opt.subCover; }
+function flSubData(L) {
   var last = FL.last || { text: "" };
-  return { orig: last.text, trOn: !!opt.trOn, tr: opt.trOn ? (FL.trState || { state: "pending" }) : null, showOrig: !!opt.subOrig, size: opt.subSize, bg: SUB_BG[opt.subBg] || 0.6, seq: FL.seq };
+  return { orig: last.text, trOn: !!opt.trOn, tr: opt.trOn ? (FL.trState || { state: "pending" }) : null, showOrig: !!opt.subOrig, px: Number(opt.subPx) || 20, color: opt.subColor, bgc: opt.subBgColor, bga: flSubCover() ? 1 : (Number(opt.subBgA) || 0) / 100, rad: Number(opt.subRad) || 0, bold: !!opt.subBold, shadow: !!opt.subShadow, align: opt.subAlign, fixed: !!(L && L.fixed), seq: FL.seq };
 }
 function flSubCreate(L) {
   var o = OVB(); if (!o || !FL.live || FL.live !== L) return;
-  var h = flSubEst(), pl = flSubPlace(h); L.h = h; L.hide = pl.overlap;
+  var h = flSubEst(), pl = flSubPlace(h); L.h = pl.h; L.hide = pl.overlap; L.fixed = pl.fixed;
   var d; try { d = o.destroy(FL.ids.sub); } catch (e) {}
-  var make = function () { var p = o.create({ id: FL.ids.sub, html: injectData(OV_SUB, flSubData()), x: pl.x, y: pl.y, w: pl.w, h: pl.h, touchable: false, focusable: false, keep: true }); setTimeout(flResync, 900); return p; };
+  var make = function () { var p = o.create({ id: FL.ids.sub, html: injectData(OV_SUB, flSubData(L)), x: pl.x, y: pl.y, w: pl.w, h: pl.h, touchable: false, focusable: false }); setTimeout(flResync, 900); return p; };
   return Promise.resolve(d).then(make, make);
 }
 function flSubSize(h) {
-  var o = OVB(), L = FL.live; if (!o || !L || !L.shown) return;
+  var o = OVB(), L = FL.live; if (!o || !L || !L.shown || L.fixed) return;
   var s = flScreen(); h = Math.max(10, Math.min(Math.round(+h || 0), Math.round(s.h * 0.4)));
   if (L.h && Math.abs(h - L.h) < 2) return;
   var pl = flSubPlace(h); L.h = h; L.hide = pl.overlap;
@@ -1057,41 +1266,84 @@ function flSubStop(all) {
 function flSubStart() {
   var o = OVB(); if (!o || !SUBREG) return;
   flSubStop(false); clearTimeout(FL.autoT);
-  FL.last = null; FL.sel = []; FL.trState = null; FL.trTok++; FL.trText = "";
-  var L = { rect: SUBREG, norm: "", emp: 0, fail: 0, shown: false, hidden: false, paused: false, auto: Number(opt.subInt) > 0, timer: 0, hide: true, h: 0 };
+  FL.last = null; FL.sel = []; FL.trState = null; FL.trTok++; FL.trText = ""; trAbort(FL.trCtl);
+  var L = { rect: SUBREG, norm: "", emp: 0, fail: 0, shown: false, hidden: false, paused: false, auto: Number(opt.subInt) > 0, timer: 0, hide: true, h: 0, fixed: false, sig: null, ms: 0 };
   FL.live = L; flSubTick(L, true);
 }
+/* أقصر فاصل فعلي: عند احتمال قراءة نافذتنا نفسها يُخفى كل شيء لحظة الالتقاط (وميض) فلا نقل عن ثانية */
+function flSubIv(L) { var iv = parseFloat(opt.subInt) || 0; if (L && L.hide && iv > 0) iv = Math.max(iv, 1); return iv; }
 function flSubNext(L, t0) {
   if (FL.live !== L || !L.auto || L.paused) return;
   clearTimeout(L.timer);
-  var iv = Number(opt.subInt) || 2;
-  L.timer = setTimeout(function () { flSubTick(L, false); }, Math.max(250, iv * 1000 - (Date.now() - t0)));
+  var iv = flSubIv(L) || 2;
+  L.timer = setTimeout(function () { flSubTick(L, false); }, Math.max(40, iv * 1000 - (Date.now() - t0)));
+}
+/* بصمة صغيرة للصورة (رمادية 128 عرضاً) لمقارنة سريعة */
+function flSig(url) {
+  return new Promise(function (res) {
+    var im = new Image();
+    im.onload = function () {
+      try {
+        var w = Math.min(128, im.naturalWidth || 128), h = Math.max(4, Math.min(128, Math.round(w * (im.naturalHeight || 1) / (im.naturalWidth || 1))));
+        var c = document.createElement("canvas"); c.width = w; c.height = h; var x = c.getContext("2d"); x.drawImage(im, 0, 0, w, h);
+        var d = x.getImageData(0, 0, w, h).data, g = new Uint8Array(w * h), i;
+        for (i = 0; i < g.length; i++) g[i] = (d[i * 4] * 3 + d[i * 4 + 1] * 6 + d[i * 4 + 2]) / 10;
+        res(g);
+      } catch (e) { res(null); }
+    };
+    im.onerror = function () { res(null); }; im.src = url;
+  });
+}
+function flSigDiff(a, b) {
+  if (!a || !b || a.length !== b.length) return 1;
+  var n = 0, i; for (i = 0; i < a.length; i++) if (Math.abs(a[i] - b[i]) > 16) n++;
+  return n / a.length;
+}
+/* التقاط ثم (إن تغيّرت الصورة أو كان طلباً يدوياً) قراءة. يرجع null إن لم يتغير شيء */
+function flGrab(L, manual) {
+  var c = W("RosTrickOcr"), s = SCB(), hideNow = manual || L.hide;
+  if (!s || typeof s.capture !== "function" || opt.subGate === false) return c.fromScreen(flOpts(L.rect, !hideNow));
+  var rg = { x: Math.round(L.rect.x), y: Math.round(L.rect.y), w: Math.round(L.rect.w), h: Math.round(L.rect.h) };
+  var cop = hideNow ? { region: rg, unit: "dp", scale: 1, dataUrl: true, hideOverlays: true } : { region: rg, unit: "dp", scale: 0.25, format: "jpeg", quality: 50, dataUrl: true, hideOverlays: false };
+  return s.capture(cop).then(function (cap) {
+    return flSig(cap && cap.dataUrl).then(function (sig) {
+      if (!manual && sig && L.sig && flSigDiff(sig, L.sig) < 0.003) return null;
+      L.sig = sig;
+      if (hideNow) { var ro = flOpts(L.rect, false); delete ro.region; delete ro.unit; delete ro.hideOverlays; return c.recognize(cap, ro); }
+      return c.fromScreen(flOpts(L.rect, true));
+    });
+  }, function (e) {
+    if (!manual && e && e.code === "no_frame") return null;
+    throw e;
+  });
 }
 function flSubTick(L, manual) {
   var c = W("RosTrickOcr"), o = OVB(); if (FL.live !== L || !FL.on || !c || !c.fromScreen || !o || L.paused) return;
-  if (FL.busy) { if (!manual) L.timer = setTimeout(function () { flSubTick(L, false); }, 200); return; }
+  if (FL.busy) { if (!manual) L.timer = setTimeout(function () { flSubTick(L, false); }, 120); return; }
   clearTimeout(L.timer); FL.busy = true; var t0 = Date.now(), p;
   if (manual) o.post(FL.ids.b, { busy: true });
-  try { p = c.fromScreen(flOpts(L.rect, !manual && !L.hide)); } catch (e) { p = Promise.reject(e); }
-  p.then(function (r) { if (FL.live !== L) return; L.fail = 0; flSubApply(L, r || {}); },
+  try { p = flGrab(L, manual); } catch (e) { p = Promise.reject(e); }
+  p.then(function (r) { if (FL.live !== L) return; L.fail = 0; if (r) { L.ms = Math.round(+r.ms || (Date.now() - t0)); flSubApply(L, r); } },
     function (e) {
-      if (FL.live !== L) return; var code = String((e && (e.code || e.message)) || "");
+      if (FL.live !== L) return; L.sig = null; var code = String((e && (e.code || e.message)) || "");
       if (code === "not_active" || code === "screen_unavailable") { flSubStop(false); flShow(null, { error: "انتهت جلسة تسجيل الشاشة. أعد تشغيلها من الصفحة ثم ابدأ من جديد." }); return; }
       if (++L.fail >= 3) { flSubStop(false); flShow(null, { error: errMsg(e) }); }
     })
     .then(function () { FL.busy = false; if (manual) o.post(FL.ids.b, { busy: false }); flSubNext(L, t0); });
 }
+var SUB_SENS = { low: 0.8, mid: 0.93, high: 0.985 };
 function flSubApply(L, r) {
   var lines = flMapLines(r), text = lines.map(function (l) { return l.t; }).join(" "), o = OVB(); if (!o) return;
   if (!text.trim()) {
-    if (++L.emp >= 2 && L.norm !== "") { L.norm = ""; FL.last = { text: "", lines: [] }; FL.seq++; FL.trTok++; FL.trText = ""; FL.trState = null; if (L.shown && !L.hidden) o.post(FL.ids.sub, { sub: { orig: "", seq: FL.seq } }); }
+    L.sig = null; /* اقرأ مرة ثانية حتى لو ثبتت الصورة: قراءتان فارغتان تمسحان الترجمة */
+    if (++L.emp >= 2 && L.norm !== "") { L.norm = ""; FL.last = { text: "", lines: [] }; FL.seq++; FL.trTok++; trAbort(FL.trCtl); FL.trText = ""; FL.trState = null; if (L.shown && !L.hidden) o.post(FL.ids.sub, { sub: { orig: "", seq: FL.seq } }); }
     return;
   }
   L.emp = 0;
-  var n = flNorm(text); if (L.norm && flSim(n, L.norm) >= 0.93) return;
+  var n = flNorm(text); if (L.norm && flSim(n, L.norm) >= (SUB_SENS[opt.subSens] || 0.93)) return;
   L.norm = n; FL.last = { text: text, lines: lines }; FL.seq++; FL.trText = ""; FL.sel = [];
   var seq = FL.seq;
-  if (opt.trOn) FL.trState = { state: "pending" }; else { FL.trState = null; FL.trTok++; }
+  if (opt.trOn) FL.trState = { state: "pending" }; else { FL.trState = null; FL.trTok++; trAbort(FL.trCtl); }
   if (!L.hidden) {
     if (!L.shown) { L.shown = true; flSubCreate(L); }
     else o.post(FL.ids.sub, { sub: { orig: text, seq: seq } });
@@ -1109,7 +1361,7 @@ function flSim(a, b) {
 function flOpenMenu() {
   var o = OVB(); if (!o || !FL.on) return;
   var L = FL.live;
-  o.create({ id: FL.ids.m, html: injectData(OV_MENU, { auto: !!(L && L.auto), iv: Number(opt.subInt) || 2, hidden: !!(L && L.hidden) }), fullscreen: true });
+  o.create({ id: FL.ids.m, html: injectData(OV_MENU, { auto: !!(L && L.auto), iv: (L ? flSubIv(L) : 0) || parseFloat(opt.subInt) || 2, hidden: !!(L && L.hidden), ms: (L && L.ms) || 0 }), fullscreen: true });
 }
 function flMenuMsg(d) {
   var o = OVB(); if (!d || !o || !FL.on) return;
@@ -1122,6 +1374,29 @@ function flMenuMsg(d) {
   else if (d.type === "stop") flStop();
 }
 function flSubRestyle() { var L = FL.live; if (L && L.shown && !L.hidden) flSubCreate(L); }
+/* ----- محرر المكان والحجم على الشاشة ----- */
+function flOpenEditor() {
+  var o = OVB(); if (!o) { toast("العرض فوق التطبيقات غير مفعّل في هذا التطبيق."); return; }
+  var L = FL.live, pl = opt.subPos === "custom" ? flSubRect() : flSubPlace(flSubEst());
+  if (L) { L.paused = true; clearTimeout(L.timer); try { o.destroy(FL.ids.sub); } catch (e) {} }
+  if (FL.edOff) { try { FL.edOff(); } catch (e) {} FL.edOff = null; }
+  FL.edOff = o.onMessage(FL.ids.e, flEditMsg);
+  try { o.destroy(FL.ids.e); } catch (e) {}
+  o.create({ id: FL.ids.e, html: OV_EDIT, x: pl.x, y: pl.y, w: pl.w, h: pl.h }).then(null, function () { flEditClose(); toast("تعذّر فتح محرر المكان."); });
+}
+function flEditClose() {
+  var o = OVB(); if (o) { try { o.destroy(FL.ids.e); } catch (e) {} }
+  if (FL.edOff) { try { FL.edOff(); } catch (e) {} FL.edOff = null; }
+  var L = FL.live; if (L) { L.paused = false; if (L.shown && !L.hidden) flSubCreate(L); flSubNext(L, Date.now()); }
+}
+function flEditMsg(d) {
+  if (!d) return;
+  if (d.type === "done" && d.rect) {
+    var r = d.rect; opt.subX = String(Math.round(r.x)); opt.subY = String(Math.round(r.y)); opt.subWd = String(Math.round(r.w)); opt.subHt = String(Math.round(r.h)); opt.subPos = "custom"; saveOpt();
+    subFill();
+  }
+  flEditClose();
+}
 function icPrev() {
   var el = $("ic-prev"); if (!el) return;
   var img = icImg(), sz = 48;
@@ -1139,23 +1414,54 @@ function icReadFile(f) {
     icPrev(); flRebuildBubble();
   }, function () { try { URL.revokeObjectURL(u); } catch (e) {} toast("تعذّر فتح الصورة."); });
 }
+var SUB_VAL = [["fl-mode", "mode"], ["sub-int", "subInt"], ["sub-sens", "subSens"], ["sub-align", "subAlign"], ["sub-pos", "subPos"], ["ocr-q", "ocrQ"], ["ic-kind", "icKind"], ["ic-size", "icSize"], ["ic-op", "icOp"], ["ic-color", "icColor"],
+  ["sub-px", "subPx"], ["sub-bga", "subBgA"], ["sub-rad", "subRad"], ["sub-w", "subW"], ["sub-color", "subColor"], ["sub-bgcolor", "subBgColor"], ["sub-x", "subX"], ["sub-y", "subY"], ["sub-wd", "subWd"], ["sub-ht", "subHt"]];
+var SUB_CHK = [["sub-orig", "subOrig"], ["sub-outline", "subOutline"], ["sub-tr", "trOn"], ["sub-gate", "subGate"], ["sub-bold", "subBold"], ["sub-shadow", "subShadow"], ["sub-cover", "subCover"], ["ic-close", "icClose"]];
+function subVis() {
+  var fx = opt.subPos === "region" || opt.subPos === "custom";
+  $("sub-xy").hidden = opt.subPos !== "custom"; $("sub-cover-row").hidden = !fx; $("sub-cover-note").hidden = !fx;
+}
+function subFill() {
+  SUB_VAL.forEach(function (m) { var el = $(m[0]); if (!el) return; el.value = opt[m[1]]; if (el.tagName === "SELECT" && el.value !== opt[m[1]]) { el.selectedIndex = 0; opt[m[1]] = el.value; } });
+  SUB_CHK.forEach(function (m) { var el = $(m[0]); if (el) el.checked = !!opt[m[1]]; });
+  subVis(); subPrev();
+}
+function subPrev() {
+  var b = $("sub-prev"); if (!b) return; var t = b.firstElementChild, h = oHex(opt.subBgColor, "#000000");
+  b.style.background = "rgba(" + parseInt(h.substr(1, 2), 16) + "," + parseInt(h.substr(3, 2), 16) + "," + parseInt(h.substr(5, 2), 16) + "," + (flSubCover() ? 1 : (Number(opt.subBgA) || 0) / 100) + ")";
+  b.style.borderRadius = (Number(opt.subRad) || 0) + "px"; b.style.textAlign = opt.subAlign;
+  t.style.fontSize = (Number(opt.subPx) || 20) + "px"; t.style.color = opt.subColor; t.style.fontWeight = opt.subBold ? "700" : "400";
+  t.style.textShadow = opt.subShadow ? "0 1px 3px rgba(0,0,0,.85)" : "none";
+}
 function bindSub() {
   if (!$("sub-card")) return;
-  var map = [["fl-mode", "mode"], ["sub-int", "subInt"], ["sub-size", "subSize"], ["sub-pos", "subPos"], ["sub-bg", "subBg"], ["ic-kind", "icKind"], ["ic-size", "icSize"], ["ic-op", "icOp"]];
-  map.forEach(function (m) { var el = $(m[0]); el.value = opt[m[1]]; if (el.value !== opt[m[1]]) { el.selectedIndex = 0; opt[m[1]] = el.value; } });
-  $("sub-orig").checked = opt.subOrig; $("sub-outline").checked = opt.subOutline; $("sub-tr").checked = opt.trOn;
-  $("ic-color").value = icColor();
-  $("fl-mode").onchange = function () { opt.mode = this.value; saveOpt(); flSubStop(false); flFrame(); renderFloat(); };
-  $("sub-int").onchange = function () { opt.subInt = this.value; saveOpt(); var L = FL.live; if (L) { L.auto = Number(opt.subInt) > 0 || L.auto; flSubNext(L, Date.now()); } };
-  ["sub-size", "sub-pos", "sub-bg"].forEach(function (id, i) { $(id).onchange = function () { opt[["subSize", "subPos", "subBg"][i]] = this.value; saveOpt(); flSubRestyle(); }; });
-  $("sub-orig").onchange = function () { opt.subOrig = this.checked; saveOpt(); flSubRestyle(); };
+  subFill();
+  var onVal = function (id, key, after) { $(id).onchange = function () { opt[key] = this.value; saveOpt(); if (after) after(); }; };
+  onVal("fl-mode", "mode", function () { flSubStop(false); flFrame(); renderFloat(); });
+  onVal("sub-int", "subInt", function () { var L = FL.live; if (L) { L.auto = Number(opt.subInt) > 0; clearTimeout(L.timer); if (L.auto) flSubNext(L, Date.now()); } });
+  onVal("sub-sens", "subSens"); onVal("ocr-q", "ocrQ");
+  onVal("sub-align", "subAlign", function () { subPrev(); flSubRestyle(); });
+  onVal("sub-pos", "subPos", function () {
+    if (opt.subPos === "region" && !opt.subCover) { opt.subCover = true; $("sub-cover").checked = true; saveOpt(); }
+    subVis(); subPrev(); flSubRestyle();
+  });
+  [["sub-px", "subPx"], ["sub-bga", "subBgA"], ["sub-rad", "subRad"], ["sub-w", "subW"], ["sub-color", "subColor"], ["sub-bgcolor", "subBgColor"]].forEach(function (m) {
+    var el = $(m[0]), fn = function () { opt[m[1]] = el.value; saveOpt(); subPrev(); };
+    el.oninput = fn; el.onchange = function () { fn(); flSubRestyle(); };
+  });
+  [["sub-x", "subX"], ["sub-y", "subY"], ["sub-wd", "subWd"], ["sub-ht", "subHt"]].forEach(function (m) { var el = $(m[0]); el.onchange = function () { opt[m[1]] = String(el.value).trim(); saveOpt(); flSubRestyle(); }; });
+  [["sub-orig", "subOrig"], ["sub-gate", "subGate"], ["sub-bold", "subBold"], ["sub-shadow", "subShadow"], ["sub-cover", "subCover"]].forEach(function (m) {
+    $(m[0]).onchange = function () { opt[m[1]] = this.checked; saveOpt(); subPrev(); flSubRestyle(); };
+  });
   $("sub-outline").onchange = function () { opt.subOutline = this.checked; saveOpt(); flFrame(); };
   $("sub-tr").onchange = function () { opt.trOn = this.checked; $("tr-on").checked = this.checked; saveOpt(); };
   $("tr-on").addEventListener("change", function () { $("sub-tr").checked = this.checked; });
+  $("sub-edit").onclick = flOpenEditor;
   $("sub-region-clear").onclick = function () { SUBREG = null; try { localStorage.removeItem("ocr_sub_region_v1"); } catch (e) {} flSubStop(false); flFrame(); renderSubRegion(); renderFloat(); toast("مُسحت المنطقة. اضغط الزر العائم لتحديد منطقة جديدة."); };
   var onIc = function (key, el) { return function () { opt[key] = el.value; saveOpt(); icPrev(); flRebuildBubble(); }; };
   [["ic-kind", "icKind"], ["ic-size", "icSize"], ["ic-op", "icOp"]].forEach(function (m) { $(m[0]).onchange = onIc(m[1], $(m[0])); });
   $("ic-color").oninput = onIc("icColor", $("ic-color")); $("ic-color").onchange = onIc("icColor", $("ic-color"));
+  $("ic-close").onchange = function () { opt.icClose = this.checked; saveOpt(); flRebuildBubble(); };
   $("ic-img").onchange = function (e) { var f = e.target.files && e.target.files[0]; if (f) icReadFile(f); e.target.value = ""; };
   $("ic-img-clear").onclick = function () { try { localStorage.removeItem("ocr_ic_img_v1"); } catch (e) {} icPrev(); flRebuildBubble(); };
   renderSubRegion(); icPrev();
@@ -1166,6 +1472,7 @@ function bindFloat() {
   $("fl-sc").onclick = function () { var s = SCB(); if (!s) return; Promise.resolve(s.requestPermission()).then(renderFloat, renderFloat); };
   $("fl-sc-stop").onclick = function () { var s = SCB(); if (s) { try { s.stop(); } catch (e) {} } setTimeout(renderFloat, 200); };
   $("fl-go").onclick = function () { if (FL.on) flStop(); else flStart(); };
+  window.addEventListener("pagehide", function () { flSubStop(true); flDestroyAll(); });
   window.addEventListener("focus", renderFloat);
   document.addEventListener("visibilitychange", function () { if (!document.hidden) renderFloat(); });
   renderFloat();
@@ -1235,6 +1542,7 @@ function bind() {
   $("img").addEventListener("dragstart", function (e) { e.preventDefault(); });
 }
 function start() {
+  flSweep();
   bind(); bindTr(); bindSub(); bindFloat(); setMode("lines"); renderHist(); autosize();
   checkBridges();
   window.addEventListener("rtocr-ready", checkBridges);
