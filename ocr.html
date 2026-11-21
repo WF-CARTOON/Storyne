@@ -172,8 +172,11 @@
 <div class="card" id="tr-card">
   <h2><svg class="i" viewBox="0 0 24 24"><path d="M4 5h9M8.5 3v2M6 5c0 4 3 7 7 8M12 5c0 4-3 7-7 8M13 21l4-10 4 10M14.5 18h5"/></svg>الترجمة</h2>
   <p class="note" style="color:var(--mut);font-size:13px;margin:0 0 10px">تترجم النص المقروء إلى لغتك وتعرف لغته تلقائياً. القراءة تعمل دون إنترنت، أما الترجمة فتحتاج اتصالاً بالإنترنت.</p>
-  <div class="row"><label class="fld">الترجمة إلى<select id="tr-lang"></select></label><label class="fld">لغة النص الأصلي<select id="tr-src"></select></label><label class="fld">خدمة الترجمة<select id="tr-prov"><option value="auto">تلقائي (Google ثم MyMemory ثم خادمك)</option><option value="google">Google فقط</option><option value="mymemory">MyMemory فقط</option><option value="libre">خادم LibreTranslate خاص بي</option></select></label></div>
-  <div id="tr-lib" hidden><div class="row"><label class="fld">عنوان الخادم<input type="url" id="tr-lib-url" dir="ltr" placeholder="http://192.168.1.5:5000" autocomplete="off"></label><label class="fld">مفتاح API (إن وُجد)<input type="password" id="tr-lib-key" dir="ltr" autocomplete="off"></label></div><p class="nt">يُستعمل مع «تلقائي» كملاذ أخير إن كتبت عنوانه هنا. يمكنك تشغيله على جهازك أو شبكتك المحلية.</p></div>
+  <div class="row"><label class="fld">الترجمة إلى<select id="tr-lang"></select></label><label class="fld">لغة النص الأصلي<select id="tr-src"></select></label><label class="fld">خدمة الترجمة<select id="tr-prov"><option value="auto">تلقائي (Google ثم MyMemory ثم خادمك)</option><option value="google">Google (مجاني)</option><option value="mymemory">MyMemory (مجاني)</option><option value="lingva">Lingva (مجاني، وسيط لـ Google)</option><option value="libre">خادم LibreTranslate خاص بي</option><option value="gcloud">Google Cloud Translation (بمفتاح)</option><option value="azure">Microsoft Azure Translator (بمفتاح)</option></select></label><label class="fld">خدمة احتياطية إن فشلت الأولى<select id="tr-fb"><option value="none">بدون</option><option value="google">Google</option><option value="mymemory">MyMemory</option><option value="lingva">Lingva</option><option value="libre">LibreTranslate</option><option value="gcloud">Google Cloud</option><option value="azure">Azure</option></select></label></div>
+  <div id="tr-lingva" hidden><div class="row"><label class="fld">عنوان Lingva (اتركه فارغاً لاستعمال lingva.ml)<input type="url" id="tr-lingva-url" dir="ltr" placeholder="https://lingva.ml" autocomplete="off"></label></div></div>
+  <div id="tr-gc" hidden><div class="row"><label class="fld">مفتاح Google Cloud Translation<input type="password" id="tr-g-key" dir="ltr" autocomplete="off"></label></div></div>
+  <div id="tr-az" hidden><div class="row"><label class="fld">مفتاح Azure Translator<input type="password" id="tr-az-key" dir="ltr" autocomplete="off"></label><label class="fld">المنطقة (Region، اختياري)<input type="text" id="tr-az-reg" dir="ltr" placeholder="westeurope" autocomplete="off"></label></div></div>
+  <div id="tr-lib" hidden><div class="row"><label class="fld">عنوان الخادم<input type="url" id="tr-lib-url" dir="ltr" placeholder="http://192.168.1.5:5000" autocomplete="off"></label><label class="fld">مفتاح API (إن وُجد)<input type="password" id="tr-lib-key" dir="ltr" autocomplete="off"></label></div><p class="nt">يمكنك تشغيله على جهازك أو شبكتك المحلية. ويُستعمل مع «تلقائي» كملاذ أخير إن بقي عنوانه محفوظاً. الخدمات التي بمفتاح تُحسب على حسابك لدى المزوّد.</p></div>
   <label class="chk"><input type="checkbox" id="tr-on"><span>ترجمة تلقائية للنص المقروء<small>تُترجم كل قراءة جديدة، وفي الوضع العائم تظهر الترجمة في النافذة.</small></span></label>
   <div class="row" style="margin-top:6px"><button type="button" class="btn sm" id="tr-now">ترجم الآن</button><button type="button" class="btn sm" id="tr-copy" disabled>نسخ الترجمة</button><button type="button" class="btn sm" id="tr-test">اختبار الاتصال بالخدمة</button></div>
   <div id="tr-status" role="status" aria-live="polite" style="min-height:22px;font-size:14px;color:var(--mut)"></div>
@@ -260,7 +263,7 @@
     <label class="fld">الحجم<select id="ic-size"><option value="40">صغير</option><option value="48">متوسط</option><option value="56">كبير</option></select></label>
     <label class="fld">الشفافية<select id="ic-op"><option value="100">معتم</option><option value="70">شبه شفاف</option><option value="45">شفاف</option></select></label>
   </div>
-  <label class="chk"><input type="checkbox" id="ic-close"><span>علامة إغلاق (×) صغيرة على الزر<small>اضغطها لإيقاف الأداة وإزالة الزر في أي وقت. تُزال أيضاً من «إيقاف الأداة العائمة» أعلاه ومن قائمة الضغط المطوّل.</small></span></label>
+  <label class="chk"><input type="checkbox" id="ic-close"><span>علامتا الإغلاق (×) والإعدادات على الزر<small>× يوقف الأداة ويزيل الزر، والترس يفتح لوحة إعدادات فوق أي تطبيق: السرعة والشكل والمكان والترجمة دون الرجوع إلى هنا. القائمة نفسها تفتح بالضغط المطوّل على الزر.</small></span></label>
   <div class="row"><label class="btn sm" for="ic-img" style="margin-bottom:6px">صورة خاصة بدل الأيقونة</label><input id="ic-img" class="vh" type="file" accept="image/*" aria-label="اختيار صورة للزر العائم"><button type="button" class="btn sm" id="ic-img-clear">إزالة الصورة</button></div>
 </div>
 
@@ -292,6 +295,7 @@ var ZOOMS = [0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4];
 
 var S = { img: null, lines: [], sel: {}, mode: "lines", region: null, zoom: 1, busy: false, thumbs: [], thumbOn: -1, undo: [], loadTok: 0, autoKey: "" };
 var opt = LS.get("ocr_opts_v1", {});
+var TR_PROVS = ["google", "mymemory", "lingva", "libre", "gcloud", "azure"];
 function oNum(v, d, a, b) { v = parseFloat(v); return isFinite(v) ? Math.max(a, Math.min(b, v)) : d; }
 function oHex(v, d) { return /^#[0-9a-fA-F]{6}$/.test(String(v)) ? String(v) : d; }
 function oPick(v, list, d) { v = String(v); return list.indexOf(v) >= 0 ? v : d; }
@@ -299,7 +303,7 @@ var SUB_INTS = ["0", "0.1", "0.3", "0.5", "1", "2", "3", "5", "10"];
 opt = {
   lang: opt.lang || "", psm: String(opt.psm || "3"), invert: String(opt.invert || "auto"), ocrQ: opt.ocrQ === "lite" ? "lite" : "acc",
   autoCopy: !!opt.autoCopy, autoRun: opt.autoRun !== false,
-  trOn: !!opt.trOn, trLang: String(opt.trLang || "ar"), trProv: oPick(opt.trProv || "auto", ["auto", "google", "mymemory", "libre"], "auto"), trSrc: String(opt.trSrc || "auto"), trLibUrl: String(opt.trLibUrl || ""), trLibKey: String(opt.trLibKey || ""),
+  trOn: !!opt.trOn, trLang: String(opt.trLang || "ar"), trProv: oPick(opt.trProv || "auto", ["auto"].concat(TR_PROVS), "auto"), trFb: oPick(opt.trFb || "none", ["none"].concat(TR_PROVS), "none"), trSrc: String(opt.trSrc || "auto"), trLibUrl: String(opt.trLibUrl || ""), trLibKey: String(opt.trLibKey || ""), trLingvaUrl: String(opt.trLingvaUrl || ""), trGKey: String(opt.trGKey || ""), trAzKey: String(opt.trAzKey || ""), trAzReg: String(opt.trAzReg || ""),
   mode: opt.mode === "win" ? "win" : "sub", subInt: oPick(opt.subInt != null ? opt.subInt : "2", SUB_INTS, "2"), subGate: opt.subGate !== false, subSens: oPick(opt.subSens || "mid", ["low", "mid", "high"], "mid"),
   subPx: String(oNum(opt.subPx != null ? opt.subPx : ({ s: 16, m: 20, l: 26 })[opt.subSize], 20, 12, 40)), subColor: oHex(opt.subColor, "#ffffff"), subBgColor: oHex(opt.subBgColor, "#000000"),
   subBgA: String(oNum(opt.subBgA != null ? opt.subBgA : ({ low: 35, mid: 60, high: 85 })[opt.subBg], 60, 0, 100)), subRad: String(oNum(opt.subRad, 12, 0, 24)), subBold: opt.subBold !== false, subShadow: opt.subShadow !== false,
@@ -670,7 +674,7 @@ function onIntent(d) {
 
 /* ---------- الترجمة (تحتاج إنترنت): ثلاث خدمات اختيارية + ذاكرة مؤقتة + إلغاء الطلبات القديمة ---------- */
 var TR_LANGS = [["ar", "العربية"], ["en", "English"], ["fr", "Français"], ["de", "Deutsch"], ["es", "Español"], ["it", "Italiano"], ["pt", "Português"], ["tr", "Türkçe"], ["ru", "Русский"], ["fa", "فارسی"], ["ur", "اردو"], ["hi", "हिन्दी"], ["id", "Indonesia"], ["zh-CN", "中文"], ["ja", "日本語"], ["ko", "한국어"]];
-var trCache = {}, trCacheN = 0, TR_G = 1500, TR_M = 450, TR_VIA = { google: "Google", mymemory: "MyMemory", libre: "LibreTranslate" };
+var trCache = {}, trCacheN = 0, TR_G = 1500, TR_M = 450, TR_L = 700, TR_VIA = { google: "Google", mymemory: "MyMemory", lingva: "Lingva", libre: "LibreTranslate", gcloud: "Google Cloud", azure: "Azure" };
 function trSameLang(text, to) {
   if (to !== "ar") return false;
   var letters = text.match(/[A-Za-zÀ-ɏЀ-ӿ؀-ۿݐ-ݿ぀-ヿ一-鿿가-힯]/g) || [];
@@ -751,11 +755,50 @@ function trLibre(chunk, to, src, ctl) {
     return { text: String(j.translatedText), from: (j.detectedLanguage && j.detectedLanguage.language) || "" };
   });
 }
-var TR_FN = { google: trGoogle, mymemory: trMyMemory, libre: trLibre };
+function trLingva(chunk, to, src, ctl) {
+  var base = String(opt.trLingvaUrl || "").trim().replace(/\/+$/, "") || "https://lingva.ml";
+  var parts = trChunks(chunk, TR_L), i = 0, outs = [], tgt = to === "zh-CN" ? "zh" : to, sl = !src || src === "auto" ? "auto" : (src === "zh-CN" ? "zh" : src);
+  var next = function () {
+    if (i >= parts.length) return Promise.resolve({ text: outs.join("\n"), from: "" });
+    return trFetchJson(base + "/api/v1/" + encodeURIComponent(sl) + "/" + encodeURIComponent(tgt) + "/" + encodeURIComponent(parts[i++]), 9000, {}, ctl).then(function (j) {
+      if (!j || !j.translation) throw trErr("empty");
+      outs.push(String(j.translation)); return next();
+    });
+  };
+  return next();
+}
+function trGCloud(chunk, to, src, ctl) {
+  var key = String(opt.trGKey || "").trim(); if (!key) return Promise.reject(trErr("nokey"));
+  var body = { q: chunk, target: to, format: "text" }; if (src && src !== "auto") body.source = src;
+  return trFetchJson("https://translation.googleapis.com/language/translate/v2?key=" + encodeURIComponent(key), 9000, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }, ctl).then(function (j) {
+    var t = j && j.data && j.data.translations && j.data.translations[0];
+    if (!t || !t.translatedText) throw trErr("empty");
+    return { text: String(t.translatedText), from: t.detectedSourceLanguage || "" };
+  });
+}
+function trAzure(chunk, to, src, ctl) {
+  var key = String(opt.trAzKey || "").trim(); if (!key) return Promise.reject(trErr("nokey"));
+  var az = function (c) { return c === "zh-CN" ? "zh-Hans" : c; };
+  var u = "https://api.cognitive.microsofttranslator.com/translate?api-version=3.0&to=" + encodeURIComponent(az(to)) + (src && src !== "auto" ? "&from=" + encodeURIComponent(az(src)) : "");
+  var h = { "Content-Type": "application/json", "Ocp-Apim-Subscription-Key": key }, reg = String(opt.trAzReg || "").trim(); if (reg) h["Ocp-Apim-Subscription-Region"] = reg;
+  return trFetchJson(u, 9000, { method: "POST", headers: h, body: JSON.stringify([{ Text: chunk }]) }, ctl).then(function (j) {
+    var t = j && j[0] && j[0].translations && j[0].translations[0];
+    if (!t || !t.text) throw trErr("empty");
+    return { text: String(t.text), from: (j[0].detectedLanguage && j[0].detectedLanguage.language) || "" };
+  });
+}
+var TR_FN = { google: trGoogle, mymemory: trMyMemory, lingva: trLingva, libre: trLibre, gcloud: trGCloud, azure: trAzure };
+function trReady(p) {
+  if (p === "libre") return /^https?:\/\//i.test(String(opt.trLibUrl || "").trim());
+  if (p === "gcloud") return !!String(opt.trGKey || "").trim();
+  if (p === "azure") return !!String(opt.trAzKey || "").trim();
+  return true;
+}
 function trOrder() {
-  var p = opt.trProv;
-  if (p === "google" || p === "mymemory" || p === "libre") return [p];
-  var a = ["google", "mymemory"]; if (/^https?:\/\//i.test(String(opt.trLibUrl || "").trim())) a.push("libre");
+  var p = opt.trProv, a;
+  if (p === "auto") { a = ["google", "mymemory", "lingva"]; ["libre", "gcloud", "azure"].forEach(function (x) { if (trReady(x)) a.push(x); }); }
+  else a = [p];
+  if (p !== "auto" && opt.trFb && opt.trFb !== "none" && a.indexOf(opt.trFb) < 0) a.push(opt.trFb);
   return a;
 }
 function trChunk(chunk, to, src, ctl) {
@@ -776,7 +819,7 @@ function translateText(text, to, o) {
   if (!text) return Promise.resolve({ text: "", same: true });
   if (src && src.split("-")[0] === to.split("-")[0]) return Promise.resolve({ text: text, same: true });
   if (!src && trSameLang(text, to)) return Promise.resolve({ text: text, same: true });
-  var key = [opt.trProv, src, to].join("|") + "\u0001" + text; if (!o.nocache && trCache[key]) return Promise.resolve(trCache[key]);
+  var key = [opt.trProv, opt.trFb, src, to].join("|") + "\u0001" + text; if (!o.nocache && trCache[key]) return Promise.resolve(trCache[key]);
   var parts = trChunks(text, TR_G), outs = [], from = "", via = "", i = 0;
   var next = function () {
     if (i >= parts.length) return Promise.resolve();
@@ -794,6 +837,7 @@ function trWhyText(t) {
   if (w === "timeout") return "انتهت مهلة خدمة الترجمة.";
   if (w === "http") return "رفضت الخدمة الطلب (رمز " + ((t && t.code) || "؟") + ").";
   if (w === "nolib") return "لم تُدخل عنوان خادم LibreTranslate.";
+  if (w === "nokey") return "لم تُدخل مفتاح الخدمة المختارة.";
   if (w === "empty") return "لم تُرجع الخدمة ترجمة.";
   return "تعذّر الوصول إلى خدمة الترجمة. تحتاج الترجمة إلى اتصال بالإنترنت.";
 }
@@ -808,20 +852,26 @@ function trMain(text) {
     out.hidden = false; out.textContent = r.text; $("tr-copy").disabled = false; st.className = "ok"; st.textContent = "تمت الترجمة إلى " + trLabel(opt.trLang) + (r.via ? " (" + TR_VIA[r.via] + ")" : "") + ".";
   }, function (e) { if (my !== trTok) return; st.className = "bad"; st.textContent = "تعذّرت الترجمة. " + trWhyText(e && e.tr); });
 }
-function trTest() {
-  var st = $("tr-status"), my = ++trTok, t0 = Date.now(), to = opt.trLang === "en" ? "ar" : opt.trLang;
-  st.className = ""; st.textContent = "جارٍ اختبار الاتصال…";
+function trTestMsg() {
+  var t0 = Date.now(), to = opt.trLang === "en" ? "ar" : opt.trLang;
   return translateText("Hello", to, { nocache: true, src: "" }).then(function (r) {
-    if (my !== trTok) return;
-    st.className = "ok"; st.textContent = "تم الاتصال عبر " + (TR_VIA[r.via] || "الخدمة") + " (" + (Date.now() - t0) + " مللي ثانية).";
-  }, function (e) { if (my !== trTok) return; st.className = "bad"; st.textContent = "فشل الاتصال: " + trWhyText(e && e.tr); });
+    return { ok: true, msg: "تم الاتصال عبر " + (TR_VIA[r.via] || "الخدمة") + " (" + (Date.now() - t0) + " مللي ثانية)." };
+  }, function (e) { return { ok: false, msg: "فشل الاتصال: " + trWhyText(e && e.tr) }; });
+}
+function trTest() {
+  var st = $("tr-status"), my = ++trTok;
+  st.className = ""; st.textContent = "جارٍ اختبار الاتصال…";
+  return trTestMsg().then(function (r) { if (my !== trTok) return; st.className = r.ok ? "ok" : "bad"; st.textContent = r.msg; });
 }
 function trLabel(c) { for (var i = 0; i < TR_LANGS.length; i++) if (TR_LANGS[i][0] === c) return TR_LANGS[i][1]; return c; }
 function trNow() {
   var ta = $("result"), s = ta.selectionStart, e = ta.selectionEnd, v = ta.value;
   return trMain(e > s ? v.slice(s, e) : v);
 }
-function trLibVis() { $("tr-lib").hidden = opt.trProv !== "libre"; }
+function trCfgVis() {
+  var on = function (p) { return opt.trProv === p || opt.trFb === p; };
+  $("tr-lib").hidden = !on("libre"); $("tr-lingva").hidden = !on("lingva"); $("tr-gc").hidden = !on("gcloud"); $("tr-az").hidden = !on("azure");
+}
 function bindTr() {
   var sel = $("tr-lang"); TR_LANGS.forEach(function (l) { var o = document.createElement("option"); o.value = l[0]; o.textContent = l[1]; sel.appendChild(o); });
   sel.value = opt.trLang; if (sel.value !== opt.trLang) { opt.trLang = "ar"; sel.value = "ar"; }
@@ -830,18 +880,19 @@ function bindTr() {
   TR_LANGS.forEach(function (l) { var o = document.createElement("option"); o.value = l[0]; o.textContent = l[1]; src.appendChild(o); });
   src.value = opt.trSrc; if (src.value !== opt.trSrc) { opt.trSrc = "auto"; src.value = "auto"; }
   src.onchange = function () { opt.trSrc = this.value; saveOpt(); };
-  var pv = $("tr-prov"); pv.value = opt.trProv; pv.onchange = function () { opt.trProv = this.value; saveOpt(); trLibVis(); };
-  $("tr-lib-url").value = opt.trLibUrl; $("tr-lib-key").value = opt.trLibKey;
-  $("tr-lib-url").onchange = function () { opt.trLibUrl = this.value.trim(); saveOpt(); };
-  $("tr-lib-key").onchange = function () { opt.trLibKey = this.value.trim(); saveOpt(); };
-  trLibVis();
+  var pv = $("tr-prov"); pv.value = opt.trProv; pv.onchange = function () { opt.trProv = this.value; saveOpt(); trCfgVis(); };
+  var fb = $("tr-fb"); fb.value = opt.trFb; fb.onchange = function () { opt.trFb = this.value; saveOpt(); trCfgVis(); };
+  [["tr-lib-url", "trLibUrl"], ["tr-lib-key", "trLibKey"], ["tr-lingva-url", "trLingvaUrl"], ["tr-g-key", "trGKey"], ["tr-az-key", "trAzKey"], ["tr-az-reg", "trAzReg"]].forEach(function (m) {
+    var el = $(m[0]); el.value = opt[m[1]]; el.onchange = function () { opt[m[1]] = this.value.trim(); saveOpt(); };
+  });
+  trCfgVis();
   $("tr-on").checked = opt.trOn; $("tr-on").onchange = function () { opt.trOn = this.checked; saveOpt(); toast(opt.trOn ? "الترجمة التلقائية مفعّلة." : "الترجمة التلقائية متوقفة."); };
   $("tr-now").onclick = trNow; $("tr-test").onclick = trTest;
   $("tr-copy").onclick = function () { var t = $("tr-out").textContent; if (t) copyWithToast(t, "نُسخت الترجمة."); };
 }
 
 /* ---------- الوضع العائم: زر فوق التطبيقات الأخرى + التقاط الشاشة + قراءة ---------- */
-var FL = { on: false, busy: false, last: null, sel: [], offs: [], selOff: null, autoT: 0, seq: 0, trTok: 0, trText: "", trState: null, live: null, ids: { b: "ocr-bubble", s: "ocr-sel", r: "ocr-res", sub: "ocr-sub", m: "ocr-menu", fr: "ocr-frame", e: "ocr-edit" }, trCtl: null, edOff: null };
+var FL = { on: false, busy: false, last: null, sel: [], offs: [], selOff: null, autoT: 0, seq: 0, trTok: 0, trText: "", trState: null, live: null, ids: { b: "ocr-bubble", s: "ocr-sel", r: "ocr-res", sub: "ocr-sub", m: "ocr-menu", fr: "ocr-frame", e: "ocr-edit", p: "ocr-set" }, trCtl: null, edOff: null, panOff: null, edT: "sub", rsT: 0, panBack: false };
 var ICONS = { translate: "M4 5h9M8.5 3v2M6 5c0 4 3 7 7 8M12 5c0 4-3 7-7 8M13 21l4-10 4 10M14.5 18h5", subtitle: "M3 6h18a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1zM6 12h4M12 12h6M6 15h7", scan: "M4 7V5a1 1 0 0 1 1-1h2M17 4h2a1 1 0 0 1 1 1v2M20 17v2a1 1 0 0 1-1 1h-2M7 20H5a1 1 0 0 1-1-1v-2M4 12h16", eye: "M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z", chat: "M21 12a8 8 0 0 1-11.5 7.2L4 20l1-4.5A8 8 0 1 1 21 12zM8 11h8M8 14h5", globe: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18" };
 var SUB_SZ = { s: 16, m: 20, l: 26 }, SUB_BG = { low: 0.35, mid: 0.6, high: 0.85 };
 var SUBREG = LS.get("ocr_sub_region_v1", null);
@@ -855,12 +906,13 @@ function bubbleHtml() {
     'html,body{margin:0;height:100%;background:transparent;overflow:hidden}',
     '#b{width:' + size + 'px;height:' + size + 'px;margin:' + m + 'px;border-radius:50%;background:' + icColor() + ';box-shadow:0 2px 8px rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;touch-action:none;overflow:hidden;opacity:' + String(op / 100).replace(/^0\./, ".") + '}',
     'svg{width:55%;height:55%;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}img{width:100%;height:100%;object-fit:cover;border-radius:50%}',
-    '#cl{position:absolute;top:0;right:0;width:22px;height:22px;border-radius:50%;background:#1b2430;border:1.5px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:0}#cl svg{width:12px;height:12px;stroke-width:3}',
+    '#cl,#gr{position:absolute;right:0;width:22px;height:22px;border-radius:50%;background:#1b2430;border:1.5px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:0}#cl{top:0}#gr{bottom:0}#cl svg,#gr svg{width:12px;height:12px;stroke-width:3}#gr svg{stroke-width:2.2}',
     '#b.busy{background:#b26a00}#b.busy svg,#b.busy img{-webkit-animation:sp 1s linear infinite;animation:sp 1s linear infinite}@-webkit-keyframes sp{to{-webkit-transform:rotate(360deg)}}@keyframes sp{to{transform:rotate(360deg)}}',
-    '</style></head><body><div id="b">' + inner + '</div>' + (cl ? '<div id="cl" role="button" aria-label="إغلاق"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></div>' : '') + '<script>',
+    '</style></head><body><div id="b">' + inner + '</div>' + (cl ? '<div id="cl" role="button" aria-label="إغلاق"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></div><div id="gr" role="button" aria-label="الإعدادات"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg></div>' : '') + '<script>',
     'var lp=0,sx=0,sy=0,did=false;',
-    'function go(){var b=document.getElementById("b"),c=document.getElementById("cl");',
+    'function go(){var b=document.getElementById("b"),c=document.getElementById("cl"),g=document.getElementById("gr");',
     'if(c)c.addEventListener("click",function(e){e.stopPropagation();RosTrickOverlay.post({type:"close"})});',
+    'if(g)g.addEventListener("click",function(e){e.stopPropagation();RosTrickOverlay.post({type:"settings"})});',
     'b.addEventListener("touchstart",function(e){var t=e.touches[0];sx=t.screenX;sy=t.screenY;did=false;clearTimeout(lp);lp=setTimeout(function(){did=true;RosTrickOverlay.post({type:"menu"})},650)},{passive:true});',
     'b.addEventListener("touchmove",function(e){var t=e.touches[0];if(Math.abs(t.screenX-sx)>8||Math.abs(t.screenY-sy)>8)clearTimeout(lp)},{passive:true});',
     'b.addEventListener("touchend",function(){clearTimeout(lp)},{passive:true});b.addEventListener("touchcancel",function(){clearTimeout(lp)},{passive:true});',
@@ -922,7 +974,7 @@ var OV_RES = ['<html><head><meta name="viewport" content="width=device-width,ini
   'var t=document.createElement("span");t.className="t";t.dir="auto";t.textContent=l.t;var c=document.createElement("span");c.className="cf";c.textContent=l.c+"%";',
   'd.appendChild(t);d.appendChild(c);d.onclick=function(){tog(i)};ls.appendChild(d)})}',
   'document.getElementById("mt").textContent=L.length?(D.conf+"% · "+D.lang):"";paint()}',
-  'function why(t){var w=t&&t.why;if(w==="offline")return"لا يوجد اتصال بالإنترنت.";if(w==="timeout")return"انتهت مهلة خدمة الترجمة.";if(w==="http")return"رفضت الخدمة الطلب (رمز "+(t.code||"?")+").";if(w==="nolib")return"لم يُدخل عنوان خادم الترجمة.";return"تحتاج الترجمة إلى اتصال بالإنترنت."}',
+  'function why(t){var w=t&&t.why;if(w==="offline")return"لا يوجد اتصال بالإنترنت.";if(w==="timeout")return"انتهت مهلة خدمة الترجمة.";if(w==="http")return"رفضت الخدمة الطلب (رمز "+(t.code||"?")+").";if(w==="nolib")return"لم يُدخل عنوان خادم الترجمة.";if(w==="nokey")return"لم يُدخل مفتاح خدمة الترجمة.";return"تحتاج الترجمة إلى اتصال بالإنترنت."}',
   'function setTr(t){if(!t){return}',
   'tb.hidden=false;tb.className="";',
   'if(t.state==="ok"){tb.dir="auto";tb.textContent=t.text||""}',
@@ -955,7 +1007,7 @@ var OV_SUB = ['<html><head><meta name="viewport" content="width=device-width,ini
   '</style></head><body><div id="box"><div id="in"><div id="tr"></div><div id="og"></div><div id="er"></div></div></div><script>',
   'var D=window.__D||{},O=D.orig||"",T=D.tr||null,prev="",seq=D.seq||0,box=document.getElementById("box"),inn=document.getElementById("in"),tr=document.getElementById("tr"),og=document.getElementById("og"),er=document.getElementById("er"),BASE=D.px||20;',
   'function post(m){RosTrickOverlay.post(m)}',
-  'function why(t){var w=t&&t.why;if(w==="offline")return"لا يوجد اتصال بالإنترنت";if(w==="timeout")return"انتهت مهلة خدمة الترجمة";if(w==="http")return"رفضت الخدمة الطلب (رمز "+(t.code||"?")+")";if(w==="nolib")return"لم يُدخل عنوان خادم الترجمة";return"تعذّرت الترجمة (تحتاج إنترنت)"}',
+  'function why(t){var w=t&&t.why;if(w==="offline")return"لا يوجد اتصال بالإنترنت";if(w==="timeout")return"انتهت مهلة خدمة الترجمة";if(w==="http")return"رفضت الخدمة الطلب (رمز "+(t.code||"?")+")";if(w==="nolib")return"لم يُدخل عنوان خادم الترجمة";if(w==="nokey")return"لم يُدخل مفتاح خدمة الترجمة";return"تعذّرت الترجمة (تحتاج إنترنت)"}',
   'function fit(){if(!D.fixed)return;var H=window.innerHeight,sz=BASE;tr.style.fontSize=sz+"px";og.style.fontSize=Math.max(9,Math.round(sz*.6))+"px";while(inn.offsetHeight+17>H&&sz>10){sz-=1;tr.style.fontSize=sz+"px";og.style.fontSize=Math.max(9,Math.round(sz*.6))+"px"}}',
   'function rep(z){if(D.fixed)return;setTimeout(function(){post({type:"size",h:z===0?0:Math.ceil(box.offsetHeight)+4})},30)}',
   'function render(){if(!O){box.style.display="none";rep(0);return}',
@@ -980,13 +1032,13 @@ var OV_MENU = ['<html><head><meta name="viewport" content="width=device-width,in
   '#pn button{display:block;width:100%;min-height:46px;margin:4px 0;border:0;border-radius:12px;background:#243242;color:#e8edf4;font:inherit;font-size:15px;font-weight:700;text-align:right;padding:0 14px}',
   '#pn #m-stop{background:#7f1d1d}#pn #m-close{background:transparent;color:#93a1b3;text-align:center}',
   '#m-info{color:#93a1b3;font-size:12px;padding:2px 6px 6px;text-align:center}',
-  '</style></head><body><div id="bd"><div id="pn"><div id="m-info"></div><button type="button" id="m-auto"></button><button type="button" id="m-region">تحديد منطقة جديدة</button><button type="button" id="m-copy">نسخ الترجمة</button><button type="button" id="m-show"></button><button type="button" id="m-stop">إيقاف الأداة وإزالة الزر</button><button type="button" id="m-close">إغلاق</button></div></div><script>',
+  '</style></head><body><div id="bd"><div id="pn"><div id="m-info"></div><button type="button" id="m-set">الإعدادات السريعة</button><button type="button" id="m-auto"></button><button type="button" id="m-region">تحديد منطقة جديدة</button><button type="button" id="m-copy">نسخ الترجمة</button><button type="button" id="m-show"></button><button type="button" id="m-stop">إيقاف الأداة وإزالة الزر</button><button type="button" id="m-close">إغلاق</button></div></div><script>',
   'var D=window.__D||{};',
   'function post(t){RosTrickOverlay.post({type:t})}',
   'function go(){document.getElementById("m-auto").textContent=D.auto?("التحديث التلقائي: مفعّل (كل "+D.iv+" ث)"):"التحديث التلقائي: متوقف";',
   'document.getElementById("m-info").textContent=D.ms?("آخر قراءة: "+D.ms+" مللي ثانية"):"";',
   'document.getElementById("m-show").textContent=D.hidden?"إظهار الترجمة":"إخفاء الترجمة";',
-  '[["m-auto","auto"],["m-region","region"],["m-copy","copy"],["m-show","toggle"],["m-stop","stop"],["m-close","close"]].forEach(function(a){document.getElementById(a[0]).onclick=function(){post(a[1])}});',
+  '[["m-set","settings"],["m-auto","auto"],["m-region","region"],["m-copy","copy"],["m-show","toggle"],["m-stop","stop"],["m-close","close"]].forEach(function(a){document.getElementById(a[0]).onclick=function(){post(a[1])}});',
   'document.getElementById("bd").onclick=function(e){if(e.target===this)post("close")}}',
   'if(window.RosTrickOverlay)go();else window.addEventListener("rtoverlay-ready",go);<\/script></body></html>'].join("");
 var OV_EDIT = ['<html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>',
@@ -996,8 +1048,8 @@ var OV_EDIT = ['<html><head><meta name="viewport" content="width=device-width,in
   '.k{margin:8px 4px 0;padding:8px 16px;border-radius:18px;border:0;font:inherit;font-size:14px;font-weight:700;background:#fff;color:#14202e}.k.p{background:#16a34a;color:#fff}',
   '#rz{position:absolute;right:-1px;bottom:-1px;width:34px;height:34px;border-radius:8px 0 10px 0;background:#fff;touch-action:none}#rz:after{content:"";position:absolute;right:7px;bottom:7px;width:14px;height:14px;border-right:3px solid #1f6feb;border-bottom:3px solid #1f6feb}',
   '</style></head><body><div id="bx"><div id="tx">مكان الترجمة وحجمها</div><div id="hn">اسحب الصندوق لتحريكه، واسحب الزاوية البيضاء لتغيير الحجم</div><div><button type="button" class="k p" id="ok">تم</button><button type="button" class="k" id="no">إلغاء</button></div><div id="rz"></div></div><script>',
-  'function pt(e){var t=(e.touches&&e.touches[0])||(e.changedTouches&&e.changedTouches[0])||e;return{x:t.screenX,y:t.screenY}}',
-  'function go(){var R=RosTrickOverlay,rz=document.getElementById("rz"),s=null,b0=null;',
+  'var D=window.__D||{};function pt(e){var t=(e.touches&&e.touches[0])||(e.changedTouches&&e.changedTouches[0])||e;return{x:t.screenX,y:t.screenY}}',
+  'function go(){var R=RosTrickOverlay,rz=document.getElementById("rz"),s=null,b0=null;if(D.t==="region")document.getElementById("tx").textContent="منطقة القراءة";',
   'R.drag(document.getElementById("bx"),{});',
   'function dn(e){var p=pt(e);s=p;b0=R.info();e.stopPropagation()}',
   'function mv(e){if(!s)return;var p=pt(e),w=Math.max(60,Math.round((b0.w||200)+(p.x-s.x))),h=Math.max(30,Math.round((b0.h||80)+(p.y-s.y)));R.resize(w,h);if(e.cancelable)e.preventDefault();e.stopPropagation()}',
@@ -1047,7 +1099,7 @@ function flSweep() {
   try { l = o.list() || []; } catch (e) {}
   l.forEach(function (w) { if (w && ours.indexOf(w.id) >= 0) { try { o.destroy(w.id); } catch (e) {} } });
 }
-function flUnlisten() { FL.offs.forEach(function (f) { try { f(); } catch (e) {} }); FL.offs = []; if (FL.selOff) { try { FL.selOff(); } catch (e) {} FL.selOff = null; } if (FL.edOff) { try { FL.edOff(); } catch (e) {} FL.edOff = null; } clearTimeout(FL.autoT); }
+function flUnlisten() { FL.offs.forEach(function (f) { try { f(); } catch (e) {} }); FL.offs = []; if (FL.selOff) { try { FL.selOff(); } catch (e) {} FL.selOff = null; } if (FL.edOff) { try { FL.edOff(); } catch (e) {} FL.edOff = null; } if (FL.panOff) { try { FL.panOff(); } catch (e) {} FL.panOff = null; } FL.panBack = false; clearTimeout(FL.autoT); clearTimeout(FL.rsT); }
 function flDestroyAll() { var o = OVB(); if (!o) return; flOurIds().forEach(function (id) { try { o.destroy(id); } catch (e) {} }); flSweep(); }
 function flStop() { flSubStop(true); FL.on = false; FL.busy = false; trAbort(FL.trCtl); flUnlisten(); flDestroyAll(); renderFloat(); }
 function flBubbleOpts() { var o = OVB(), sc = {}; try { sc = o.screen() || {}; } catch (e) {} var sz = (Number(opt.icSize) || 48) + (opt.icClose ? 14 : 4); return { id: FL.ids.b, html: bubbleHtml(), x: 0, y: Math.round((sc.dpH || 700) * 0.3), w: sz, h: sz }; }
@@ -1071,7 +1123,7 @@ function flRebuildBubble() {
 }
 function flListen() {
   flUnlisten(); var o = OVB(); if (!o) return;
-  FL.offs.push(o.onMessage(FL.ids.b, function (d) { if (d && d.type === "tap") flBubbleTap(); else if (d && d.type === "menu") flOpenMenu(); else if (d && d.type === "close") flStop(); }));
+  FL.offs.push(o.onMessage(FL.ids.b, function (d) { if (d && d.type === "tap") flBubbleTap(); else if (d && d.type === "menu") flOpenMenu(); else if (d && d.type === "close") flStop(); else if (d && d.type === "settings") flPanelOpen(); }));
   FL.offs.push(o.onMessage(FL.ids.r, flResMsg));
   FL.offs.push(o.onMessage(FL.ids.m, flMenuMsg));
   FL.offs.push(o.onMessage(FL.ids.sub, function (d) { if (d && d.type === "size") flSubSize(d.h); }));
@@ -1097,9 +1149,10 @@ function flOpenSelector() {
       off(); FL.selOff = null; o.destroy(FL.ids.s); o.show(FL.ids.b);
       if (d && d.rect && d.rect.w > 0 && d.rect.h > 0) { if (opt.mode === "sub") flSubSetRegion(d.rect); else flRun(d.rect); }
       else if (FL.live) { FL.live.paused = false; flSubNext(FL.live, Date.now()); }
+      flPanelBack();
     });
     FL.selOff = off;
-  }, function () { o.show(FL.ids.b); if (FL.live) { FL.live.paused = false; } });
+  }, function () { o.show(FL.ids.b); if (FL.live) { FL.live.paused = false; } flPanelBack(); });
 }
 function flMapLines(r) {
   var lines = (r.lines || []).map(function (l) { return { t: String(l.text || ""), c: Math.round(+l.confidence || 0) }; }).filter(function (l) { return l.t.trim(); });
@@ -1368,35 +1421,185 @@ function flMenuMsg(d) {
   try { o.destroy(FL.ids.m); } catch (e) {}
   var L = FL.live;
   if (d.type === "auto") { if (L) { L.auto = !L.auto; clearTimeout(L.timer); if (L.auto) flSubNext(L, Date.now()); } }
+  else if (d.type === "settings") flPanelOpen();
   else if (d.type === "region") flOpenSelector();
   else if (d.type === "copy") { var t = FL.trText || (FL.last && FL.last.text) || ""; if (t.trim()) copyText(t).then(function (ok) { if (ok) hap(); }); }
   else if (d.type === "toggle") { if (L) { L.hidden = !L.hidden; if (L.hidden) { try { o.destroy(FL.ids.sub); } catch (e) {} } else if (L.shown) flSubCreate(L); } }
   else if (d.type === "stop") flStop();
 }
 function flSubRestyle() { var L = FL.live; if (L && L.shown && !L.hidden) flSubCreate(L); }
-/* ----- محرر المكان والحجم على الشاشة ----- */
-function flOpenEditor() {
+/* ----- محرر المكان والحجم على الشاشة (للترجمة أو لمنطقة القراءة) ----- */
+function flOpenEditor(target) {
   var o = OVB(); if (!o) { toast("العرض فوق التطبيقات غير مفعّل في هذا التطبيق."); return; }
-  var L = FL.live, pl = opt.subPos === "custom" ? flSubRect() : flSubPlace(flSubEst());
-  if (L) { L.paused = true; clearTimeout(L.timer); try { o.destroy(FL.ids.sub); } catch (e) {} }
+  target = target === "region" ? "region" : "sub"; FL.edT = target;
+  var L = FL.live, pl;
+  if (target === "region") pl = SUBREG ? { x: SUBREG.x, y: SUBREG.y, w: SUBREG.w, h: SUBREG.h } : { x: 20, y: 200, w: 300, h: 80 };
+  else pl = opt.subPos === "custom" ? flSubRect() : flSubPlace(flSubEst());
+  flPanelHide();
+  if (L) { L.paused = true; clearTimeout(L.timer); if (target === "sub") { try { o.destroy(FL.ids.sub); } catch (e) {} } }
   if (FL.edOff) { try { FL.edOff(); } catch (e) {} FL.edOff = null; }
   FL.edOff = o.onMessage(FL.ids.e, flEditMsg);
   try { o.destroy(FL.ids.e); } catch (e) {}
-  o.create({ id: FL.ids.e, html: OV_EDIT, x: pl.x, y: pl.y, w: pl.w, h: pl.h }).then(null, function () { flEditClose(); toast("تعذّر فتح محرر المكان."); });
+  o.create({ id: FL.ids.e, html: injectData(OV_EDIT, { t: target }), x: pl.x, y: pl.y, w: pl.w, h: pl.h }).then(null, function () { flEditEnd(true); flPanelBack(); toast("تعذّر فتح محرر المكان."); });
 }
-function flEditClose() {
+function flEditEnd(resume) {
   var o = OVB(); if (o) { try { o.destroy(FL.ids.e); } catch (e) {} }
   if (FL.edOff) { try { FL.edOff(); } catch (e) {} FL.edOff = null; }
-  var L = FL.live; if (L) { L.paused = false; if (L.shown && !L.hidden) flSubCreate(L); flSubNext(L, Date.now()); }
+  var L = FL.live; if (L && resume) { L.paused = false; if (L.shown && !L.hidden) flSubCreate(L); flSubNext(L, Date.now()); }
 }
 function flEditMsg(d) {
   if (!d) return;
-  if (d.type === "done" && d.rect) {
+  var ok = d.type === "done" && d.rect, t = FL.edT;
+  if (ok && t === "region") { flEditEnd(false); flSubSetRegion(d.rect); flPanelBack(); return; }
+  if (ok) {
     var r = d.rect; opt.subX = String(Math.round(r.x)); opt.subY = String(Math.round(r.y)); opt.subWd = String(Math.round(r.w)); opt.subHt = String(Math.round(r.h)); opt.subPos = "custom"; saveOpt();
     subFill();
   }
-  flEditClose();
+  flEditEnd(true); flPanelBack();
 }
+/* ----- لوحة الإعدادات العائمة: كل شيء بالنقر فقط (بلا قوائم منسدلة ولا ملتقط ألوان) ----- */
+var SW_COLORS = ["#ffffff", "#ffee00", "#ffb020", "#3ddc84", "#4cc2ff", "#ff6b6b", "#cfcfcf", "#000000", "#102030", "#1f6feb"];
+var RANGE_KEYS = ["subPx", "subBgA", "subRad", "subW"];
+function pickF(list) { return function (v) { v = String(v); return list.indexOf(v) >= 0 ? v : undefined; }; }
+function boolF(v) { return v === true || v === "true" ? true : (v === false || v === "false" ? false : undefined); }
+function numF(a, b) { return function (v) { var n = parseFloat(v); return isFinite(n) ? String(Math.round(Math.max(a, Math.min(b, n)))) : undefined; }; }
+function hexF(v) { return /^#[0-9a-fA-F]{6}$/.test(String(v)) ? String(v).toLowerCase() : undefined; }
+function langF(v) { v = String(v); return trLabel(v) !== v ? v : undefined; }
+function srcF(v) { v = String(v); return v === "auto" || trLabel(v) !== v ? v : undefined; }
+var OPT_SPEC = {
+  subInt: pickF(SUB_INTS), subSens: pickF(["low", "mid", "high"]), ocrQ: pickF(["acc", "lite"]), subGate: boolF,
+  subPx: numF(12, 40), subColor: hexF, subBgColor: hexF, subBgA: numF(0, 100), subRad: numF(0, 24), subW: numF(30, 100),
+  subAlign: pickF(["center", "right", "left"]), subBold: boolF, subShadow: boolF, subOrig: boolF, subPos: pickF(["auto", "top", "bottom", "region", "custom"]), subCover: boolF,
+  trOn: boolF, trLang: langF, trSrc: srcF, trProv: pickF(["auto"].concat(TR_PROVS)), trFb: pickF(["none"].concat(TR_PROVS))
+};
+var TR_KEYS = ["trOn", "trLang", "trSrc", "trProv", "trFb"];
+function flOptSet(k, v) {
+  if (!Object.prototype.hasOwnProperty.call(OPT_SPEC, k)) return false;
+  var nv = OPT_SPEC[k](v); if (nv === undefined) return false;
+  opt[k] = nv;
+  if (k === "subPos" && nv === "region" && !opt.subCover) opt.subCover = true;
+  saveOpt(); subFill();
+  var L = FL.live;
+  if (k === "subInt") { if (L) { L.auto = Number(nv) > 0; clearTimeout(L.timer); if (L.auto && !L.paused) flSubNext(L, Date.now()); } }
+  else if (TR_KEYS.indexOf(k) >= 0) flRetranslate();
+  else if (k !== "subSens" && k !== "ocrQ" && k !== "subGate") flSubRestyleSoon();
+  return true;
+}
+function flSubRestyleSoon() { clearTimeout(FL.rsT); FL.rsT = setTimeout(flSubRestyle, 110); }
+function flRetranslate() {
+  var L = FL.live; if (!L) return;
+  clearTimeout(FL.rsT);
+  FL.trTok++; trAbort(FL.trCtl); FL.trText = ""; FL.trState = opt.trOn ? { state: "pending" } : null;
+  if (L.shown && !L.hidden) flSubCreate(L);
+  if (opt.trOn && FL.last && FL.last.text) flTranslate(FL.last.text, FL.seq);
+}
+function trProvChoices() {
+  var a = [["auto", "تلقائي"], ["google", "Google"], ["mymemory", "MyMemory"], ["lingva", "Lingva"]];
+  [["libre", "LibreTranslate"], ["gcloud", "Google Cloud"], ["azure", "Azure"]].forEach(function (p) { if (trReady(p[0]) || opt.trProv === p[0] || opt.trFb === p[0]) a.push(p); });
+  return a;
+}
+function flPanelVals() { var v = {}, k; for (k in OPT_SPEC) v[k] = opt[k]; return v; }
+function flPanelData() {
+  var ints = [["0", "يدوي"]].concat(SUB_INTS.slice(1).map(function (x) { return [x, x + " ث"]; }));
+  var provs = trProvChoices(), fb = [["none", "بدون"]].concat(provs.slice(1));
+  var langs = TR_LANGS.map(function (l) { return [l[0], l[1]]; }), src = [["auto", "تلقائي"]].concat(langs);
+  return { v: flPanelVals(), tabs: [
+    { id: "read", t: "القراءة", items: [
+      { k: "subInt", ty: "ch", t: "سرعة التحديث التلقائي", o: ints },
+      { k: "subSens", ty: "ch", t: "حساسية تغيّر النص", o: [["low", "منخفضة"], ["mid", "متوسطة"], ["high", "عالية"]] },
+      { k: "ocrQ", ty: "ch", t: "جودة القراءة", o: [["acc", "دقيق"], ["lite", "مخفف"]] },
+      { k: "subGate", ty: "tg", t: "تثبيت: لا تقرأ إن لم تتغير الصورة" },
+      { a: "newregion", ty: "ac", t: "تحديد منطقة جديدة" }, { a: "editregion", ty: "ac", t: "تعديل المنطقة بالسحب" }] },
+    { id: "look", t: "الشكل", items: [
+      { k: "subPx", ty: "rg", t: "حجم الخط", mn: 12, mx: 40, st: 1 },
+      { k: "subColor", ty: "sw", t: "لون الخط", o: SW_COLORS }, { k: "subBgColor", ty: "sw", t: "لون الخلفية", o: SW_COLORS },
+      { k: "subBgA", ty: "rg", t: "كثافة الخلفية", mn: 0, mx: 100, st: 5 }, { k: "subRad", ty: "rg", t: "استدارة الحواف", mn: 0, mx: 24, st: 1 },
+      { k: "subAlign", ty: "ch", t: "المحاذاة", o: [["center", "وسط"], ["right", "يمين"], ["left", "يسار"]] },
+      { k: "subBold", ty: "tg", t: "خط عريض" }, { k: "subShadow", ty: "tg", t: "ظل خلف الحروف" }, { k: "subOrig", ty: "tg", t: "إظهار النص الأصلي صغيراً" }] },
+    { id: "place", t: "المكان", items: [
+      { k: "subPos", ty: "ch", t: "الموضع", o: [["auto", "تحت المنطقة"], ["top", "أعلى"], ["bottom", "أسفل"], ["region", "فوق المنطقة"], ["custom", "مخصص"]] },
+      { k: "subCover", ty: "tg", t: "تغطية النص الأصلي بخلفية معتمة", show: { k: "subPos", vs: ["region", "custom"] } },
+      { k: "subW", ty: "rg", t: "العرض", mn: 30, mx: 100, st: 5, show: { k: "subPos", vs: ["auto", "top", "bottom"] } },
+      { a: "editsub", ty: "ac", t: "تحريك وتغيير حجم الترجمة" }, { a: "resetpos", ty: "ac", t: "إعادة ضبط المكان" }] },
+    { id: "tr", t: "الترجمة", items: [
+      { k: "trOn", ty: "tg", t: "ترجمة النص" },
+      { k: "trLang", ty: "ch", t: "الترجمة إلى", o: langs }, { k: "trSrc", ty: "ch", t: "لغة النص الأصلي", o: src },
+      { k: "trProv", ty: "ch", t: "الخدمة", o: provs }, { k: "trFb", ty: "ch", t: "خدمة احتياطية", o: fb },
+      { a: "test", ty: "ac", t: "اختبار الاتصال" }, { ty: "nt", t: "المفاتيح وعناوين الخوادم تُكتب من صفحة الأداة داخل التطبيق." }] }
+  ] };
+}
+function flPanelRect() {
+  var s = flScreen(), h = Math.round(Math.max(300, Math.min(460, s.h * 0.55))), L = FL.live, pl = flSubPlace((L && L.h) || flSubEst());
+  var hit = function (y) { return !(pl.y + pl.h <= y || pl.y >= y + h); };
+  var y = s.h - h; if (hit(y) && !hit(0)) y = 0;
+  return { x: 0, y: Math.max(0, y), w: s.w, h: Math.min(h, s.h) };
+}
+function flPanelOpen() {
+  var o = OVB(); if (!o || !FL.on) return;
+  var L = FL.live; if (L) { L.paused = true; clearTimeout(L.timer); }
+  try { o.destroy(FL.ids.m); } catch (e) {} try { o.destroy(FL.ids.p); } catch (e) {}
+  if (FL.panOff) { try { FL.panOff(); } catch (e) {} }
+  FL.panOff = o.onMessage(FL.ids.p, flPanelMsg);
+  var r = flPanelRect();
+  o.create({ id: FL.ids.p, html: injectData(OV_SET, flPanelData()), x: r.x, y: r.y, w: r.w, h: r.h }).then(null, function () { flPanelClose(); });
+}
+function flPanelHide() {
+  var o = OVB(); if (!o) return;
+  try { o.destroy(FL.ids.p); } catch (e) {}
+  if (FL.panOff) { try { FL.panOff(); } catch (e) {} FL.panOff = null; }
+}
+function flPanelClose() {
+  flPanelHide(); FL.panBack = false;
+  var L = FL.live; if (L && L.paused) { L.paused = false; flSubNext(L, Date.now()); }
+}
+function flPanelBack() { if (FL.panBack) { FL.panBack = false; flPanelOpen(); } }
+function flPanelMsg(d) {
+  var o = OVB(); if (!d || !o) return;
+  if (d.type === "close") flPanelClose();
+  else if (d.type === "set") { if (flOptSet(d.k, d.v) && RANGE_KEYS.indexOf(d.k) < 0) o.post(FL.ids.p, { v: flPanelVals() }); }
+  else if (d.type === "act") flPanelAct(d.a);
+}
+function flPanelAct(a) {
+  var o = OVB(); if (!o) return;
+  if (a === "stop") { flStop(); return; }
+  if (a === "newregion") { flPanelHide(); FL.panBack = true; flOpenSelector(); return; }
+  if (a === "editregion") { FL.panBack = true; flOpenEditor("region"); return; }
+  if (a === "editsub") { FL.panBack = true; flOpenEditor("sub"); return; }
+  if (a === "resetpos") { opt.subPos = "auto"; opt.subX = opt.subY = opt.subWd = opt.subHt = ""; saveOpt(); subFill(); flSubRestyle(); o.post(FL.ids.p, { v: flPanelVals(), note: "أُعيد ضبط المكان." }); return; }
+  if (a === "test") { o.post(FL.ids.p, { note: "جارٍ اختبار الاتصال…" }); trTestMsg().then(function (r) { var oo = OVB(); if (oo) oo.post(FL.ids.p, { note: r.msg }); }); }
+}
+var OV_SET = ['<html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>',
+  'html,body{margin:0;height:100%;overflow:hidden;font-family:system-ui,sans-serif;direction:rtl;background:transparent}',
+  '#pn{position:absolute;left:0;right:0;top:0;bottom:0;background:#121b26;color:#e8edf4;border:1px solid #263341;border-radius:18px;display:flex;flex-direction:column;box-shadow:0 4px 24px rgba(0,0,0,.55)}',
+  '#hd{display:flex;align-items:center;padding:8px 12px 0}#hd b{flex:1;font-size:15px}',
+  '#hd button{min-height:36px;min-width:36px;border:0;border-radius:18px;background:#243242;color:#e8edf4;font:inherit;font-size:13px;margin-right:6px;padding:0 12px}#hd #x{background:#1f6feb;font-weight:700}#hd #st{background:#7f1d1d}',
+  '#tabs{display:flex;padding:8px 8px 0}#tabs button{flex:1;min-height:40px;margin:0 3px;border:0;border-radius:12px 12px 0 0;background:#1a2634;color:#93a1b3;font:inherit;font-size:14px;font-weight:700}#tabs button.on{background:#243242;color:#fff}',
+  '#note{min-height:0;padding:4px 14px 0;font-size:12px;color:#7ee2a8}#note:empty{display:none}',
+  '#body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#243242;border-radius:0 0 16px 16px;padding:6px 12px 12px;margin:0 8px 8px}',
+  '.it{margin:10px 0}.lb{font-size:13px;color:#aebccc;margin-bottom:6px}.lb i{font-style:normal;color:#fff;margin-right:6px}',
+  '.ch,.ac,.tg{min-height:40px;border:0;border-radius:12px;background:#17202b;color:#e8edf4;font:inherit;font-size:14px;margin:0 0 6px 6px;padding:0 14px}',
+  '.ch.on,.tg.on{background:#1f6feb;color:#fff;font-weight:700}.ac{background:#2f4257;font-weight:700}.tg{display:block;width:100%;text-align:right}',
+  '.sw{width:36px;height:36px;border-radius:50%;border:2px solid #44566b;margin:0 0 6px 8px;padding:0}.sw.on{border-color:#fff;box-shadow:0 0 0 2px #1f6feb}',
+  'input[type=range]{width:100%;height:34px}.nt{font-size:12px;color:#aebccc}',
+  '</style></head><body><div id="pn"><div id="hd"><b>إعدادات الترجمة السطرية</b><button type="button" id="st" data-a="stop">إيقاف الأداة</button><button type="button" id="x">تم</button></div><div id="tabs"></div><div id="note"></div><div id="body"></div></div><script>var D=window.__D||{};',
+  'var V=D.v||{},T=D.tabs||[],cur=T.length?T[0].id:"read",body=document.getElementById("body"),tabs=document.getElementById("tabs"),note=document.getElementById("note");',
+  'function post(m){RosTrickOverlay.post(m)}',
+  'function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;if(t==="button")e.type="button";return e}',
+  'function shown(it){return !it.show||it.show.vs.indexOf(String(V[it.show.k]))>=0}',
+  'function setV(k,v){V[k]=v;post({type:"set",k:k,v:v})}',
+  'function render(){var st=body.scrollTop,i;tabs.innerHTML="";',
+  'T.forEach(function(t){var b=el("button",t.id===cur?"on":"",t.t);b.setAttribute("data-t",t.id);b.onclick=function(){cur=t.id;render();body.scrollTop=0};tabs.appendChild(b)});',
+  'body.innerHTML="";var tab=T.filter(function(t){return t.id===cur})[0];if(!tab)return;',
+  'tab.items.forEach(function(it){if(!shown(it))return;var w=el("div","it");',
+  'if(it.ty==="ac"){var a=el("button","ac",it.t);a.setAttribute("data-a",it.a);a.onclick=function(){post({type:"act",a:it.a})};w.appendChild(a)}',
+  'else if(it.ty==="nt"){w.appendChild(el("div","nt",it.t))}',
+  'else if(it.ty==="tg"){var g=el("button","tg"+(V[it.k]?" on":""),it.t+" : "+(V[it.k]?"مفعّل":"متوقف"));g.setAttribute("data-k",it.k);g.setAttribute("aria-pressed",V[it.k]?"true":"false");g.onclick=function(){setV(it.k,!V[it.k]);render();body.scrollTop=st};w.appendChild(g)}',
+  'else if(it.ty==="rg"){var l=el("div","lb");var n=el("i","",V[it.k]);l.appendChild(document.createTextNode(it.t));l.appendChild(n);w.appendChild(l);var r=document.createElement("input");r.type="range";r.min=it.mn;r.max=it.mx;r.step=it.st;r.value=V[it.k];r.setAttribute("data-k",it.k);r.oninput=function(){n.textContent=r.value;setV(it.k,String(r.value))};w.appendChild(r)}',
+  'else{w.appendChild(el("div","lb",it.t));it.o.forEach(function(o){var v=it.ty==="sw"?o:o[0],b=el("button",it.ty==="sw"?"sw":"ch",it.ty==="sw"?"":o[1]);b.setAttribute("data-k",it.k);b.setAttribute("data-v",v);if(it.ty==="sw")b.style.background=v;if(String(V[it.k]).toLowerCase()===String(v).toLowerCase())b.className+=" on";b.onclick=function(){setV(it.k,v);render();body.scrollTop=st};w.appendChild(b)})}',
+  'body.appendChild(w)});body.scrollTop=st}',
+  'function go(){document.getElementById("x").onclick=function(){post({type:"close"})};document.getElementById("st").onclick=function(){post({type:"act",a:"stop"})};',
+  'RosTrickOverlay.onMessage(function(d){if(!d)return;if(d.v){V=d.v;render()}if(d.note!==undefined)note.textContent=d.note});render()}',
+  'if(window.RosTrickOverlay)go();else window.addEventListener("rtoverlay-ready",go);<\/script></body></html>'].join("");
 function icPrev() {
   var el = $("ic-prev"); if (!el) return;
   var img = icImg(), sz = 48;
@@ -1415,8 +1618,8 @@ function icReadFile(f) {
   }, function () { try { URL.revokeObjectURL(u); } catch (e) {} toast("تعذّر فتح الصورة."); });
 }
 var SUB_VAL = [["fl-mode", "mode"], ["sub-int", "subInt"], ["sub-sens", "subSens"], ["sub-align", "subAlign"], ["sub-pos", "subPos"], ["ocr-q", "ocrQ"], ["ic-kind", "icKind"], ["ic-size", "icSize"], ["ic-op", "icOp"], ["ic-color", "icColor"],
-  ["sub-px", "subPx"], ["sub-bga", "subBgA"], ["sub-rad", "subRad"], ["sub-w", "subW"], ["sub-color", "subColor"], ["sub-bgcolor", "subBgColor"], ["sub-x", "subX"], ["sub-y", "subY"], ["sub-wd", "subWd"], ["sub-ht", "subHt"]];
-var SUB_CHK = [["sub-orig", "subOrig"], ["sub-outline", "subOutline"], ["sub-tr", "trOn"], ["sub-gate", "subGate"], ["sub-bold", "subBold"], ["sub-shadow", "subShadow"], ["sub-cover", "subCover"], ["ic-close", "icClose"]];
+  ["tr-lang", "trLang"], ["tr-src", "trSrc"], ["tr-prov", "trProv"], ["tr-fb", "trFb"], ["sub-px", "subPx"], ["sub-bga", "subBgA"], ["sub-rad", "subRad"], ["sub-w", "subW"], ["sub-color", "subColor"], ["sub-bgcolor", "subBgColor"], ["sub-x", "subX"], ["sub-y", "subY"], ["sub-wd", "subWd"], ["sub-ht", "subHt"]];
+var SUB_CHK = [["sub-orig", "subOrig"], ["sub-outline", "subOutline"], ["sub-tr", "trOn"], ["tr-on", "trOn"], ["sub-gate", "subGate"], ["sub-bold", "subBold"], ["sub-shadow", "subShadow"], ["sub-cover", "subCover"], ["ic-close", "icClose"]];
 function subVis() {
   var fx = opt.subPos === "region" || opt.subPos === "custom";
   $("sub-xy").hidden = opt.subPos !== "custom"; $("sub-cover-row").hidden = !fx; $("sub-cover-note").hidden = !fx;
@@ -1424,7 +1627,7 @@ function subVis() {
 function subFill() {
   SUB_VAL.forEach(function (m) { var el = $(m[0]); if (!el) return; el.value = opt[m[1]]; if (el.tagName === "SELECT" && el.value !== opt[m[1]]) { el.selectedIndex = 0; opt[m[1]] = el.value; } });
   SUB_CHK.forEach(function (m) { var el = $(m[0]); if (el) el.checked = !!opt[m[1]]; });
-  subVis(); subPrev();
+  subVis(); subPrev(); if ($("tr-lib")) trCfgVis();
 }
 function subPrev() {
   var b = $("sub-prev"); if (!b) return; var t = b.firstElementChild, h = oHex(opt.subBgColor, "#000000");
