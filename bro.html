@@ -79,8 +79,9 @@ body.fs #top,body.fs #find{display:none}
 .sg:active{background:var(--field)}
 .sg .t{min-width:0;flex:1}.sg .t b{display:block;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sg .t small{display:block;color:var(--muted);font-size:12px;direction:ltr;text-align:start;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sg svg{color:var(--muted);width:20px;height:20px}
-.fav{width:26px;height:26px;border-radius:6px;overflow:hidden;flex:none;background:var(--field);display:flex;align-items:center;justify-content:center}
-.fav img{width:20px;height:20px}.fav .letter{font-size:13px}
+.fav{width:26px;height:26px;border-radius:6px;overflow:hidden;flex:none;background:var(--field);display:flex;align-items:center;justify-content:center;position:relative}
+.fav img{width:20px;height:20px;position:absolute;inset:0;margin:auto;background:var(--bg)}.fav .letter{font-size:13px}
+.fav.big{width:52px;height:52px;border-radius:50%}.fav.big img{width:28px;height:28px}.fav.big .letter{font-size:20px}
 
 /* ===== القائمة السفلية ===== */
 #sheet{background:var(--card);color:var(--fg);border-top:1px solid var(--line);box-shadow:var(--shadow);max-height:0;overflow:hidden;transition:max-height .22s;position:relative;z-index:3}
@@ -105,7 +106,9 @@ body.fs #top,body.fs #find{display:none}
 .sec{padding:14px 18px 6px;font-size:13px;color:var(--accent);font-weight:700}
 .row{display:flex;align-items:center;gap:14px;padding:10px 16px}
 .row .t{flex:1;min-width:0}.row .t b{display:block;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.row .t small{display:block;color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;direction:ltr;text-align:start}
-.row:active{background:var(--field)}
+.row:active,.rowb:active{background:var(--field)}
+.rowb{display:flex;align-items:center;gap:14px;flex:1;min-width:0;text-align:start}
+.hib{opacity:.62}.hibtag{position:absolute;top:6px;inset-inline-end:6px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center}.hibtag svg{width:13px;height:13px}
 .empty{text-align:center;color:var(--muted);padding:50px 20px;line-height:1.9}
 .empty svg{width:42px;height:42px;margin:0 auto 10px;opacity:.6}
 .seg{display:flex;background:var(--field);border-radius:20px;padding:3px;gap:2px}
@@ -207,7 +210,7 @@ var P = {
   set: "M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6", trash: "M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6",
   info: "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 16v-4M12 8h.01", globe: "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z",
   home: "M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM9 22V12h6v10", eyeoff: "M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24M1 1l22 22",
-  warn: "M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01", tab: "M3 5h18v14H3z", chk: "M20 6L9 17l-5-5", up: "M18 15l-6-6-6 6", ext: "M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"
+  warn: "M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01", tab: "M3 5h18v14H3z", moon: "M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z", folder: "M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z", chk: "M20 6L9 17l-5-5", up: "M18 15l-6-6-6 6", ext: "M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"
 };
 function I(n, cls) { return '<svg viewBox="0 0 24 24"' + (cls ? ' class="' + cls + '"' : "") + '><path d="' + P[n] + '"/></svg>'; }
 var store = {
@@ -217,10 +220,13 @@ var store = {
 function host(u) { try { var h = new URL(u).hostname; return h.replace(/^www\./, ""); } catch (e) { return ""; } }
 function hue(s) { var h = 0; for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 360; return h; }
 function letter(u, t) { var h = host(u) || t || "?"; return '<span class="letter" style="background:hsl(' + hue(h) + ',45%,48%)">' + esc(h.charAt(0).toUpperCase()) + "</span>"; }
-function fav(u, t) {
-  var o = ""; try { o = new URL(u).origin; } catch (e) {}
-  if (!/^https?:/.test(o)) return '<span class="fav">' + letter(u, t) + "</span>";
-  return '<span class="fav">' + letter(u, t) + '<img src="' + esc(o) + '/favicon.ico" alt="" style="position:absolute" onload="this.parentNode.firstChild.style.display=\'none\';this.style.position=\'static\'" onerror="this.remove()"></span>';
+var badFav = {};
+window.__favBad = function (h) { badFav[h] = 1; };
+function fav(u, t, big) {
+  var o = "", h = ""; try { var x = new URL(u); o = x.origin; h = x.host; } catch (e) {}
+  var cls = "fav" + (big ? " big" : "");
+  if (!/^https?:/.test(o) || badFav[h]) return '<span class="' + cls + '">' + letter(u, t) + "</span>";
+  return '<span class="' + cls + '">' + letter(u, t) + '<img loading="lazy" src="' + esc(o) + '/favicon.ico" alt="" onload="this.previousSibling.style.display=\'none\'" onerror="window.__favBad(\'' + esc(h) + '\');this.remove()"></span>';
 }
 function ago(ts) { var d = new Date(ts), n = new Date(), s = new Date(n.getFullYear(), n.getMonth(), n.getDate()).getTime(); if (ts >= s) return "اليوم"; if (ts >= s - 864e5) return "أمس"; return d.toLocaleDateString("ar", { weekday: "long", day: "numeric", month: "long" }); }
 function hm(ts) { return new Date(ts).toLocaleTimeString("ar", { hour: "2-digit", minute: "2-digit" }); }
@@ -230,12 +236,13 @@ function toHex(c) { try { cv.fillStyle = "#000"; cv.fillStyle = String(c).trim()
 function lum(hex) { var n = parseInt(hex.slice(1), 16), r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255; return (0.299 * r + 0.587 * g + 0.114 * b) / 255; }
 
 /* ============================ الحالة والإعدادات ============================ */
-var DEF = { engine: "google", custom: "", home: "", desktop: false, js: true, zoom: 100, theme: "auto", follow: true, saveHistory: true,
+var DEF = { live: 5, engine: "google", custom: "", home: "", desktop: false, js: true, zoom: 100, theme: "auto", follow: true, saveHistory: true,
   sb: { mode: "auto", color: "#1a73e8", icons: "auto", anim: 250, hideInFs: true } };
 var S = store.get("settings", {}); S = Object.assign({}, DEF, S); S.sb = Object.assign({}, DEF.sb, S.sb || {});
 var ENGINES = { google: ["Google", "https://www.google.com/search?q=%s"], ddg: ["DuckDuckGo", "https://duckduckgo.com/?q=%s"], bing: ["Bing", "https://www.bing.com/search?q=%s"], brave: ["Brave", "https://search.brave.com/search?q=%s"], custom: ["مخصص", ""] };
 var hist = store.get("history", []), books = store.get("bookmarks", []), downs = store.get("downloads", []);
-var tabs = [], curId = null, tseq = 0, byVid = {}, MAXLIVE = 5, MAXTABS = 12;
+var tabs = [], curId = null, tseq = 0, byVid = {};
+function maxLive() { return Math.max(2, Math.min(8, S.live | 0 || 5)); }
 var openPanels = [], omniFocus = false, dialogOn = false, fs = false, findOn = false, sheetOn = false, tickKey = "";
 var WV = null, SB = null;
 function saveSettings() { store.set("settings", S); }
@@ -249,8 +256,8 @@ function normalize(s) {
   var m = s.match(/^([a-z][a-z0-9+.-]*):/i);
   if (m) {
     var sc = m[1].toLowerCase();
-    if (/^(https?|about|data|blob)$/.test(sc) && !/\s/.test(s)) return s;
-    if (/^(javascript|file|content|intent)$/.test(sc)) return "about:blank";
+    if (/^(https?|about)$/.test(sc) && !/\s/.test(s)) return s;
+    if (/^(javascript|file|content|intent|data|blob|vbscript)$/.test(sc)) return "about:blank";
     if (/^[a-z0-9.-]+:\d+(\/|$)/i.test(s)) return "http://" + s;
     return searchUrl(s);
   }
@@ -265,32 +272,42 @@ function isUrlish(s) { return normalize(s).indexOf(searchUrl("")) !== 0 && !/\s/
 /* ============================ التبويبات ============================ */
 function newTab(o) {
   o = o || {};
-  var real = tabs.filter(function (t) { return !!t.priv === !!o.priv; });
-  if (tabs.length >= MAXTABS) { snack("الحد الأقصى " + MAXTABS + " تبويبًا"); return null; }
   var t = { id: "t" + (++tseq) + "_" + Date.now().toString(36), url: o.url || "", title: "", vid: null, loading: false, progress: 0, canBack: false, canFwd: false, priv: !!o.priv,
-    desktop: o.desktop != null ? o.desktop : S.desktop, err: null, theme: null, parent: o.parent || null, last: Date.now(), shown: false };
+    desktop: o.desktop != null ? o.desktop : S.desktop, err: null, theme: null, parent: o.parent || null, last: Date.now(), shown: false, scroll: null, creating: null };
   tabs.push(t);
   if (o.activate !== false) activate(t.id);
   saveSession();
   return t;
 }
-function liveCount() { return tabs.filter(function (t) { return t.vid; }).length; }
-function evict(except) {
-  while (liveCount() >= MAXLIVE) {
-    var c = tabs.filter(function (t) { return t.vid && t.id !== except; }).sort(function (a, b) { return a.last - b.last; })[0];
-    if (!c) break; killView(c);
+function liveCount() { return tabs.filter(function (t) { return t.vid || t.creating; }).length; }
+/* تعليق التبويبات: نُبقي أحدث maxLive() تبويبًا حيًا ونُنيم الأقدم (يُدمَّر الـ WebView ويبقى الرابط) ثم يُحمَّل عند الدخول عليه */
+function evict(except, keep) {
+  if (keep == null) keep = maxLive() - 1; // نترك مكانًا للتبويب الجديد
+  while (liveCount() > keep) {
+    var c = tabs.filter(function (t) { return t.vid && t.id !== except && t.id !== curId; }).sort(function (a, b) { return a.last - b.last; })[0];
+    if (!c) break; killView(c, true);
   }
 }
-function killView(t) { if (!t.vid) return; try { WV.destroy(t.vid); } catch (e) {} delete byVid[t.vid]; t.vid = null; t.shown = false; t.canBack = t.canFwd = false; }
+function killView(t, keepScroll) {
+  var vid = t.vid; if (!vid) return;
+  delete byVid[vid]; t.vid = null; t.shown = false; t.canBack = t.canFwd = false; t.loading = false;
+  var done = function () { try { WV.destroy(vid); } catch (e) {} };
+  if (!keepScroll || !t.url || t.err) return done();
+  var fin = false, to = setTimeout(function () { if (!fin) { fin = true; done(); } }, 700);
+  try { WV.evaluate(vid, "[Math.round(scrollX),Math.round(scrollY)]").then(function (v) { if (fin) return; fin = true; clearTimeout(to); if (v && v.length === 2 && (v[0] || v[1])) t.scroll = v; done(); }); } catch (e) { clearTimeout(to); done(); }
+}
+function sleeping(t) { return !!(t.url && !t.vid && !t.creating && !t.err); }
 function ensureView(t) {
   if (t.vid) return Promise.resolve(t.vid);
   if (t.creating) return t.creating;
-  evict(t.id);
+  evict(t.id); t.createdUrl = t.url;
   var r = $("view").getBoundingClientRect();
   var bg = toHex(getComputedStyle(document.documentElement).getPropertyValue("--bg")) || "#ffffff";
   t.creating = WV.create({ bounds: { x: r.left, y: r.top, w: r.width, h: r.height }, visible: false, url: t.url && !t.err ? t.url : undefined, newWindow: "event", download: "auto",
-    handleBack: true, background: bg, desktop: !!t.desktop, textZoom: S.zoom, javascript: S.js, zoom: true, thirdPartyCookies: true }).then(function (id) {
-    t.vid = id; byVid[id] = t; t.creating = null; if (t.url) { t.loading = true; } syncNative(); render(); return id;
+    handleBack: false, background: bg, desktop: !!t.desktop, textZoom: S.zoom, javascript: S.js, zoom: true, thirdPartyCookies: true }).then(function (id) {
+    t.vid = id; byVid[id] = t; t.creating = null;
+    if (t.url && t.url !== t.createdUrl && !t.err) WV.load(id, t.url); // تغيّر الرابط أثناء إنشاء الـ WebView
+    if (t.url) { t.loading = true; } syncNative(); render(); return id;
   }, function (e) { t.creating = null; snack("تعذّر فتح التبويب (حد الـ WebView)"); render(); return null; });
   return t.creating;
 }
@@ -303,10 +320,11 @@ function activate(id) {
 function closeTab(id) {
   var i = -1; tabs.forEach(function (t, k) { if (t.id === id) i = k; }); if (i < 0) return;
   var t = tabs[i]; killView(t); tabs.splice(i, 1);
+  var wasCur = curId === id;
   if (curId === id) {
     var next = (t.parent && tabById(t.parent)) || tabs.filter(function (x) { return !!x.priv === !!t.priv; })[Math.min(i, tabs.length - 1)] || tabs[Math.min(i, tabs.length - 1)];
-    if (!next) { newTab({ priv: t.priv }); return; }
-    curId = next.id; if (next.url && !next.vid) ensureView(next);
+    if (!next) newTab({ priv: t.priv });
+    else { curId = next.id; next.last = Date.now(); if (next.url && !next.vid) ensureView(next); }
   }
   syncNative(); render(); saveSession();
   if (openPanels.indexOf("tabs") > -1) renderTabs();
@@ -316,7 +334,8 @@ function saveSession() { store.set("session", { cur: curId, tabs: tabs.filter(fu
 /* ============================ التنقل ============================ */
 function go(t, input) {
   var u = normalize(input); if (!u) return;
-  t = t || cur(); t.url = u; t.err = null; t.title = ""; t.theme = null; t.loading = true; t.progress = 5; hideFind(true);
+  if (u === "about:blank" && !/^about:blank$/i.test(String(input).trim())) { snack("هذا النوع من الروابط غير مسموح"); return; }
+  t = t || cur(); t.url = u; t.err = null; t.title = ""; t.theme = null; t.loading = true; t.progress = 5; t.scroll = null; hideFind(true);
   if (t.vid) { WV.load(t.vid, u); } else { ensureView(t); }
   setOmniFocus(false); syncNative(); render(); saveSession();
 }
@@ -334,7 +353,7 @@ function onWv(d, id, type) {
   else if (type === "url") { if (d.url) t.url = d.url; t.canBack = !!d.canGoBack; t.canFwd = !!d.canGoForward; }
   else if (type === "finish") {
     t.loading = false; t.progress = 100; if (d.url) t.url = d.url; if (d.title) t.title = d.title; t.canBack = !!d.canGoBack; t.canFwd = !!d.canGoForward;
-    if (!t.err) { addHistory(t); readTheme(t); }
+    if (!t.err) { addHistory(t); readTheme(t); restoreScroll(t); }
   }
   else if (type === "error") { t.err = { code: d.code, desc: d.description || "", url: d.url || t.url }; t.loading = false; t.progress = 0; if (d.url) t.url = d.url; }
   else if (type === "newwindow") { if (d.url) { newTab({ url: d.url, parent: t.id, priv: t.priv }); } }
@@ -345,6 +364,10 @@ function onWv(d, id, type) {
   else if (type === "destroyed") { if (t.vid === id) { delete byVid[id]; t.vid = null; t.shown = false; } }
   if (t.id === curId) { syncNative(); render(); } else if (type === "newwindow") render();
   if (type === "title" || type === "finish") { saveSession(); if (openPanels.indexOf("tabs") > -1) renderTabs(); }
+}
+function restoreScroll(t) {
+  var sc = t.scroll; if (!sc || !t.vid) return; t.scroll = null; var vid = t.vid;
+  [60, 500, 1400].forEach(function (ms) { setTimeout(function () { if (t.vid === vid) WV.evaluate(vid, "scrollTo(" + (sc[0] | 0) + "," + (sc[1] | 0) + ")"); }, ms); });
 }
 function readTheme(t) {
   if (!t.vid) return;
@@ -359,12 +382,13 @@ function addHistory(t) {
   store.set("history", hist);
 }
 function addDownload(d, t) {
+  if (t.priv) return; // التبويب بدون سجل لا يسجّل التنزيلات (التنزيل نفسه يتم عبر التطبيق)
   var name = "";
   try { var m = /filename\*?=(?:UTF-8'')?"?([^";]+)"?/i.exec(d.disposition || ""); if (m) name = decodeURIComponent(m[1]); } catch (e) {}
   if (!name) { try { name = decodeURIComponent(new URL(d.url).pathname.split("/").pop()); } catch (e) {} }
   name = name || "ملف";
   downs.unshift({ url: d.url, name: name, mime: d.mime || "", size: d.size > 0 ? d.size : 0, ts: Date.now() }); if (downs.length > 200) downs.length = 200; store.set("downloads", downs);
-  snack("بدأ التنزيل: " + name, 3000, "التنزيلات", function () { openPanel("downloads"); });
+  snack("بدأ التنزيل: " + name, 3500, "فتح التنزيلات", function () { openDownloadsApp(); });
 }
 
 /* ============================ إدارة عرض الـ WebView الأصلي ============================ */
@@ -415,7 +439,7 @@ function render() {
   var t = cur(); if (!t) return;
   chrome();
   var u = t.url, focus = omniFocus, input = $("url"), omni = $("omni");
-  $("tabN").textContent = tabs.filter(function (x) { return !!x.priv === !!t.priv; }).length;
+  var nt = tabs.filter(function (x) { return !!x.priv === !!t.priv; }).length; $("tabN").textContent = nt > 99 ? "99+" : nt;
   $("bBack").disabled = !t.canBack; $("bFwd").disabled = !t.canFwd;
   omni.classList.toggle("focus", focus);
   omni.classList.toggle("sec", /^https:/.test(u) && !t.err); omni.classList.toggle("bad", /^http:/.test(u) && !t.err);
@@ -444,9 +468,9 @@ function renderNtp(t) {
     Object.keys(cnt).map(function (k) { return cnt[k]; }).sort(function (a, b) { return b.n - a.n; }).slice(0, 8 - sc.length).forEach(function (s) { sc.push({ url: new URL(s.url).origin + "/", title: host(s.url) }); }); }
   if (!sc.length) sc = [{ url: "https://www.google.com/", title: "Google" }, { url: "https://www.youtube.com/", title: "YouTube" }, { url: "https://ar.wikipedia.org/", title: "ويكيبيديا" }, { url: "https://github.com/", title: "GitHub" }];
   el.innerHTML = '<div class="ntp"><div class="logo">المتصفح</div><div class="sbox" data-act="focusurl">' + I("search") + '<span>ابحث أو اكتب عنوان موقع</span></div><div class="grid">' +
-    sc.map(function (s) { return '<button class="sc" data-act="open" data-url="' + esc(s.url) + '"><div class="ic">' + fav(s.url, s.title).replace('class="fav"', 'class="fav" style="width:52px;height:52px;border-radius:50%;background:none;position:relative"') + "</div><span>" + esc(s.title.length > 14 ? host(s.url) || s.title : s.title) + "</span></button>"; }).join("") + "</div></div>";
+    sc.map(function (s) { return '<button class="sc" data-act="open" data-url="' + esc(s.url) + '"><div class="ic" style="background:none">' + fav(s.url, s.title, true) + "</div><span>" + esc(s.title.length > 14 ? host(s.url) || s.title : s.title) + "</span></button>"; }).join("") + "</div></div>";
 }
-var ERRMSG = { "-2": ["تعذّر العثور على الموقع", "تأكد من كتابة العنوان بشكل صحيح ومن اتصالك بالإنترنت."], "-6": ["رفض الموقع الاتصال", "قد يكون الموقع متوقفًا أو محجوبًا مؤقتًا."], "-7": ["انقطع الاتصال", "حدثت مشكلة أثناء تحميل الصفحة، حاول مرة أخرى."], "-8": ["انتهت مهلة الاتصال", "استغرق الموقع وقتًا طويلًا في الرد."], "-11": ["اتصال غير آمن", "تعذّر التحقق من شهادة أمان الموقع، لذلك مُنع تحميله حمايةً لبياناتك."], "-14": ["الصفحة غير موجودة", "لا يوجد ملف في هذا العنوان."], "-15": ["طلبات كثيرة", "حاول مرة أخرى بعد قليل."] };
+var ERRMSG = { "-2": ["تعذّر العثور على الموقع", "تأكد من كتابة العنوان بشكل صحيح ومن اتصالك بالإنترنت."], "-6": ["رفض الموقع الاتصال", "قد يكون الموقع متوقفًا أو محجوبًا مؤقتًا."], "-7": ["انقطع الاتصال", "حدثت مشكلة أثناء تحميل الصفحة، حاول مرة أخرى."], "-8": ["انتهت مهلة الاتصال", "استغرق الموقع وقتًا طويلًا في الرد."], "-11": ["اتصال غير آمن", "تعذّر التحقق من شهادة أمان الموقع، لذلك مُنع تحميله حمايةً لبياناتك."], "-14": ["الصفحة غير موجودة", "لا يوجد ملف في هذا العنوان."], "-15": ["طلبات كثيرة", "حاول مرة أخرى بعد قليل."], "-9": ["إعادة توجيه لا نهائية", "الموقع يحوّلك بين صفحات في حلقة مفرغة."], "-10": ["نوع رابط غير مدعوم", "لا يستطيع المتصفح فتح هذا النوع من الروابط."], "-12": ["عنوان غير صالح", "تأكد من كتابة العنوان بشكل صحيح."], "-16": ["موقع غير آمن", "مُنع تحميل الصفحة لأنها مصنّفة غير آمنة."] };
 function renderErr(t) {
   var e = t.err || {}, m = ERRMSG[String(e.code)] || ["لا يمكن الوصول إلى هذه الصفحة", "تحقق من الاتصال بالإنترنت ثم أعد المحاولة."];
   $("errpg").innerHTML = '<div class="err"><div class="big">' + I("warn") + "</div><h2>" + esc(m[0]) + "</h2><p>" + esc(m[1]) + "</p><p>" + esc(host(e.url) || "") + "</p><code>" + esc(e.desc || "") + (e.code != null ? "  (" + esc(e.code) + ")" : "") + '</code><div><button class="btn" data-act="retry">' + I("reload") + " إعادة المحاولة</button></div></div>";
@@ -511,25 +535,25 @@ function renderTabs() {
     '<div style="display:flex;justify-content:center;padding:10px 0 0"><div class="seg"><button data-act="tabset" data-p="0" class="' + (tabsPriv ? "" : "on") + '">عادية ' + nn + '</button><button data-act="tabset" data-p="1" class="' + (tabsPriv ? "on" : "") + '">بدون سجل ' + np + "</button></div></div>" +
     '<div class="pb"><div class="tgrid">' + (list.map(function (t) {
       var h = host(t.url);
-      return '<div class="tcard ' + (t.id === curId ? "cur" : "") + '"><div class="th">' + '<span style="width:6px"></span>' + fav(t.url, t.title) + "<b>" + esc(t.title || h || "تبويب جديد") + '</b><button class="ib" data-act="tabclose" data-id="' + t.id + '" aria-label="إغلاق">' + I("x") + '</button></div><button class="pv" data-act="tabopen" data-id="' + t.id + '" style="width:100%;background:' + (t.url ? "hsl(" + hue(h) + ",40%,42%)" : (t.priv ? "#35363a" : "var(--field)")) + '">' + (t.url ? esc((h || "?").charAt(0).toUpperCase()) + "<small>" + esc(h) + "</small>" : '<span style="color:var(--muted)">' + I(t.priv ? "eyeoff" : "plus") + "</span>") + "</button></div>";
+      return '<div class="tcard ' + (t.id === curId ? "cur" : "") + (sleeping(t) ? " hib" : "") + '"><div class="th">' + '<span style="width:6px"></span>' + fav(t.url, t.title) + "<b>" + esc(t.title || h || "تبويب جديد") + '</b><button class="ib" data-act="tabclose" data-id="' + t.id + '" aria-label="إغلاق">' + I("x") + '</button></div><button class="pv" data-act="tabopen" data-id="' + t.id + '" style="width:100%;background:' + (t.url ? "hsl(" + hue(h) + ",40%,42%)" : (t.priv ? "#35363a" : "var(--field)")) + '">' + (t.url ? esc((h || "?").charAt(0).toUpperCase()) + "<small>" + esc(h) + "</small>" : '<span style="color:var(--muted)">' + I(t.priv ? "eyeoff" : "plus") + "</span>") + (sleeping(t) ? '<span class="hibtag" title="نائم">' + I("moon") + "</span>" : "") + "</button></div>";
     }).join("") || '<div class="empty" style="grid-column:1/3">لا توجد تبويبات هنا</div>') + "</div></div>";
 }
 function renderHistory(q) {
   q = (q || "").toLowerCase(); var rows = hist.filter(function (h) { return !q || (h.title + " " + h.url).toLowerCase().indexOf(q) > -1; }).slice(0, 300), last = "", out = "";
   rows.forEach(function (h) { var g = ago(h.ts); if (g !== last) { out += '<div class="sec">' + esc(g) + "</div>"; last = g; }
-    out += '<div class="row">' + '<button class="row" data-act="open" data-url="' + esc(h.url) + '" style="flex:1;min-width:0;padding:0">' + fav(h.url, h.title) + '<span class="t"><b>' + esc(h.title || host(h.url)) + "</b><small>" + esc(host(h.url)) + " · " + hm(h.ts) + '</small></span></button><button class="ib" data-act="hdel" data-ts="' + h.ts + '" aria-label="حذف">' + I("x") + "</button></div>"; });
+    out += '<div class="row">' + '<button class="rowb" data-act="open" data-url="' + esc(h.url) + '">' + fav(h.url, h.title) + '<span class="t"><b>' + esc(h.title || host(h.url)) + "</b><small>" + esc(host(h.url)) + " · " + hm(h.ts) + '</small></span></button><button class="ib" data-act="hdel" data-ts="' + h.ts + '" aria-label="حذف">' + I("x") + "</button></div>"; });
   if (!$("p-history").firstChild) $("p-history").innerHTML = panelHead("السجل", '<button class="ib" data-act="hclear" aria-label="مسح السجل">' + I("trash") + '</button>') + '<div class="search">' + I("search") + '<input id="hq" type="text" placeholder="بحث في السجل"></div><div class="pb" id="hlist"></div>';
   $("hlist").innerHTML = out || '<div class="empty">' + I("clock") + "لا يوجد سجل تصفح</div>";
 }
 function renderBooks(q) {
   q = (q || "").toLowerCase(); var rows = books.filter(function (b) { return !q || (b.title + " " + b.url).toLowerCase().indexOf(q) > -1; });
   if (!$("p-bookmarks").firstChild) $("p-bookmarks").innerHTML = panelHead("المفضلة") + '<div class="search">' + I("search") + '<input id="bq" type="text" placeholder="بحث في المفضلة"></div><div class="pb" id="blist"></div>';
-  $("blist").innerHTML = rows.map(function (b) { return '<div class="row"><button class="row" data-act="open" data-url="' + esc(b.url) + '" style="flex:1;min-width:0;padding:0">' + fav(b.url, b.title) + '<span class="t"><b>' + esc(b.title || host(b.url)) + "</b><small>" + esc(b.url) + '</small></span></button><button class="ib" data-act="bedit" data-url="' + esc(b.url) + '" aria-label="تعديل">' + I("txt") + '</button><button class="ib" data-act="bdel" data-url="' + esc(b.url) + '" aria-label="حذف">' + I("x") + "</button></div>"; }).join("") || '<div class="empty">' + I("star") + "لا توجد مفضلة بعد<br>اضغط النجمة في شريط العنوان لإضافة الصفحة</div>";
+  $("blist").innerHTML = rows.map(function (b) { return '<div class="row"><button class="rowb" data-act="open" data-url="' + esc(b.url) + '">' + fav(b.url, b.title) + '<span class="t"><b>' + esc(b.title || host(b.url)) + "</b><small>" + esc(b.url) + '</small></span></button><button class="ib" data-act="bedit" data-url="' + esc(b.url) + '" aria-label="تعديل">' + I("txt") + '</button><button class="ib" data-act="bdel" data-url="' + esc(b.url) + '" aria-label="حذف">' + I("x") + "</button></div>"; }).join("") || '<div class="empty">' + I("star") + "لا توجد مفضلة بعد<br>اضغط النجمة في شريط العنوان لإضافة الصفحة</div>";
 }
 function renderDowns() {
-  $("p-downloads").innerHTML = panelHead("التنزيلات", '<button class="ib" data-act="dclear" aria-label="مسح القائمة">' + I("trash") + "</button>") + '<div class="pb">' + (downs.map(function (d, i) {
-    return '<div class="row"><span class="fav" style="width:40px;height:40px;border-radius:50%">' + I("dl", "") + '</span><span class="t"><b>' + esc(d.name) + "</b><small>" + esc(host(d.url)) + " · " + esc(fsize(d.size)) + " · " + ago(d.ts) + " " + hm(d.ts) + '</small></span><button class="ib" data-act="dcopy" data-i="' + i + '" aria-label="نسخ الرابط">' + I("copy") + "</button></div>";
-  }).join("") || '<div class="empty">' + I("dl") + "لا توجد تنزيلات<br>تُحفظ الملفات في مجلد التنزيلات بالجهاز</div>") + '<div class="empty" style="padding-top:10px;font-size:12px">يتولى التطبيق التنزيل نفسه، وهذه القائمة سجل لما بدأ من هنا.</div></div>';
+  $("p-downloads").innerHTML = panelHead("التنزيلات", '<button class="ib" data-act="dopen" aria-label="فتح مجلد التنزيلات">' + I("folder") + '</button><button class="ib" data-act="dclear" aria-label="مسح القائمة">' + I("trash") + "</button>") + '<div class="pb"><div style="padding:10px 16px 2px"><button class="btn" data-act="dopen" style="margin:0;width:100%">' + I("folder") + " فتح مجلد التنزيلات</button></div>" + (downs.map(function (d, i) {
+    return '<div class="row"><button class="rowb" data-act="dopen"><span class="fav" style="width:40px;height:40px;border-radius:50%">' + I("dl", "") + '</span><span class="t"><b>' + esc(d.name) + "</b><small>" + esc(host(d.url)) + " · " + esc(fsize(d.size)) + " · " + ago(d.ts) + " " + hm(d.ts) + '</small></span></button><button class="ib" data-act="dcopy" data-i="' + i + '" aria-label="نسخ الرابط">' + I("copy") + "</button></div>";
+  }).join("") || '<div class="empty">' + I("dl") + "لا توجد تنزيلات<br>تُحفظ الملفات في مجلد التنزيلات بالجهاز</div>") + '<div class="empty" style="padding-top:10px;font-size:12px">يتولى التطبيق التنزيل نفسه ويحفظ الملف في مجلد التنزيلات بالجهاز. اضغط على أي عنصر (أو زر المجلد) لفتح تطبيق التنزيلات في الجهاز ومنه تفتح الملف، أو اضغط إشعار «اكتمل التنزيل» بعد انتهائه.</div></div>';
 }
 function sw(on, act, key) { return '<button class="sw ' + (on ? "on" : "") + '" data-act="' + act + '"' + (key ? ' data-k="' + key + '"' : "") + ' role="switch" aria-checked="' + !!on + '"></button>'; }
 function renderSettings() {
@@ -543,6 +567,7 @@ function renderSettings() {
     '<div class="set"><div class="t"><b>نسخة سطح المكتب افتراضيًا</b></div>' + sw(S.desktop, "tg", "desktop") + "</div>" +
     '<div class="set"><div class="t"><b>تفعيل جافاسكربت</b><small>إيقافه قد يعطّل كثيرًا من المواقع</small></div>' + sw(S.js, "tg", "js") + "</div>" +
     '<div class="set"><div class="t"><b>حجم النص</b></div><input type="range" min="50" max="200" step="10" value="' + S.zoom + '" data-act="zoomr"><b id="zr" style="min-width:42px;text-align:center">' + S.zoom + "%</b></div>" +
+    '<div class="set"><div class="t"><b>التبويبات النشطة</b><small>عدد التبويبات التي تبقى شغّالة في الذاكرة، والباقي ينام ويُحمَّل عند الدخول عليه (بلا حد لعدد التبويبات)</small></div><input type="range" min="2" max="8" step="1" value="' + maxLive() + '" data-act="liver"><b id="lv" style="min-width:26px;text-align:center">' + maxLive() + "</b></div>" +
     '<div class="sec">المظهر</div><div class="set"><div class="t"><b>السمة</b></div>' + segs("theme", S.theme, [["auto", "تلقائي"], ["light", "فاتح"], ["dark", "داكن"]]) + "</div>" +
     '<div class="set"><div class="t"><b>تلوين الأدوات بلون الموقع</b><small>مثل كروم: يأخذ اللون من الوسم theme-color في الموقع</small></div>' + sw(S.follow, "tg", "follow") + "</div>" +
     '<div class="sec">شريط الحالة (تحكم كامل)</div>' +
@@ -564,6 +589,14 @@ function dialog(html, onOk, okLabel, red) {
   dialogOn = true; $("dlg").classList.add("on"); dialog.ok = onOk; syncNative();
 }
 function closeDialog() { dialogOn = false; $("dlg").classList.remove("on"); syncNative(); }
+/* لا يوجد في القالب واجهة تفتح ملفًا محمّلًا بعينه، لذلك نفتح تطبيق «التنزيلات» في أندرويد عبر رابط intent: يمرّ على RosTrickWebView */
+function openDownloadsApp() {
+  var html = '<!doctype html><meta charset="utf-8"><script>location.href="intent:#Intent;action=android.intent.action.VIEW_DOWNLOADS;end";<\/script>';
+  WV.create({ visible: false, bounds: { x: 0, y: 0, w: 1, h: 1 }, javascript: true }).then(function (id) {
+    if (id == null) { snack("تعذّر فتح التنزيلات"); return; }
+    WV.loadHtml(id, html); setTimeout(function () { WV.destroy(id); }, 2500);
+  }, function () { snack("تعذّر فتح التنزيلات"); });
+}
 function withView(fn) { var t = tabs.filter(function (x) { return x.vid; })[0]; if (t) return fn(t.vid); return WV.create({ visible: false, bounds: { x: 0, y: 0, w: 1, h: 1 } }).then(function (id) { setTimeout(function () { fn(id); setTimeout(function () { WV.destroy(id); }, 600); }, 200); }); }
 function clearData() {
   dialog("<h3>مسح بيانات التصفح</h3><label class='chk'><input type='checkbox' id='cdH' checked> سجل التصفح</label><label class='chk'><input type='checkbox' id='cdC' checked> الملفات المؤقتة (الكاش)</label><label class='chk'><input type='checkbox' id='cdK'> الكوكيز وتسجيلات الدخول</label><label class='chk'><input type='checkbox' id='cdD'> قائمة التنزيلات</label>", function () {
@@ -595,7 +628,7 @@ function fsSet(on) { fs = on; closeSheet(); if (on) snack("للخروج من م�
 var ACT = {
   back: function () { var t = cur(); if (t && t.vid && t.canBack) { WV.back(t.vid); closeSheet(); } },
   fwd: function () { var t = cur(); if (t && t.vid && t.canFwd) { WV.forward(t.vid); closeSheet(); } },
-  reload: function () { closeSheet(); reloadOrStop(); }, retry: function () { var t = cur(); if (!t) return; t.err = null; t.loading = true; if (t.vid) WV.reload(t.vid); else ensureView(t); syncNative(); render(); },
+  reload: function () { closeSheet(); reloadOrStop(); }, retry: function () { var t = cur(); if (!t) return; var u = (t.err && t.err.url) || t.url; t.err = null; t.loading = true; t.url = u; if (t.vid) WV.load(t.vid, u); else ensureView(t); syncNative(); render(); },
   star: function () { toggleBookmark(); closeSheet(); }, tabs: function () { openPanel("tabs"); }, menu: function () { sheetOn ? closeSheet() : openMenu(); },
   clearurl: function () { $("url").value = ""; suggest(""); $("url").focus(); }, focusurl: function () { setOmniFocus(true); },
   pick: function (el) { var k = el.dataset.k; go(cur(), k); }, open: function (el) { closeAllPanels(); go(cur(), el.dataset.url); },
@@ -608,6 +641,7 @@ var ACT = {
   hclear: function () { dialog("<h3>مسح السجل؟</h3><p>سيُحذف كل سجل التصفح من هذا الجهاز.</p>", function () { hist = []; store.set("history", hist); renderHistory(""); }, "مسح", true); },
   bdel: function (el) { books = books.filter(function (b) { return b.url !== el.dataset.url; }); store.set("bookmarks", books); renderBooks($("bq") ? $("bq").value : ""); render(); },
   bedit: function (el) { editBookmark(el.dataset.url); }, dclear: function () { downs = []; store.set("downloads", downs); renderDowns(); },
+  dopen: function () { openDownloadsApp(); },
   dcopy: function (el) { var d = downs[+el.dataset.i]; if (d) copyText(d.url).then(function (ok) { snack(ok ? "نُسخ رابط التنزيل" : "تعذّر النسخ"); }); },
   home: function () { closeSheet(); goHome(); },
   share: function () { var t = cur(); closeSheet(); if (navigator.share) navigator.share({ title: t.title, url: t.url }).catch(function () {}); else copyText(t.url).then(function () { snack("المشاركة غير متاحة، نُسخ الرابط"); }); },
@@ -640,6 +674,7 @@ document.addEventListener("change", function (e) {
 document.addEventListener("input", function (e) {
   var a = e.target.dataset && e.target.dataset.act, id = e.target.id;
   if (a === "zoomr") setZoom(+e.target.value);
+  else if (a === "liver") { S.live = +e.target.value; saveSettings(); $("lv").textContent = S.live; var c = cur(); evict(c && c.vid ? c.id : null, maxLive()); }
   else if (a === "sbanim") { S.sb.anim = +e.target.value; saveSettings(); $("sba").textContent = S.sb.anim + "ms"; chrome(); }
   else if (a === "sbcolor") { S.sb.color = e.target.value; chrome(); }
   else if (id === "hq") renderHistory(e.target.value); else if (id === "bq") renderBooks(e.target.value);
@@ -649,6 +684,7 @@ var urlEl = $("url");
 urlEl.addEventListener("focus", function () { setOmniFocus(true); });
 urlEl.addEventListener("input", function () { urlEl.dir = /[\u0600-\u06ff]/.test(urlEl.value) || !urlEl.value ? "rtl" : "ltr"; suggest(urlEl.value); });
 urlEl.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); go(cur(), urlEl.value); } });
+$("sug").addEventListener("click", function (e) { if (e.target === $("sug")) { var t = cur(); setOmniFocus(false); } });
 $("omni").addEventListener("click", function (e) { if (!e.target.closest("button")) setOmniFocus(true); });
 $("findq").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); ACT.findnext(); } });
 window.addEventListener("rtstatusbar", function () { var lv = $("sbLive"); if (lv) lv.textContent = sbReadout(); });
@@ -657,7 +693,8 @@ window.addEventListener("resize", function () { var t = cur(); place(t); });
 
 /* ===== زر الرجوع في أندرويد: ينفّذ أقرب إجراء بدل الخروج ===== */
 var exitArmed = false, exitT = 0;
-function armGuard() { try { history.pushState({ rtb: 1 }, ""); } catch (e) {} }
+var guardOn = false;
+function armGuard() { guardOn = true; try { history.pushState({ rtb: 1 }, ""); } catch (e) {} }
 function handleBack() {
   if (dialogOn) { closeDialog(); return true; }
   if (sheetOn) { closeSheet(); return true; }
@@ -672,10 +709,12 @@ function handleBack() {
 }
 window.addEventListener("popstate", function () {
   if (handleBack()) { armGuard(); return; }
-  if (exitArmed) { exitArmed = false; clearTimeout(exitT); return; } // الضغطة الثانية: دع التطبيق يخرج
-  exitArmed = true; snack("اضغط رجوع مرة أخرى للخروج", 2000); armGuard();
-  exitT = setTimeout(function () { exitArmed = false; }, 2000);
+  if (exitArmed) return; // الضغطة الثانية: لا نعيد الحارس فيخرج التطبيق
+  exitArmed = true; snack("اضغط رجوع مرة أخرى للخروج", 2000);
+  clearTimeout(exitT); exitT = setTimeout(function () { if (exitArmed) { exitArmed = false; armGuard(); } }, 2000);
 });
+// أي لمسة أثناء مهلة الخروج تعيد الحارس حتى لا يخرج التطبيق بالخطأ
+document.addEventListener("pointerdown", function () { if (exitArmed) { exitArmed = false; clearTimeout(exitT); armGuard(); } }, true);
 
 /* ============================ الإقلاع ============================ */
 function boot() {
@@ -684,12 +723,14 @@ function boot() {
   WV.on(onWv);
   var ses = store.get("session", null), restored = false;
   if (ses && ses.tabs && ses.tabs.length) {
-    ses.tabs.slice(0, MAXTABS).forEach(function (x) { tabs.push({ id: x.id, url: x.url || "", title: x.title || "", vid: null, loading: false, progress: 0, canBack: false, canFwd: false, priv: false, desktop: !!x.desktop, err: null, theme: null, parent: null, last: 0, shown: false }); tseq++; });
+    ses.tabs.forEach(function (x) { tabs.push({ id: x.id, url: x.url || "", title: x.title || "", vid: null, loading: false, progress: 0, canBack: false, canFwd: false, priv: false, desktop: !!x.desktop, err: null, theme: null, parent: null, last: 0, shown: false, scroll: null, creating: null }); tseq++; });
     curId = tabById(ses.cur) ? ses.cur : tabs[0].id; restored = true; tabById(curId).last = Date.now();
     if (cur().url) ensureView(cur());
   }
   if (!restored) { var q = new URLSearchParams(location.search).get("u"); newTab(q ? { url: normalize(q) } : {}); }
-  armGuard(); chrome(); syncNative(); render();
+  // الحارس يُضاف عند أول لمسة فقط: كروم يتجاهل مدخلات السجل المضافة قبل أي تفاعل من المستخدم
+  document.addEventListener("pointerdown", function () { if (!guardOn) armGuard(); }, { capture: true, once: true });
+  chrome(); syncNative(); render();
 }
 var started = false, tries = 0;
 function start() { if (started) return; started = true; boot(); }
