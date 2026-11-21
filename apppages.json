@@ -90,5 +90,9 @@
   "am1.html": {
     "op": "add",
     "timestamp": 1795234557234
+  },
+  "browser-test.html": {
+    "op": "add",
+    "timestamp": 1795241303880
   }
 }
