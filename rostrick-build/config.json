@@ -17,7 +17,9 @@
     "location",
     "media_download",
     "bg_service",
-    "bg_scheduler"
+    "bg_scheduler",
+    "overlay",
+    "screen_capture"
   ],
   "output_format": "apk",
   "min_sdk": 21,
@@ -57,6 +59,21 @@
     ],
     "verify": false,
     "extra_fingerprints": []
+  },
+  "ocr": {
+    "enabled": true,
+    "languages": [
+      "ara",
+      "eng"
+    ],
+    "quality": "fast"
+  },
+  "intents": {
+    "view": [
+      "application/pdf"
+    ],
+    "send": [],
+    "process_text": true
   },
   "hardware": {
     "bluetooth": true,
