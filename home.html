@@ -8422,6 +8422,23 @@ ${parts.body}
         return { url: w, via: "worker", big: big };
     }
     /*RT-PICK:END*/
+    /* نسخة التحميل الكبيرة (>23MB) في جذر المستودع تُفشل نشر الـ Worker كله (حدّه 25MB للملف) فتتوقف تحديثات الصفحات.
+       ملف البناء الجديد يقسّمها، لكن بناءات قديمة تركتها: نحذفها تلقائياً قبل كل بناء ليُعاد توليدها مقسّمة. لا نوقف البناء إن فشل الفحص. */
+    async function rtCleanOversizedDownloads() {
+        const removed = [];
+        try {
+            const res = await rtApi("/contents/?_=" + Date.now());
+            if (!res.ok) return removed;
+            const list = await res.json();
+            if (!Array.isArray(list)) return removed;
+            const bad = list.filter(function (x) { return x && x.type === "file" && /^__rostrick_download\.(apk|aab)$/.test(x.name) && x.size > RT_WORKER_MAX; });
+            for (const f of bad) {
+                const r = await rtApi("/contents/" + f.path, { method: "DELETE", body: { message: "RosTrick: حذف نسخة التحميل الكبيرة من الجذر (تُنشر الآن مقسّمة)", sha: f.sha } });
+                if (r.ok) removed.push(f.name);
+            }
+        } catch (e) {}
+        return removed;
+    }
 
     /* ---------- إصدارات أندرويد (minSdk / targetSdk) ---------- */
     const RT_SDK_NAMES = { 21: "5.0", 22: "5.1", 23: "6.0", 24: "7.0", 25: "7.1", 26: "8.0", 27: "8.1", 28: "9", 29: "10", 30: "11", 31: "12", 32: "12L", 33: "13", 34: "14", 35: "15", 36: "16" };
@@ -9554,6 +9571,10 @@ ${parts.body}
         rtSetStatus("⏳ رفع ملف البناء والقالب إلى مستودعك...");
         await rtPutIfChanged(".github/workflows/" + RT_BUILD.workflowFile, rtB64(wfText), "RosTrick: تحديث ملف بناء التطبيق");
         await rtPutIfChanged(RT_BUILD.dir + "/template.zip", rtBufToB64(tplBuf), "RosTrick: تحديث قالب التطبيق");
+        {
+            const gone = await rtCleanOversizedDownloads();
+            if (gone.length) rtSetStatus(rtL("🧹 حُذفت نسخة التحميل الكبيرة القديمة من المستودع (" + gone.join("، ") + ") لأنها كانت تعطّل نشر الـ Worker؛ ستُولَّد مقسّمة مع هذا البناء.", "🧹 Removed the old oversized download copy from the repository (" + gone.join(", ") + ") because it was blocking the Worker deploy; it will be regenerated in parts with this build."));
+        }
 
         // الأيقونة تُحفظ داخل config.json نفسه (icon_b64) فتصل دائماً مع بقية الإعدادات ولا يمكن أن تتعارض معها.
         let iconB64 = null, hadLegacy = false;
