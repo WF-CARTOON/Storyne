@@ -1,0 +1,8 @@
+{
+  "rules": [
+    {
+      "type": "application/pdf",
+      "page": "viewer.html"
+    }
+  ]
+}
