@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="rostrick-orientation" content="both">
+<title>مختبر جسور RosTrick</title>
+<style>
+:root{--bg:#f3f6f5;--card:#fff;--fg:#17302c;--mut:#5d716d;--line:#d5e0dd;--acc:#14877a;--acc2:#0d6a5f;--onacc:#fff;--field:#eef3f2;--ok:#127a43;--okbg:#dff3e7;--warn:#9a5b00;--warnbg:#fdeccf;--bad:#b3261e;--badbg:#fbdedb;--code:#0e2420;--codefg:#c9f2e7}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0b1513;--card:#13211f;--fg:#e3f1ee;--mut:#8fa8a3;--line:#24413c;--acc:#3cc2b1;--acc2:#2aa090;--onacc:#06201c;--field:#0d1a18;--ok:#7be0a8;--okbg:#12382a;--warn:#f1be6b;--warnbg:#3a2c0e;--bad:#ff9b92;--badbg:#42201d;--code:#06100e;--codefg:#a8e8dc}}
+:root[data-theme=dark]{--bg:#0b1513;--card:#13211f;--fg:#e3f1ee;--mut:#8fa8a3;--line:#24413c;--acc:#3cc2b1;--acc2:#2aa090;--onacc:#06201c;--field:#0d1a18;--ok:#7be0a8;--okbg:#12382a;--warn:#f1be6b;--warnbg:#3a2c0e;--bad:#ff9b92;--badbg:#42201d;--code:#06100e;--codefg:#a8e8dc}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}
+body{margin:0;padding:0 16px 96px;background:var(--bg);color:var(--fg);font:15px/1.7 system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif;min-height:100vh}
+h1{font-size:20px;margin:0}
+header{padding:calc(var(--rt-statusbar-height,0px) + 14px) 0 10px}
+.sub{color:var(--mut);font-size:13px;margin-top:2px}
+svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none;vertical-align:middle}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;margin:10px 0;overflow:hidden}
+.grp{font-size:12px;font-weight:700;color:var(--mut);margin:20px 4px 4px;letter-spacing:.2px}
+details.sec>summary{list-style:none;display:flex;align-items:center;padding:13px 14px;cursor:pointer;font-weight:700;min-height:52px}
+details.sec>summary::-webkit-details-marker{display:none}
+details.sec>summary .nm{direction:ltr;unicode-bidi:embed;margin:0 10px}
+details.sec>summary .sp{flex:1}
+details.sec>summary .chev{transition:transform .15s;color:var(--mut)}
+details.sec[open]>summary .chev{transform:rotate(90deg)}
+details.sec[open]>summary{border-bottom:1px solid var(--line)}
+.body{padding:12px 14px 14px}
+.bd{display:inline-flex;align-items:center;font-size:12px;font-weight:700;border-radius:20px;padding:1px 9px;margin-inline-start:6px}
+.bd svg.i{width:14px;height:14px;margin-inline-end:4px}
+.bd.ok{background:var(--okbg);color:var(--ok)}.bd.off{background:var(--warnbg);color:var(--warn)}.bd.no{background:var(--badbg);color:var(--bad)}
+.note{font-size:13px;color:var(--mut);margin:2px 0 8px}
+.btn{display:block;width:100%;border:0;border-radius:11px;background:var(--acc);color:var(--onacc);font:inherit;font-weight:700;padding:11px 12px;margin:6px 0;min-height:46px;cursor:pointer;text-align:center}
+.btn:active{background:var(--acc2)}
+.btn.alt{background:var(--field);color:var(--fg);border:1px solid var(--line)}
+.btn.red{background:var(--bad);color:#fff}
+.btn[disabled]{opacity:.45}
+.two{display:flex;flex-wrap:wrap;margin:0 -3px}.two>*{flex:1 1 130px;margin:0 3px}
+.fld{display:block;width:100%;border:1px solid var(--line);background:var(--field);color:var(--fg);border-radius:10px;padding:10px;font:inherit;margin:5px 0;direction:ltr;text-align:left}
+.lbl{display:flex;align-items:center;justify-content:space-between;margin:10px 0 2px;font-weight:600}
+.lbl output{direction:ltr;font-variant-numeric:tabular-nums;color:var(--mut);font-weight:400}
+input[type=range]{width:100%;margin:4px 0;accent-color:var(--acc);height:28px}
+input[type=color]{width:56px;height:38px;border:1px solid var(--line);border-radius:8px;background:var(--field);padding:2px}
+.sw{display:flex;align-items:center;justify-content:space-between;margin:8px 0;font-weight:600}
+.sw button{width:50px;height:28px;border-radius:14px;border:0;background:var(--line);position:relative;flex:none;cursor:pointer}
+.sw button::after{content:"";position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:right .15s}
+.sw button.on{background:var(--acc)}.sw button.on::after{right:25px}
+.seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:6px 0}
+.seg button{flex:1;border:0;background:var(--field);color:var(--fg);font:inherit;padding:9px 4px;cursor:pointer;border-inline-start:1px solid var(--line)}
+.seg button:first-child{border-inline-start:0}.seg button.on{background:var(--acc);color:var(--onacc);font-weight:700}
+pre.out{background:var(--code);color:var(--codefg);border-radius:10px;padding:10px;margin:8px 0 0;font:12px/1.6 ui-monospace,Menlo,Consolas,monospace;direction:ltr;text-align:left;white-space:pre-wrap;word-break:break-all;max-height:190px;overflow:auto;min-height:38px}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+td{padding:7px 12px;border-top:1px solid var(--line)}td:first-child{direction:ltr;text-align:left;unicode-bidi:embed}td:last-child{text-align:left;white-space:nowrap}
+tr.h td{background:var(--field);font-weight:700;color:var(--mut);font-size:12px;border-top:0}
+#wvbox{height:230px;border:2px dashed var(--line);border-radius:12px;margin:8px 0;display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:13px;text-align:center;padding:10px}
+.tbox{border:1px solid var(--line);border-radius:10px;padding:10px;margin:8px 0;background:var(--field)}
+.dl{display:flex;flex-wrap:wrap;align-items:center;border-top:1px solid var(--line);padding:8px 0}.dl:first-child{border-top:0}
+.dl .t{flex:1 1 100%;min-width:0;margin-bottom:6px}.tbox:empty{display:none}.dl .t b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.dl .t small{color:var(--mut)}
+.dl .bar{height:4px;background:var(--line);border-radius:2px;margin-top:4px;overflow:hidden}.dl .bar i{display:block;height:100%;background:var(--acc)}
+.dl button{border:1px solid var(--line);background:var(--field);color:var(--fg);border-radius:8px;padding:6px 8px;margin-inline-start:5px;font:inherit;font-size:12px;cursor:pointer}
+video,audio,img.pv{max-width:100%;border-radius:10px;margin-top:8px;display:block}
+#logfab{position:fixed;bottom:16px;right:16px;background:var(--acc);color:var(--onacc);border:0;border-radius:26px;padding:0 16px;height:48px;font:inherit;font-weight:700;display:flex;align-items:center;box-shadow:0 3px 12px rgba(0,0,0,.3);z-index:20}
+#logfab svg.i{margin-inline-end:6px}
+#sheet{position:fixed;left:0;right:0;bottom:0;max-height:68vh;background:var(--card);border-top:1px solid var(--line);border-radius:16px 16px 0 0;box-shadow:0 -6px 24px rgba(0,0,0,.3);transform:translateY(105%);transition:transform .2s;z-index:30;display:flex;flex-direction:column;visibility:hidden}
+#sheet.on{transform:none;visibility:visible}
+#sheet .hd{display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line);font-weight:700}
+#sheet .hd .sp{flex:1}
+#sheet .hd button{border:1px solid var(--line);background:var(--field);color:var(--fg);border-radius:8px;padding:6px 10px;margin-inline-start:6px;font:inherit}
+#logbody{overflow:auto;padding:8px 12px;font:12px/1.6 ui-monospace,Menlo,Consolas,monospace;direction:ltr;text-align:left;flex:1}
+#logbody div{border-bottom:1px dashed var(--line);padding:3px 0;word-break:break-all}#logbody b{color:var(--acc)}
+#toast{position:fixed;left:16px;right:16px;bottom:78px;background:#222;color:#fff;border-radius:10px;padding:11px 14px;text-align:center;opacity:0;transition:opacity .2s;pointer-events:none;z-index:40}
+#toast.on{opacity:1}
+@media print{#logfab,#sheet,#toast,details.sec:not(#s_pdf){display:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <h1>مختبر جسور RosTrick</h1>
+  <div class="sub">صفحة تجربة لكل واجهات RosTrick. شغّلها <b>داخل التطبيق المبني</b>؛ خارجه تظهر الجسور «غير موجودة». كل نتيجة تُسجَّل في زر «السجل» أسفل الشاشة.</div>
+</header>
+
+<div class="card"><table id="scan"></table>
+  <div class="body"><button class="btn alt" id="rescan">إعادة الفحص</button></div></div>
+<div id="secs"></div>
+
+<button id="logfab" aria-label="السجل"><svg class="i" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>السجل <span id="logn">0</span></button>
+<div id="sheet" role="dialog" aria-label="السجل"><div class="hd"><span>السجل</span><span class="sp"></span><button id="logcopy">نسخ</button><button id="logclr">مسح</button><button id="logx">إغلاق</button></div><div id="logbody"></div></div>
+<div id="toast"></div>
+<script>
+(function(){
+"use strict";
+var $=function(id){return document.getElementById(id)};
+var IC={
+ sun:"M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10zM12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4",
+ gear:"M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z",
+ vib:"M2 8v8M5 6v12M19 6v12M22 8v8M9 4h6a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z",
+ clip:"M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2M9 2h6a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z",
+ bat:"M3 7h14a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2zM23 11v2M5 10v4",
+ user:"M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z",
+ chk:"M20 6L9 17l-5-5",warn:"M12 9v4M12 17h.01M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z",x:"M18 6L6 18M6 6l12 12",
+ chev:"M9 18l6-6-6-6",bar:"M3 5h18M3 12h18",win:"M3 5h18a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zM1 9h22",
+ back:"M19 12H5M12 19l-7-7 7-7",app:"M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zM12 18h.01",
+ dev:"M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8",
+ dl:"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3",share:"M18 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM6 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM18 22a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM8.6 13.5l6.8 4M15.4 6.5l-6.8 4",
+ star:"M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.9L12 17.8 5.8 21l1.2-6.9-5-4.9 6.9-1z",link:"M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7",
+ file:"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6",info:"M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 16v-4M12 8h.01",
+ box:"M21 8l-9-5-9 5v8l9 5 9-5zM3 8l9 5 9-5M12 13v8",page:"M4 4h16v16H4zM4 9h16M9 9v11",print:"M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z",
+ lock:"M5 11h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2zM7 11V7a5 5 0 0 1 10 0v4",ad:"M3 5h18a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zM8 15V9l2 3 2-3v6",
+ bell:"M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0",cart:"M6 6h15l-2 9H8zM6 6L5 2H2M9 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2zM18 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2z",
+ clock:"M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 6v6l4 2",chart:"M3 3v18h18M7 14l4-4 3 3 5-6",globe:"M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20",
+ chip:"M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3M6 5h12a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zM9 9h6v6H9z",log:"M4 6h16M4 12h16M4 18h10",
+ reload:"M23 4v6h-6M1 20v-6h6M3.5 9a9 9 0 0 1 15-3.4L23 10M1 14l4.5 4.4A9 9 0 0 0 20.5 15"
+};
+function ic(n){return '<svg class="i" viewBox="0 0 24 24"><path d="'+IC[n]+'"/></svg>'}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function J(x){if(typeof x==="string")return x;if(x===undefined)return "undefined";try{return JSON.stringify(x)}catch(e){return String(x)}}
+function W(n){return window[n]||null}
+function hasFn(o,f){return !!(o&&typeof o[f]==="function")}
+
+/* ---------- السجل ---------- */
+var LOG=[],logn=0;
+function log(tag,msg){
+  var t=new Date(),ts=("0"+t.getHours()).slice(-2)+":"+("0"+t.getMinutes()).slice(-2)+":"+("0"+t.getSeconds()).slice(-2);
+  var line=ts+" ["+tag+"] "+(msg===undefined?"":J(msg)); LOG.push(line); if(LOG.length>400)LOG.shift(); logn++;
+  $("logn").textContent=logn;
+  var d=document.createElement("div"); d.innerHTML="<b>"+esc(ts)+"</b> ["+esc(tag)+"] "+esc(msg===undefined?"":J(msg));
+  var lb=$("logbody"); lb.appendChild(d); while(lb.childNodes.length>400)lb.removeChild(lb.firstChild); lb.scrollTop=lb.scrollHeight;
+  return line;
+}
+var toastT=0;
+function toast(m){var e=$("toast");e.textContent=m;e.className="on";clearTimeout(toastT);toastT=setTimeout(function(){e.className=""},2200)}
+var sheetOn=false;
+function sheet(on){sheetOn=on;$("sheet").className=on?"on":"";wvSuspend(on)}
+$("logfab").onclick=function(){sheet(!sheetOn)}; $("logx").onclick=function(){sheet(false)};
+$("logclr").onclick=function(){LOG=[];$("logbody").innerHTML="";logn=0;$("logn").textContent="0"};
+$("logcopy").onclick=function(){var t=LOG.join("\n");try{navigator.clipboard.writeText(t).then(function(){toast("نُسخ السجل")},function(){toast("تعذّر النسخ")})}catch(e){toast("تعذّر النسخ")}};
+window.addEventListener("error",function(e){log("خطأ",e.message)});
+window.addEventListener("unhandledrejection",function(e){log("وعد مرفوض",(e.reason&&e.reason.message)||e.reason)});
+
+/* ---------- أدوات بناء الواجهة ---------- */
+function Btn(p,label,fn,cls){var b=document.createElement("button");b.type="button";b.className="btn"+(cls?" "+cls:"");b.textContent=label;b.onclick=function(){Promise.resolve().then(fn).catch(function(e){log(label+" (خطأ)",e&&e.message||e)})};p.appendChild(b);return b}
+function Two(p){var d=document.createElement("div");d.className="two";p.appendChild(d);return d}
+function Out(p){var o=document.createElement("pre");o.className="out";o.textContent="—";p.appendChild(o);o.set=function(v){o.textContent=J(v)};return o}
+function Note(p,t){var n=document.createElement("div");n.className="note";n.innerHTML=t;p.appendChild(n);return n}
+function Fld(p,ph,val){var i=document.createElement("input");i.className="fld";i.type="text";i.placeholder=ph||"";i.value=val||"";i.setAttribute("autocomplete","off");p.appendChild(i);return i}
+function Rng(p,label,min,max,val,step,fn){
+  var l=document.createElement("div");l.className="lbl";var o=document.createElement("output");o.textContent=val;l.innerHTML="<span>"+esc(label)+"</span>";l.appendChild(o);p.appendChild(l);
+  var r=document.createElement("input");r.type="range";r.min=min;r.max=max;r.step=step||1;r.value=val;
+  r.oninput=function(){o.textContent=r.value;try{fn(+r.value)}catch(e){log(label+" (خطأ)",e.message)}};p.appendChild(r);r.show=function(v){r.value=v;o.textContent=v};return r}
+function Sw(p,label,on,fn){
+  var d=document.createElement("div");d.className="sw";d.innerHTML="<span>"+esc(label)+"</span>";var b=document.createElement("button");b.type="button";b.setAttribute("role","switch");
+  function set(v){b.className=v?"on":"";b.setAttribute("aria-checked",v?"true":"false")} set(!!on);
+  b.onclick=function(){var v=b.className!=="on";set(v);try{var r=fn(v);if(r&&r.then)r.catch(function(e){log(label+" (خطأ)",e&&e.message||e)})}catch(e){log(label+" (خطأ)",e.message)}};
+  d.appendChild(b);p.appendChild(d);d.set=set;return d}
+function Seg(p,opts,cur,fn){
+  var d=document.createElement("div");d.className="seg";
+  opts.forEach(function(o){var b=document.createElement("button");b.type="button";b.textContent=o[1];b.dataset.v=o[0];if(o[0]===cur)b.className="on";
+    b.onclick=function(){[].forEach.call(d.children,function(x){x.className=""});b.className="on";try{fn(o[0])}catch(e){log("خطأ",e.message)}};d.appendChild(b)});
+  p.appendChild(d);return d}
+function Box(p){var d=document.createElement("div");d.className="tbox";p.appendChild(d);return d}
+
+/* ---------- الأقسام ---------- */
+var SECS=[];
+function badge(s,t){var k=s==="ok"?"chk":s==="off"?"warn":"x";return '<span class="bd '+s+'">'+ic(k)+esc(t)+"</span>"}
+function section(o){
+  var d=document.createElement("details");d.className="card sec";d.id="s_"+o.id;
+  var st=o.avail(); d.innerHTML="<summary>"+ic(o.icon)+'<span class="nm">'+esc(o.name)+'</span><span class="sp"></span><span class="bs">'+badge(st.s,st.t)+"</span>"+'<span class="chev">'+ic("chev")+"</span></summary>";
+  var body=document.createElement("div");body.className="body";d.appendChild(body);
+  $("secs").appendChild(d); SECS.push({d:d,o:o,body:body});
+  try{o.build(body)}catch(e){body.innerHTML='<div class="note">تعذّر بناء القسم: '+esc(e.message)+"</div>"}
+  return d}
+function grp(t){var g=document.createElement("div");g.className="grp";g.textContent=t;$("secs").appendChild(g)}
+function refreshBadges(){SECS.forEach(function(s){var st=s.o.avail();s.d.querySelector(".bs").innerHTML=badge(st.s,st.t)})}
+function ALW(n){return function(){return W(n)?{s:"ok",t:"موجود"}:{s:"no",t:"غير موجود"}}}
+function ENB(n){return function(){var o=W(n);return !o?{s:"no",t:"غير موجود"}:(o.enabled===false?{s:"off",t:"غير مفعّل في البناء"}:{s:"ok",t:"مفعّل"})}}
+function NAV(k){return function(){return (k in navigator)?{s:"ok",t:"موجود"}:{s:"no",t:"غير موجود"}}}
+
+/* ===== جدول الفحص ===== */
+function scan(){
+  var rows=[["h","واجهات تعمل دائمًا"],
+   ["RosTrickStatusBar","ok"],["RosTrickWebView","ok"],["RosTrickBack","ok"],["RosTrickApp","ok"],["RosTrickDevice","ok"],["RosTrickDownloads","ok"],
+   ["RosTrickShare","ok"],["RosTrickReview","ok"],["RosTrickLinks","ok"],["RosTrickFiles","ok"],["RosTrickAppInfo","ok"],["RosTrickAssets","ok"],["RosTrickPages","ok"],["RosTrickPdf","ok"],["RosTrickSecure","ok"],["RosTrickReload","ok"],
+   ["h","تعتمد على إعدادات البناء"],["RosTrickAds","en"],["RosTrickUnityAds","en"],["RosTrickFbAds","en"],["RosTrickPush","en"],["RosTrickBilling","en"],["RosTrickBackground","bg"],["RosTrickAnalytics","en"],["RosTrickOverlay","av"],["RosTrickScreen","av"],["RosTrickOcr","oe"],["RosTrickIntent","oe"],
+   ["h","واجهات قياسية"],["navigator.clipboard","n:clipboard"],["navigator.wakeLock","n:wakeLock"],["Notification","g:Notification"],["navigator.getBattery","n:getBattery"],["navigator.share","n:share"],["navigator.contacts","n:contacts"],["navigator.vibrate","n:vibrate"],["navigator.serviceWorker","n:serviceWorker"],
+   ["h","العتاد (يحتاج تفعيله في البناء)"],["navigator.bluetooth","n:bluetooth"],["navigator.usb","n:usb"],["navigator.serial","n:serial"]];
+  var h="",ok=0,tot=0;
+  rows.forEach(function(r){
+    if(r[0]==="h"){h+='<tr class="h"><td colspan="2">'+esc(r[1])+"</td></tr>";return}
+    var s,t,k=r[1];
+    if(k==="ok"){var o=W(r[0]);s=o?"ok":"no";t=o?"موجود":"غير موجود"}
+    else if(k==="en"){var e=W(r[0]);s=!e?"no":(e.enabled===false?"off":"ok");t=!e?"غير موجود":(e.enabled===false?"غير مفعّل":"مفعّل")}
+    else if(k==="av"||k==="oe"){var q=W(r[0]);var on=q&&(k==="av"?q.available:q.enabled);s=!q?"no":(on?"ok":"off");t=!q?"غير موجود":(on?"مفعّل":"غير مفعّل في البناء")}
+    else if(k==="bg"){var b=W(r[0]);if(!b){s="no";t="غير موجود"}else{var a={};try{a=b.available()||{}}catch(x){}s=(a.service||a.scheduler)?"ok":"off";t=(a.service||a.scheduler)?("خدمة:"+(a.service?"نعم":"لا")+" · جدولة:"+(a.scheduler?"نعم":"لا")):"غير مفعّل"}}
+    else if(k.indexOf("n:")===0){var x=k.slice(2) in navigator;s=x?"ok":(/bluetooth|usb|serial/.test(k)?"off":"no");t=x?"موجود":(/bluetooth|usb|serial/.test(k)?"غير مفعّل":"غير موجود")}
+    else {var g=typeof window[k.slice(2)]!=="undefined";s=g?"ok":"no";t=g?"موجود":"غير موجود"}
+    tot++;if(s==="ok")ok++;
+    h+="<tr><td>"+esc(r[0])+"</td><td>"+badge(s,t)+"</td></tr>";
+  });
+  $("scan").innerHTML='<tr class="h"><td colspan="2">الفحص: '+ok+" من "+tot+" متاح</td></tr>"+h;
+  refreshBadges();
+}
+$("rescan").onclick=function(){scan();log("فحص","أُعيد الفحص")};
+
+/* ===== WebView: تعليق/استئناف عند فتح السجل (يُرسم الأصلي فوق الصفحة) ===== */
+var wvId=null,wvHidden=false;
+function wvSuspend(on){var w=W("RosTrickWebView");if(!w||wvId==null)return;try{if(on&&!wvHidden){w.hide(wvId);wvHidden=true}else if(!on&&wvHidden){w.show(wvId);wvHidden=false}}catch(e){}}
+
+grp("واجهات تعمل دائمًا");
+
+/* ---------- StatusBar ---------- */
+section({id:"sb",name:"RosTrickStatusBar",icon:"bar",avail:ALW("RosTrickStatusBar"),build:function(b){
+  var st={mode:"visible",color:"#14877a",icons:"auto",overlay:false,anim:250,useColor:false};
+  var out=Out(b);
+  function SB(){return W("RosTrickStatusBar")}
+  function read(){var s=SB(),h=null;try{h=s&&s.height}catch(e){}out.set({height:h,cssVar:getComputedStyle(document.documentElement).getPropertyValue("--rt-statusbar-height")||"0px",state:st})}
+  function apply(){var s=SB();if(!s){log("StatusBar","غير موجود");return}var o={mode:st.mode,icons:st.icons,overlay:st.overlay,anim:st.anim};if(st.useColor)o.color=st.color;s.set(o);log("StatusBar.set",o);setTimeout(read,300)}
+  Note(b,"اختر الإعدادات ثم راقب الشريط العلوي. مع <code>overlay</code> أو الإخفاء أضف <code>padding-top: var(--rt-statusbar-height)</code>.");
+  Seg(b,[["visible","ظاهر"],["hidden","مخفي"]],st.mode,function(v){st.mode=v;apply()});
+  Seg(b,[["auto","أيقونات تلقائية"],["light","فاتحة"],["dark","داكنة"]],st.icons,function(v){st.icons=v;apply()});
+  Sw(b,"الرسم خلف الشريط (overlay)",st.overlay,function(v){st.overlay=v;apply()});
+  Sw(b,"لون محدد",st.useColor,function(v){st.useColor=v;apply()});
+  var c=document.createElement("input");c.type="color";c.value=st.color;c.oninput=function(){st.color=c.value;st.useColor=true;apply()};b.appendChild(c);
+  Rng(b,"مدة انتقال اللون (ms)",0,1000,250,50,function(v){st.anim=v;apply()});
+  var t=Two(b);
+  Btn(t,"إظهار مؤقت (peek)",function(){var s=SB();if(!s)throw new Error("غير موجود");s.peek(2500);log("StatusBar.peek",2500)},"alt");
+  Btn(t,"إعادة ضبط",function(){var s=SB();if(!s)throw new Error("غير موجود");s.reset();log("StatusBar.reset");st={mode:"visible",color:st.color,icons:"auto",overlay:false,anim:250,useColor:false};setTimeout(read,300)},"alt");
+  Btn(b,"قراءة الارتفاع",function(){read();log("StatusBar.height",out.textContent)},"alt");
+  window.addEventListener("rtstatusbar",function(e){log("rtstatusbar",e.detail);read()});
+}});
+
+/* ---------- WebView ---------- */
+section({id:"wv",name:"RosTrickWebView",icon:"win",avail:ALW("RosTrickWebView"),build:function(b){
+  var W_=function(){return W("RosTrickWebView")};
+  Note(b,"يُرسم الـ WebView الأصلي <b>فوق</b> الصفحة داخل المستطيل أدناه، لذلك يُخفى تلقائيًا عند فتح «السجل». أنشئه ثم اختبر الأوامر.");
+  var box=document.createElement("div");box.id="wvbox";box.textContent="هنا يظهر WebView الأصلي";b.appendChild(box);
+  var url=Fld(b,"https://…","https://example.com");var out=Out(b);
+  Btn(b,"إنشاء (create)",function(){var w=W_();if(!w)throw new Error("غير موجود");
+    if(wvId!=null){log("WebView","موجود مسبقًا: "+wvId);return}
+    return w.create({id:"lab",url:url.value,attach:"#wvbox"}).then(function(id){wvId=id;log("WebView.create",id);
+      ["title","finish","progress","url","error","download"].forEach(function(t){try{w.on(id,t,function(d){out.set({event:t,data:d});if(t!=="progress")log("WebView:"+t,d)})}catch(e){}})})});
+  var t1=Two(b);
+  Btn(t1,"تحميل الرابط",function(){if(wvId==null)throw new Error("أنشئه أولًا");W_().load(wvId,url.value);log("WebView.load",url.value)},"alt");
+  Btn(t1,"تحديث",function(){if(wvId==null)throw new Error("أنشئه أولًا");W_().reload(wvId)},"alt");
+  var t2=Two(b);
+  Btn(t2,"رجوع",function(){if(wvId==null)throw new Error("أنشئه أولًا");W_().back(wvId)},"alt");
+  Btn(t2,"للأمام",function(){if(wvId==null)throw new Error("أنشئه أولًا");W_().forward(wvId)},"alt");
+  Btn(b,"evaluate: عنوان الصفحة",function(){if(wvId==null)throw new Error("أنشئه أولًا");return W_().evaluate(wvId,"document.title").then(function(r){log("WebView.evaluate",r);out.set(r)})},"alt");
+  var t3=Two(b);
+  Btn(t3,"إخفاء",function(){if(wvId==null)throw new Error("أنشئه أولًا");W_().hide(wvId);wvHidden=true},"alt");
+  Btn(t3,"إظهار",function(){if(wvId==null)throw new Error("أنشئه أولًا");W_().show(wvId);wvHidden=false},"alt");
+  Btn(b,"تدمير (destroy)",function(){if(wvId==null)throw new Error("لا يوجد");W_().destroy(wvId);log("WebView.destroy",wvId);wvId=null;wvHidden=false},"red");
+  Btn(b,"نافذة كاملة جاهزة (openFullscreen)",function(){var w=W_();if(!w)throw new Error("غير موجود");w.openFullscreen(url.value,{barColor:"#14877a",textColor:"#ffffff"});log("WebView.openFullscreen",url.value)},"alt");
+}});
+
+/* ---------- Back ---------- */
+section({id:"back",name:"RosTrickBack",icon:"back",avail:ALW("RosTrickBack"),build:function(b){
+  var BK=function(){return W("RosTrickBack")};var h={icpt:null,dbl:null},cfg={consume:true},n=0;
+  Note(b,"زر الرجوع في الجهاز. فعّل الاعتراض ثم اضغط رجوع: تصلك الضغطة أولًا ولا يخرج التطبيق. الرسائل التي تظهر لك (toast) من صنع هذه الصفحة وليست أصلية.");
+  var out=Out(b);
+  Sw(b,"اعترض زر الرجوع (onBack)",false,function(v){var k=BK();if(!k)throw new Error("غير موجود");
+    if(v){h.icpt=k.onBack(function(ev){n++;out.set({presses:n,canGoBack:ev.canGoBack,consumed:cfg.consume});log("Back.onBack",{n:n,canGoBack:ev.canGoBack});toast("تم اعتراض الرجوع ("+n+")");return cfg.consume})}
+    else if(h.icpt){h.icpt();h.icpt=null}});
+  Sw(b,"أعالج الضغطة (أرجع true) — وإلا يُنفَّذ الرجوع الافتراضي",true,function(v){cfg.consume=v});
+  Sw(b,"الضغط مرتين للخروج (الرسالة من هذه الصفحة)",false,function(v){var k=BK();if(!k)throw new Error("غير موجود");
+    if(v){h.dbl=k.doubleBackToExit({timeout:2000,always:true,onFirst:function(){toast("اضغط رجوع مرة أخرى للخروج");log("Back.doubleBackToExit","الضغطة الأولى")},onExit:function(){log("Back.doubleBackToExit","خروج")}})}
+    else if(h.dbl){h.dbl();h.dbl=null}});
+  Note(b,"ما يحدث عند الرجوع بلا صفحة سابقة وبلا معالج يعالجه:");
+  Seg(b,[["exit","إغلاق"],["minimize","للخلفية"],["none","لا شيء"]],"exit",function(v){var k=BK();if(!k)throw new Error("غير موجود");k.exitMode(v);log("Back.exitMode",v)});
+  var t=Two(b);
+  Btn(t,"canGoBack()",function(){var k=BK();if(!k)throw new Error("غير موجود");var r=k.canGoBack();log("Back.canGoBack",r);out.set(r)},"alt");
+  Btn(t,"goBack()",function(){var k=BK();if(!k)throw new Error("غير موجود");var r=k.goBack();log("Back.goBack",r);out.set(r)},"alt");
+  var t2=Two(b);
+  Btn(t2,"press() محاكاة ضغطة",function(){var k=BK();if(!k)throw new Error("غير موجود");k.press();log("Back.press")},"alt");
+  Btn(t2,"minimize()",function(){var k=BK();if(!k)throw new Error("غير موجود");k.minimize();log("Back.minimize")},"alt");
+  Btn(b,"exit() — إغلاق التطبيق",function(){var k=BK();if(!k)throw new Error("غير موجود");log("Back.exit");k.exit()},"red");
+}});
+
+/* ---------- App ---------- */
+section({id:"app",name:"RosTrickApp",icon:"app",avail:ALW("RosTrickApp"),build:function(b){
+  var AP=function(){return W("RosTrickApp")};var nf={select:true,contextMenu:true,zoom:true};
+  var out=Out(b);
+  Note(b,"<b>الإحساس الأصلي.</b> بعد التطبيق جرّب تحديد النص في الصندوق أدناه (يجب ألا يتحدد) وفي حقل الإدخال (يجب أن يتحدد).");
+  Sw(b,"تعطيل تحديد النص (select)",false,function(v){nf.select=!v});
+  Sw(b,"منع قائمة الضغط المطوّل (contextMenu:false)",false,function(v){nf.contextMenu=!v});
+  Sw(b,"منع التكبير بالقرص (zoom:false)",false,function(v){nf.zoom=!v});
+  var t=Two(b);
+  Btn(t,"تطبيق nativeFeel",function(){var a=AP();if(!a)throw new Error("غير موجود");var o={select:nf.select,contextMenu:nf.contextMenu,zoom:nf.zoom};a.nativeFeel(o);log("App.nativeFeel",o)});
+  Btn(t,"إلغاء",function(){var a=AP();if(!a)throw new Error("غير موجود");a.nativeFeel(false);log("App.nativeFeel","false")},"alt");
+  var tb=Box(b);tb.innerHTML="هذا نص تجريبي: اضغط مطولًا لتجربة التحديد. <b>RosTrick</b>";
+  var inp=Fld(b,"حقل إدخال — يفتح الكيبورد","");inp.style.direction="rtl";inp.style.textAlign="right";
+  Note(b,"الكيبورد: ارتفاعه يظهر في <code>--rt-keyboard-height</code> وفي الحدث <code>keyboard</code>.");
+  var t2=Two(b);
+  Btn(t2,"إظهار الكيبورد",function(){var a=AP();if(!a)throw new Error("غير موجود");inp.focus();log("App.keyboard.show",a.keyboard.show())},"alt");
+  Btn(t2,"إخفاء الكيبورد",function(){var a=AP();if(!a)throw new Error("غير موجود");log("App.keyboard.hide",a.keyboard.hide())},"alt");
+  Btn(b,"حالة الكيبورد",function(){var a=AP();if(!a)throw new Error("غير موجود");var s=a.keyboard.state();out.set({state:s,cssVar:getComputedStyle(document.documentElement).getPropertyValue("--rt-keyboard-height")});log("App.keyboard.state",s)},"alt");
+  Btn(b,"info()",function(){var a=AP();if(!a)throw new Error("غير موجود");var i=a.info();out.set(i);log("App.info",i)},"alt");
+  var ex=Fld(b,"https://… أو mailto: أو tel:","https://example.com");
+  var t3=Two(b);
+  Btn(t3,"openExternal",function(){var a=AP();if(!a)throw new Error("غير موجود");log("App.openExternal",a.openExternal(ex.value))},"alt");
+  Btn(t3,"إعدادات التطبيق",function(){var a=AP();if(!a)throw new Error("غير موجود");log("App.openSettings",a.openSettings())},"alt");
+  var a0=AP();if(a0){a0.on(function(d,t){log("App:"+t,d)})}
+}});
+
+/* ---------- Device ---------- */
+section({id:"dev",name:"RosTrickDevice",icon:"dev",avail:ALW("RosTrickDevice"),build:function(b){
+  var D=function(){return W("RosTrickDevice")};var out=Out(b);var stream="music";
+  function need(){var d=D();if(!d)throw new Error("غير موجود");return d}
+  Note(b,"<b>السطوع</b> لنافذة التطبيق فقط (لا يغيّر إعداد النظام).");
+  var br=Rng(b,"السطوع %",1,100,50,1,function(v){need().brightness.set(v/100)});
+  var t=Two(b);
+  Btn(t,"قراءة السطوع",function(){var r=need().brightness.get();out.set(r);log("Device.brightness.get",r)},"alt");
+  Btn(t,"إعادة (reset)",function(){need().brightness.reset();log("Device.brightness.reset")},"alt");
+  Note(b,"<b>الصوت</b> — اختر القناة:");
+  Seg(b,[["music","وسائط"],["ring","رنين"],["alarm","منبّه"],["notification","إشعار"],["system","نظام"]],stream,function(v){stream=v});
+  var vr=Rng(b,"مستوى الصوت %",0,100,50,1,function(v){need().volume.set(stream,v/100)});
+  var t2=Two(b);
+  Btn(t2,"رفع",function(){log("Device.volume.up",need().volume.up(stream,true))},"alt");
+  Btn(t2,"خفض",function(){log("Device.volume.down",need().volume.down(stream,true))},"alt");
+  var t3=Two(b);
+  Btn(t3,"كتم",function(){log("Device.volume.mute",need().volume.mute(stream))},"alt");
+  Btn(t3,"إلغاء الكتم",function(){log("Device.volume.unmute",need().volume.unmute(stream))},"alt");
+  Btn(b,"قراءة مستوى القناة",function(){var r=need().volume.get(stream);out.set(r);log("Device.volume.get("+stream+")",r);if(r&&typeof r.percent==="number")vr.show(Math.round(r.percent*100))},"alt");
+  Note(b,"أزرار الجهاز تتحكم بأي قناة؟");
+  Seg(b,[["auto","تلقائي"],["music","وسائط"],["ring","رنين"]],"auto",function(v){log("Device.volume.keys("+v+")",need().volume.keys(v))});
+  Note(b,"وضع الرنين:");
+  Seg(b,[["normal","عادي"],["vibrate","اهتزاز"],["silent","صامت"]],"normal",function(v){log("Device.volume.setRinger("+v+")",need().volume.setRinger(v))});
+  Btn(b,"قراءة وضع الرنين",function(){var r=need().volume.ringer();out.set(r);log("Device.volume.ringer",r)},"alt");
+  Note(b,"<b>الكشاف:</b>");
+  var t4=Two(b);
+  Btn(t4,"متاح؟",function(){var r=need().torch.available();out.set(r);log("Device.torch.available",r)},"alt");
+  Btn(t4,"تبديل الكشاف",function(){var r=need().torch.toggle();out.set(r);log("Device.torch.toggle",r)});
+  Note(b,"<b>الاهتزاز اللمسي:</b>");
+  var t5=Two(b);["tick","click","long","confirm","reject"].forEach(function(k){Btn(t5,k,function(){log("Device.haptic("+k+")",need().haptic(k))},"alt")});
+  Note(b,"<b>اتجاه الشاشة:</b>");
+  Seg(b,[["portrait","عمودي"],["landscape","أفقي"],["auto","تلقائي"],["lock","تثبيت"],["unlock","فك"]],"auto",function(v){log("Device.orientation.set("+v+")",need().orientation.set(v))});
+  Btn(b,"orientation.get()",function(){var r=need().orientation.get();out.set(r);log("Device.orientation.get",r)},"alt");
+  Sw(b,"منع لقطات الشاشة (secure)",false,function(v){log("Device.secure("+v+")",need().secure(v))});
+  var t6=Two(b);
+  Btn(t6,"network.get()",function(){var r=need().network.get();out.set(r);log("Device.network.get",r)},"alt");
+  Btn(t6,"info()",function(){var r=need().info();out.set(r);log("Device.info",r)},"alt");
+  var d0=D();if(d0){d0.on(function(d,t){log("Device:"+t,d)})}
+}});
+
+/* ---------- Downloads ---------- */
+section({id:"dl",name:"RosTrickDownloads",icon:"dl",avail:ALW("RosTrickDownloads"),build:function(b){
+  var DL=function(){return W("RosTrickDownloads")};
+  function need(){var d=DL();if(!d)throw new Error("غير موجود");return d}
+  var out=Out(b);var list=document.createElement("div");
+  Note(b,"أنشئ تنزيلًا ثم تابعه في القائمة. التنزيل من رابط http يمرّ عبر مدير التنزيلات الأصلي، وتنزيل blob يمرّ عبر الصفحة.");
+  var u=Fld(b,"رابط ملف للتنزيل","https://example.com/file.zip");
+  var t=Two(b);
+  Btn(t,"تنزيل الرابط",function(){var a=document.createElement("a");a.href=u.value;a.download="";document.body.appendChild(a);a.click();a.parentNode.removeChild(a);log("Downloads","طُلب تنزيل "+u.value)});
+  Btn(t,"تنزيل blob نصي",function(){var bl=new Blob(["RosTrick lab "+new Date().toISOString()],{type:"text/plain"});var a=document.createElement("a");a.href=URL.createObjectURL(bl);a.download="rt-lab.txt";document.body.appendChild(a);a.click();a.parentNode.removeChild(a);log("Downloads","طُلب تنزيل blob")});
+  function render(){var d=DL();list.innerHTML="";if(!d)return;var its=[];try{its=d.list()||[]}catch(e){}
+    if(!its.length){list.innerHTML='<div class="note">لا توجد تنزيلات.</div>';return}
+    its.forEach(function(it){var r=document.createElement("div");r.className="dl";
+      var pct=it.total>0?Math.round(it.bytes*100/it.total):(it.state==="done"?100:0);
+      var tt=document.createElement("div");tt.className="t";
+      tt.innerHTML="<b>"+esc(it.name||it.url||it.id)+"</b><small>"+esc(it.state)+(it.total>0?" · "+pct+"%":"")+(it.mime?" · "+esc(it.mime):"")+'</small><div class="bar"><i style="width:'+pct+'%"></i></div>';
+      r.appendChild(tt);
+      function sb(l,f){var x=document.createElement("button");x.type="button";x.textContent=l;x.onclick=function(){try{f()}catch(e){log(l+" (خطأ)",e.message)}};r.appendChild(x)}
+      sb("فتح",function(){log("Downloads.open("+it.id+")",d.open(it.id))});
+      sb("مشاركة",function(){log("Downloads.share("+it.id+")",d.share(it.id))});
+      sb("إيقاف",function(){log("Downloads.cancel("+it.id+")",d.cancel(it.id))});
+      sb("معاينة",function(){d.localFile(it.id,{onProgress:function(p){out.set({localFileProgress:p})}}).then(function(x){out.set(x);log("Downloads.localFile",x);prev(x)}).catch(function(e){log("localFile (خطأ)",e&&e.message||e)})});
+      sb("حذف",function(){log("Downloads.remove("+it.id+",true)",d.remove(it.id,true));render()});
+      list.appendChild(r)})}
+  var pvBox=document.createElement("div");pvBox.className="tbox";
+  function prev(x){pvBox.innerHTML="";if(!x||!x.url)return;var m=x.mime||"",e;
+    if(m.indexOf("image/")===0){e=document.createElement("img");e.style.maxWidth="100%"}
+    else if(m.indexOf("video/")===0){e=document.createElement("video");e.controls=true;e.style.maxWidth="100%"}
+    else if(m.indexOf("audio/")===0){e=document.createElement("audio");e.controls=true}
+    else{pvBox.textContent=x.name+" ("+m+")";return}
+    e.src=x.url;pvBox.appendChild(e)}
+  var t2=Two(b);
+  Btn(t2,"تحديث القائمة",function(){render()},"alt");
+  Btn(t2,"summary()",function(){var r=need().summary();out.set(r);log("Downloads.summary",r)},"alt");
+  Btn(b,"مسح المنتهية (clear)",function(){log("Downloads.clear",need().clear());render()},"alt");
+  Btn(b,"فتح مجلد التنزيلات",function(){log("Downloads.openFolder",need().openFolder())},"alt");
+  b.appendChild(list);b.appendChild(pvBox);
+  var t3=Two(b);
+  Btn(t3,"cacheSize()",function(){var r=need().cacheSize();out.set(r);log("Downloads.cacheSize",r)},"alt");
+  Btn(t3,"clearCache()",function(){var r=need().clearCache();out.set(r);log("Downloads.clearCache",r)},"alt");
+  var d0=DL();if(d0){d0.on(function(d,t){log("Downloads:"+t,d);render()});render()}
+}});
+
+/* ---------- Share ---------- */
+section({id:"share",name:"RosTrickShare",icon:"share",avail:ALW("RosTrickShare"),build:function(b){
+  var ti=Fld(b,"العنوان","مختبر RosTrick"),tx=Fld(b,"النص","نص للمشاركة"),ur=Fld(b,"الرابط","https://example.com");
+  var out=Out(b);
+  function need(){var s=W("RosTrickShare");if(!s)throw new Error("غير موجود");return s}
+  Btn(b,"مشاركة نص + رابط",function(){var r=need().share({title:ti.value,text:tx.value,url:ur.value});log("Share.share",r);out.set(r)});
+  Btn(b,"مشاركة ملف نصي مولَّد",function(){var r=need().share({title:ti.value,text:tx.value,file:btoa("RosTrick lab file"),fileName:"rt-lab.txt",mime:"text/plain"});log("Share.share(file)",r);out.set(r)},"alt");
+}});
+
+/* ---------- Review ---------- */
+section({id:"rev",name:"RosTrickReview",icon:"star",avail:ALW("RosTrickReview"),build:function(b){
+  function need(){var s=W("RosTrickReview");if(!s)throw new Error("غير موجود");return s}
+  Note(b,"<code>request()</code> نافذة التقييم داخل التطبيق (تقرّر Google ظهورها)، و<code>openStore()</code> يفتح صفحة التطبيق في المتجر.");
+  var t=Two(b);
+  Btn(t,"request()",function(){log("Review.request",need().request())});
+  Btn(t,"openStore()",function(){log("Review.openStore",need().openStore())},"alt");
+}});
+
+/* ---------- Links ---------- */
+section({id:"links",name:"RosTrickLinks",icon:"link",avail:ALW("RosTrickLinks"),build:function(b){
+  var out=Out(b);
+  function need(){var s=W("RosTrickLinks");if(!s)throw new Error("غير موجود");return s}
+  Note(b,"الرابط العميق الذي فتح التطبيق، والحدث <code>rostrick-link</code> عند وصول رابط والتطبيق مفتوح.");
+  var t=Two(b);
+  Btn(t,"getInitial()",function(){var r=need().getInitial();out.set(r);log("Links.getInitial",r)},"alt");
+  Btn(t,"clear()",function(){log("Links.clear",need().clear())},"alt");
+  window.addEventListener("rostrick-link",function(e){out.set(e.detail);log("rostrick-link",e.detail)});
+}});
+
+/* ---------- Files / AppInfo / Assets ---------- */
+section({id:"files",name:"RosTrickFiles",icon:"file",avail:ALW("RosTrickFiles"),build:function(b){
+  var out=Out(b);var p=Fld(b,"مسار نسبي (اتركه فارغًا للجذر)","");
+  function need(){var s=W("RosTrickFiles");if(!s)throw new Error("غير موجود");return s}
+  var t=Two(b);
+  Btn(t,"list",function(){var r=need().list(p.value||"");out.set(r);log("Files.list",r)},"alt");
+  Btn(t,"exists",function(){var r=need().exists(p.value);out.set(r);log("Files.exists",r)},"alt");
+  var t2=Two(b);
+  Btn(t2,"url",function(){var r=need().url(p.value);out.set(r);log("Files.url",r)},"alt");
+  Btn(t2,"usage",function(){var r=need().usage();out.set(r);log("Files.usage",r)},"alt");
+  Btn(b,"remove",function(){var r=need().remove(p.value);out.set(r);log("Files.remove",r)},"red");
+}});
+section({id:"appinfo",name:"RosTrickAppInfo",icon:"info",avail:ALW("RosTrickAppInfo"),build:function(b){
+  var out=Out(b);
+  Btn(b,"قراءة كل المعلومات",function(){var a=W("RosTrickAppInfo");if(!a)throw new Error("غير موجود");var r={versionCode:a.getVersionCode(),versionName:a.getVersionName(),packageName:a.getPackageName()};out.set(r);log("AppInfo",r)});
+}});
+section({id:"assets",name:"RosTrickAssets",icon:"box",avail:ALW("RosTrickAssets"),build:function(b){
+  var out=Out(b);var n=Fld(b,"اسم ملف داخل assets","index.html");
+  function need(){var s=W("RosTrickAssets");if(!s)throw new Error("غير موجود");return s}
+  var t=Two(b);
+  Btn(t,"exists",function(){var r=need().exists(n.value);out.set(r);log("Assets.exists",r)},"alt");
+  Btn(t,"read (base64)",function(){var r=need().read(n.value);out.set(r?{length:r.length,head:String(r).slice(0,60)}:r);log("Assets.read",r?r.length+" حرفًا":r)},"alt");
+}});
+
+/* ---------- Pages ---------- */
+section({id:"pages",name:"RosTrickPages",icon:"page",avail:ALW("RosTrickPages"),build:function(b){
+  var out=Out(b);var p=Fld(b,"اسم الصفحة","home");
+  function need(){var s=W("RosTrickPages");if(!s)throw new Error("غير موجود");return s}
+  Note(b,"إدارة الصفحات القابلة للتنزيل داخل التطبيق.");
+  var t=Two(b);
+  Btn(t,"isDownloaded",function(){var r=need().isDownloaded(p.value);out.set(r);log("Pages.isDownloaded",r)},"alt");
+  Btn(t,"isOutdated",function(){var r=need().isOutdated(p.value);out.set(r);log("Pages.isOutdated",r)},"alt");
+  Btn(b,"download",function(){return need().download(p.value,{onProgress:function(x){out.set({progress:x})}}).then(function(r){out.set(r);log("Pages.download",r)})});
+  var t2=Two(b);
+  Btn(t2,"openPage",function(){log("Pages.openPage",need().openPage(p.value))},"alt");
+  Btn(t2,"refresh",function(){return Promise.resolve(need().refresh(p.value)).then(function(r){out.set(r);log("Pages.refresh",r)})},"alt");
+  Btn(b,"update (مع تأكيد)",function(){return Promise.resolve(need().update(p.value,{confirm:true,onProgress:function(x){out.set({progress:x})}})).then(function(r){out.set(r);log("Pages.update",r)})},"alt");
+  Btn(b,"remove (مع تأكيد)",function(){return Promise.resolve(need().remove(p.value,{confirm:true})).then(function(r){out.set(r);log("Pages.remove",r)})},"red");
+}});
+
+/* ---------- Pdf / Secure / Reload ---------- */
+section({id:"misc",name:"طباعة · حماية · إعادة تحميل",icon:"print",avail:function(){var n=["RosTrickPdf","RosTrickSecure","RosTrickReload"].filter(function(k){return W(k)}).length;return n===3?{s:"ok",t:"موجودة"}:n?{s:"off",t:"جزئيًا ("+n+"/3)"}:{s:"no",t:"غير موجودة"}},build:function(b){
+  var t=Two(b);
+  Btn(t,"window.print()",function(){window.print();log("print","window.print()")},"alt");
+  Btn(t,"RosTrickPdf.print",function(){var s=W("RosTrickPdf");if(!s)throw new Error("غير موجود");log("Pdf.print",s.print())},"alt");
+  Sw(b,"RosTrickSecure.set — منع لقطات الشاشة",false,function(v){var s=W("RosTrickSecure");if(!s)throw new Error("غير موجود");log("Secure.set("+v+")",s.set(v))});
+  Btn(b,"RosTrickReload()",function(){var f=W("RosTrickReload");if(typeof f!=="function")throw new Error("غير موجود");log("Reload");f()},"red");
+}});
+
+grp("أدوات النظام (تُفعَّل في البناء)");
+
+function SYSAV(k,extra){return function(){var o=W(k);if(!o)return {s:"no",t:"غير موجود"};var on=extra?extra(o):!!o.available;return on?{s:"ok",t:"مفعّل"}:{s:"off",t:"غير مفعّل في البناء"}}}
+
+/* ---------- Overlay ---------- */
+var OVL_MINI='<html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body{margin:0;height:100%;background:transparent;font-family:sans-serif}.c{box-sizing:border-box;height:100%;background:#14877a;color:#fff;border-radius:14px;padding:8px 10px;display:flex;flex-direction:column;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,.4)}.h{font-size:13px;font-weight:700;padding-bottom:4px;touch-action:none}.b{display:inline-block;margin:2px 3px 0 0;padding:5px 9px;border:0;border-radius:8px;background:rgba(255,255,255,.2);color:#fff;font-size:12px}</style></head><body><div class="c"><div class="h" id="h">مختبر RosTrick — اسحب من هنا</div><div id="m" style="font-size:12px">بانتظار رسالة…</div><div><button class="b" id="p">إرسال للصفحة</button><button class="b" id="s">حافة</button><button class="b" id="x">إغلاق</button></div></div><script>var n=0;function go(){RosTrickOverlay.drag(document.getElementById("h"),{snap:false});document.getElementById("p").onclick=function(){n++;RosTrickOverlay.post({hello:n})};document.getElementById("s").onclick=function(){RosTrickOverlay.snap()};document.getElementById("x").onclick=function(){RosTrickOverlay.close()};RosTrickOverlay.onMessage(function(d){document.getElementById("m").textContent="وصلت: "+JSON.stringify(d)})}if(window.RosTrickOverlay)go();else window.addEventListener("rtoverlay-ready",go);<\/script></body></html>';
+var OVL_SEL='<html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body{margin:0;height:100%;overflow:hidden;background:rgba(0,0,0,.35);touch-action:none;font-family:sans-serif}#r{position:absolute;border:2px solid #fff;background:rgba(20,135,122,.25);display:none}#t{position:absolute;top:60px;left:0;right:0;text-align:center;color:#fff;font-size:15px}#c{position:absolute;bottom:40px;left:50%;margin-left:-40px;width:80px;padding:8px 0;text-align:center;background:#fff;border-radius:20px;font-size:13px}</style></head><body><div id="t">اسحب لتحديد منطقة</div><div id="r"></div><div id="c">إلغاء</div><script>var s=null,r=document.getElementById("r");function pt(e){var t=(e.touches&&e.touches[0])||(e.changedTouches&&e.changedTouches[0])||e;return{x:t.clientX,y:t.clientY}}function box(a,b){return{x:Math.min(a.x,b.x),y:Math.min(a.y,b.y),w:Math.abs(a.x-b.x),h:Math.abs(a.y-b.y)}}function show(q){r.style.display="block";r.style.left=q.x+"px";r.style.top=q.y+"px";r.style.width=q.w+"px";r.style.height=q.h+"px"}function go(){document.getElementById("c").onclick=function(){RosTrickOverlay.post({cancel:true})};document.addEventListener("touchstart",function(e){if(e.target.id==="c")return;s=pt(e)},{passive:true});document.addEventListener("touchmove",function(e){if(s){show(box(s,pt(e)));e.preventDefault()}},{passive:false});document.addEventListener("touchend",function(e){if(!s)return;var q=box(s,pt(e));s=null;if(q.w>8&&q.h>8)RosTrickOverlay.post({rect:q});else r.style.display="none"})}if(window.RosTrickOverlay)go();else window.addEventListener("rtoverlay-ready",go);<\/script></body></html>';
+section({id:"ovl",name:"RosTrickOverlay",icon:"win",avail:SYSAV("RosTrickOverlay"),build:function(b){
+  var out=Out(b);var O=function(){return W("RosTrickOverlay")};
+  function need(){var o=O();if(!o)throw new Error("غير موجود");if(!o.available)throw new Error("غير مفعّل في هذا البناء (الإذن overlay)");return o}
+  Note(b,"نوافذ HTML عائمة فوق كل التطبيقات. تحتاج أولًا إذن «العرض فوق التطبيقات». عند تصغير التطبيق تبقى النوافذ المعلَّمة <code>keep</code>.");
+  var t=Two(b);
+  Btn(t,"canDraw()",function(){var r=need().canDraw();out.set(r);log("Overlay.canDraw",r)},"alt");
+  Btn(t,"طلب الإذن",function(){return need().requestPermission().then(function(g){out.set({granted:g});log("Overlay.requestPermission",g)})});
+  Btn(b,"نافذة صغيرة قابلة للسحب",function(){return need().create({id:"lab-mini",html:OVL_MINI,x:20,y:160,w:240,h:110,keep:true}).then(function(id){log("Overlay.create",id)})});
+  Btn(b,"شفافة بلا لمس (touchable:false)",function(){return need().create({id:"lab-ghost",html:'<html><body style="margin:0;background:rgba(20,135,122,.35);color:#fff;font:14px sans-serif;text-align:center;padding-top:8px">لا تلتقط اللمس</body></html>',x:20,y:300,w:180,h:40,touchable:false}).then(function(id){log("Overlay.create",id)})},"alt");
+  Btn(b,"تحديد منطقة بملء الشاشة",function(){var o=need();return o.create({id:"lab-sel",html:OVL_SEL,fullscreen:true}).then(function(id){log("Overlay.create",id);var off=o.onMessage("lab-sel",function(d){off();o.destroy("lab-sel");out.set(d);log("Overlay:selection",d)})})},"alt");
+  var t2=Two(b);
+  Btn(t2,"إرسال رسالة للصغيرة",function(){log("Overlay.post",need().post("lab-mini",{from:"الصفحة",t:Date.now()}))},"alt");
+  Btn(t2,"evaluate داخلها",function(){return need().evaluate("lab-mini","document.title+'|'+document.body.scrollHeight").then(function(r){out.set(r);log("Overlay.evaluate",r)})},"alt");
+  var t3=Two(b);
+  Btn(t3,"نقلها (update)",function(){var r=need().update("lab-mini",{x:60,y:420});out.set(r);log("Overlay.update",r)},"alt");
+  Btn(t3,"list() + screen()",function(){var o=need();var r={list:o.list(),screen:o.screen()};out.set(r);log("Overlay.list",r)},"alt");
+  var t4=Two(b);
+  Btn(t4,"إخفاء",function(){log("Overlay.hide",need().hide("lab-mini"))},"alt");
+  Btn(t4,"إظهار",function(){log("Overlay.show",need().show("lab-mini"))},"alt");
+  Btn(b,"destroyAll()",function(){need().destroyAll();log("Overlay.destroyAll")},"red");
+  var o0=O();if(o0){o0.on(function(d,t){if(t==="message"||t==="ready"||t==="closed"||t==="permission")log("Overlay:"+t,d)})}
+}});
+
+/* ---------- Screen ---------- */
+section({id:"scr",name:"RosTrickScreen",icon:"win",avail:SYSAV("RosTrickScreen"),build:function(b){
+  var out=Out(b);var S=function(){return W("RosTrickScreen")};
+  function need(){var s=S();if(!s)throw new Error("غير موجود");if(!s.available)throw new Error("غير مفعّل في هذا البناء (الإذن screen_capture)");return s}
+  Note(b,"يطلب نافذة النظام «تسجيل الشاشة»، وتظهر إشعارًا دائمًا أثناء الجلسة. على Android 14+ تتكرر الموافقة في كل جلسة.");
+  var t=Two(b);
+  Btn(t,"طلب الإذن وبدء الجلسة",function(){return need().requestPermission().then(function(g){out.set({granted:g,status:S().status()});log("Screen.requestPermission",g)})});
+  Btn(t,"status()",function(){var r=need().status();out.set(r);log("Screen.status",r)},"alt");
+  var hidden=true;Sw(b,"إخفاء نوافذ Overlay لحظة الالتقاط",true,function(v){hidden=v});
+  var img=document.createElement("img");img.style.cssText="max-width:100%;border:1px solid var(--line);border-radius:8px;display:none;margin-top:6px";
+  var t2=Two(b);
+  Btn(t2,"التقاط كامل",function(){return need().capture({hideOverlays:hidden}).then(function(r){out.set(r);img.src=r.url;img.style.display="block";log("Screen.capture",r.width+"x"+r.height)})});
+  Btn(t2,"التقاط منطقة (200×200)",function(){return need().capture({region:{x:50,y:300,w:200,h:200},hideOverlays:hidden}).then(function(r){out.set(r);img.src=r.url;img.style.display="block";log("Screen.capture(region)",r.width+"x"+r.height)})},"alt");
+  Btn(b,"التقاط وحفظ في المعرض (save)",function(){return need().capture({save:true,format:"jpeg",hideOverlays:hidden}).then(function(r){out.set(r);log("Screen.capture(save)",r.savedUri||"لم يُحفظ")})},"alt");
+  b.appendChild(img);
+  Note(b,"لون نقطة من آخر إطار (بكسل الشاشة الحقيقي):");
+  var px=Fld(b,"x,y","540,1200");var sw=document.createElement("div");sw.style.cssText="height:34px;border-radius:8px;border:1px solid var(--line);margin-top:6px";b.appendChild(sw);
+  Btn(b,"pixel(x,y,radius=2)",function(){var v=px.value.split(",");var r=need().pixel(+v[0]||0,+v[1]||0,2);out.set(r);if(r)sw.style.background=r.hex;log("Screen.pixel",r)},"alt");
+  Note(b,"<b>تسجيل الشاشة</b> (فيديو MP4 بلا صوت). يتوقف الالتقاط أثناء التسجيل.");
+  var t3=Two(b);
+  Btn(t3,"بدء التسجيل",function(){return need().record.start({scale:0.5}).then(function(r){out.set(r);log("Screen.record.start",r)})},"alt");
+  Btn(t3,"إيقاف التسجيل",function(){return need().record.stop({save:true}).then(function(r){out.set(r);log("Screen.record.stop",r.duration+"ms")})},"alt");
+  Btn(b,"stop() — إنهاء الجلسة",function(){need().stop();log("Screen.stop")},"red");
+  var s0=S();if(s0){s0.on(function(d,t){log("Screen:"+t,d)})}
+}});
+
+/* ---------- Ocr ---------- */
+section({id:"ocr",name:"RosTrickOcr",icon:"file",avail:SYSAV("RosTrickOcr",function(o){return !!o.enabled}),build:function(b){
+  var out=Out(b);var OC=function(){return W("RosTrickOcr")};var lang="";var lastCap=null;
+  function need(){var o=OC();if(!o)throw new Error("غير موجود");if(!o.enabled)throw new Error("غير مفعّل في هذا البناء (ocr)");return o}
+  Note(b,"قراءة النص دون إنترنت (Tesseract). اللغات تُحدَّد وقت البناء.");
+  Btn(b,"languages()",function(){var r=need().languages();out.set(r);log("Ocr.languages",r)},"alt");
+  Seg(b,[["","تلقائي (ara+eng)"],["ara","عربي"],["eng","English"]],"",function(v){lang=v});
+  var txt=Box(b);txt.style.minHeight="60px";txt.style.whiteSpace="pre-wrap";txt.setAttribute("dir","auto");
+  function show(r){txt.textContent=r.text||"(لا نص)";out.set({confidence:r.confidence,lang:r.lang,ms:r.ms,lines:(r.lines||[]).length});log("Ocr.recognize",r.confidence+"% · "+r.ms+"ms")}
+  Btn(b,"التقاط الشاشة ثم قراءتها (fromScreen)",function(){var o=need();return o.fromScreen({lang:lang||undefined}).then(function(r){lastCap=r.capture;show(r)})});
+  Btn(b,"قراءة آخر لقطة",function(){var o=need();if(!lastCap)throw new Error("التقط الشاشة أولًا");return o.recognize(lastCap,{lang:lang||undefined}).then(show)},"alt");
+  var p=Fld(b,"مسار ملف صورة (من Downloads.localFile أو Intent)","");
+  Btn(b,"قراءة هذا المسار",function(){var o=need();return o.recognize(p.value,{lang:lang||undefined}).then(show)},"alt");
+  Btn(b,"release() — تحرير الذاكرة",function(){need().release();log("Ocr.release")},"alt");
+}});
+
+/* ---------- Intent ---------- */
+section({id:"intent",name:"RosTrickIntent",icon:"share",avail:SYSAV("RosTrickIntent",function(o){return !!o.enabled}),build:function(b){
+  var out=Out(b);var I=function(){return W("RosTrickIntent")};
+  function need(){var o=I();if(!o)throw new Error("غير موجود");if(!o.enabled)throw new Error("غير مفعّل في هذا البناء (intents)");return o}
+  Note(b,"شارك صورة أو نصًا أو افتح ملفًا «بواسطة» هذا التطبيق من تطبيق آخر، وستظهر هنا.");
+  var list=document.createElement("div");
+  function render(d){list.innerHTML="";if(!d)return;var h=document.createElement("div");h.className="note";h.textContent=d.action+(d.mime?" · "+d.mime:"")+(d.subject?" · "+d.subject:"");list.appendChild(h);
+    if(d.text){var t=Box(list);t.textContent=d.text;t.setAttribute("dir","auto")}
+    (d.items||[]).forEach(function(it){var r=document.createElement("div");r.className="note";r.textContent=(it.ok===false?"فشل: "+it.error+" — ":"")+it.name+" · "+(it.mime||"")+" · "+(it.size||0)+"B";list.appendChild(r);if(it.url&&/^image\//.test(it.mime||"")){var im=document.createElement("img");im.src=it.url;im.style.cssText="max-width:100%;border-radius:8px";list.appendChild(im)}})}
+  var t=Two(b);
+  Btn(t,"getInitial()",function(){return need().getInitial().then(function(d){out.set(d);render(d);log("Intent.getInitial",d?d.action:"لا شيء")})},"alt");
+  Btn(t,"clear()",function(){need().clear();log("Intent.clear")},"alt");
+  b.appendChild(list);
+  var i0=I();if(i0&&i0.enabled){i0.on(function(d){out.set(d);render(d);log("Intent:event",d.action)})}
+}});
+
+grp("تعمل عند تفعيلها في البناء");
+
+/* ---------- Ads ---------- */
+function adsSec(id,name,key){section({id:id,name:name,icon:"ad",avail:ENB(key),build:function(b){
+  var out=Out(b);function need(){var s=W(key);if(!s)throw new Error("غير موجود");if(s.enabled===false)throw new Error("غير مفعّل في هذا البناء");return s}
+  var t=Two(b);
+  Btn(t,"عرض شريط",function(){log(name+".showBanner",need().showBanner())},"alt");
+  Btn(t,"إخفاء الشريط",function(){log(name+".hideBanner",need().hideBanner())},"alt");
+  var t2=Two(b);
+  Btn(t2,"بيني (Interstitial)",function(){log(name+".showInterstitial",need().showInterstitial())},"alt");
+  Btn(t2,"مكافأة (Rewarded)",function(){log(name+".showRewarded",need().showRewarded())},"alt");
+  Btn(b,"isReady()",function(){var r=need().isReady();out.set(r);log(name+".isReady",r)},"alt");
+}})}
+adsSec("admob","RosTrickAds (AdMob)","RosTrickAds");
+adsSec("unity","RosTrickUnityAds","RosTrickUnityAds");
+adsSec("fb","RosTrickFbAds","RosTrickFbAds");
+
+/* ---------- Push ---------- */
+section({id:"push",name:"RosTrickPush",icon:"bell",avail:ENB("RosTrickPush"),build:function(b){
+  var out=Out(b);var tp=Fld(b,"اسم الموضوع (topic)","news");
+  function need(){var s=W("RosTrickPush");if(!s)throw new Error("غير موجود");return s}
+  Btn(b,"getToken()",function(){return Promise.resolve(need().getToken()).then(function(r){out.set(r);log("Push.getToken",r)})},"alt");
+  Btn(b,"requestPermission()",function(){return Promise.resolve(need().requestPermission()).then(function(r){out.set(r);log("Push.requestPermission",r)})},"alt");
+  var t=Two(b);
+  Btn(t,"اشتراك",function(){log("Push.subscribe",need().subscribe(tp.value))},"alt");
+  Btn(t,"إلغاء الاشتراك",function(){log("Push.unsubscribe",need().unsubscribe(tp.value))},"alt");
+  window.addEventListener("rostrick-push",function(e){out.set(e.detail);log("rostrick-push",e.detail)});
+}});
+
+/* ---------- Billing ---------- */
+section({id:"bill",name:"RosTrickBilling",icon:"cart",avail:ENB("RosTrickBilling"),build:function(b){
+  var out=Out(b);var id=Fld(b,"معرّف المنتج","premium");var tk=Fld(b,"رمز الشراء للاستهلاك","");
+  function need(){var s=W("RosTrickBilling");if(!s)throw new Error("غير موجود");return s}
+  Btn(b,"getProducts",function(){return Promise.resolve(need().getProducts([id.value])).then(function(r){out.set(r);log("Billing.getProducts",r)})},"alt");
+  Btn(b,"buy",function(){return Promise.resolve(need().buy(id.value)).then(function(r){out.set(r);log("Billing.buy",r)})});
+  Btn(b,"getPurchases",function(){return Promise.resolve(need().getPurchases()).then(function(r){out.set(r);log("Billing.getPurchases",r)})},"alt");
+  Btn(b,"consume",function(){return Promise.resolve(need().consume(tk.value)).then(function(r){out.set(r);log("Billing.consume",r)})},"red");
+}});
+
+/* ---------- Background ---------- */
+section({id:"bg",name:"RosTrickBackground",icon:"clock",avail:ENB("RosTrickBackground"),build:function(b){
+  var out=Out(b);var tid=Fld(b,"معرّف المهمة","lab-task");
+  function need(){var s=W("RosTrickBackground");if(!s)throw new Error("غير موجود");if(s.enabled===false)throw new Error("غير مفعّل في هذا البناء");return s}
+  var t=Two(b);
+  Btn(t,"available()",function(){var r=need().available();out.set(r);log("Background.available",r)},"alt");
+  Btn(t,"list()",function(){var r=need().list();out.set(r);log("Background.list",r)},"alt");
+  Btn(b,"جدولة بعد دقيقة",function(){var r=need().schedule({id:tid.value,delay:60000});out.set(r);log("Background.schedule",r)});
+  var t2=Two(b);
+  Btn(t2,"cancel",function(){log("Background.cancel",need().cancel(tid.value))},"alt");
+  Btn(t2,"cancelAll",function(){log("Background.cancelAll",need().cancelAll())},"alt");
+  var t3=Two(b);
+  Btn(t3,"إذن الإشعارات",function(){log("Background.requestNotifications",need().requestNotifications())},"alt");
+  Btn(t3,"مسموح؟",function(){var r=need().notificationsAllowed();out.set(r);log("Background.notificationsAllowed",r)},"alt");
+  var t4=Two(b);
+  Btn(t4,"canExactAlarms",function(){var r=need().canExactAlarms();out.set(r);log("Background.canExactAlarms",r)},"alt");
+  Btn(t4,"requestExactAlarms",function(){log("Background.requestExactAlarms",need().requestExactAlarms())},"alt");
+  var t5=Two(b);
+  Btn(t5,"service.start",function(){log("Background.service.start",need().service.start())},"alt");
+  Btn(t5,"service.stop",function(){log("Background.service.stop",need().service.stop())},"alt");
+  Btn(b,"service.isRunning",function(){var r=need().service.isRunning();out.set(r);log("Background.service.isRunning",r)},"alt");
+}});
+
+/* ---------- Analytics ---------- */
+section({id:"an",name:"RosTrickAnalytics",icon:"chart",avail:ENB("RosTrickAnalytics"),build:function(b){
+  var out=Out(b);var ev=Fld(b,"اسم الحدث","lab_event");var uid=Fld(b,"معرّف المستخدم","lab-user");
+  function need(){var s=W("RosTrickAnalytics");if(!s)throw new Error("غير موجود");if(s.enabled===false)throw new Error("غير مفعّل في هذا البناء");return s}
+  Btn(b,"logEvent",function(){log("Analytics.logEvent",need().logEvent(ev.value,{source:"lab"}))});
+  var t=Two(b);
+  Btn(t,"screen",function(){log("Analytics.screen",need().screen("مختبر RosTrick"))},"alt");
+  Btn(t,"setUserId",function(){log("Analytics.setUserId",need().setUserId(uid.value))},"alt");
+  Btn(b,"setUserProperty",function(){log("Analytics.setUserProperty",need().setUserProperty("lab","1"))},"alt");
+  var t2=Two(b);
+  Btn(t2,"setEnabled(true)",function(){log("Analytics.setEnabled",need().setEnabled(true))},"alt");
+  Btn(t2,"isEnabled",function(){var r=need().isEnabled();out.set(r);log("Analytics.isEnabled",r)},"alt");
+}});
+
+grp("واجهات الويب القياسية (بلا غلاف RosTrick)");
+
+section({id:"clip",name:"navigator.clipboard",icon:"clip",avail:NAV("clipboard"),build:function(b){
+  var f=Fld(b,"نص للنسخ","RosTrick");var out=Out(b);
+  var t=Two(b);
+  Btn(t,"writeText",function(){if(!navigator.clipboard)throw new Error("غير مدعومة هنا");return navigator.clipboard.writeText(f.value).then(function(){log("clipboard.writeText","تم")})});
+  Btn(t,"readText",function(){if(!navigator.clipboard)throw new Error("غير مدعومة هنا");return navigator.clipboard.readText().then(function(r){out.set(r);log("clipboard.readText",r)})},"alt");
+}});
+section({id:"wl",name:"navigator.wakeLock",icon:"sun",avail:NAV("wakeLock"),build:function(b){
+  var lock=null;
+  Sw(b,"إبقاء الشاشة مضاءة",false,function(v){
+    if(v&&!navigator.wakeLock)throw new Error("غير مدعومة هنا");if(v)return navigator.wakeLock.request("screen").then(function(l){lock=l;log("wakeLock","فُعّل");l.addEventListener("release",function(){log("wakeLock","أُطلق")})});
+    if(lock){lock.release();lock=null}});
+}});
+section({id:"notif",name:"Notification",icon:"bell",avail:function(){return "Notification" in window?{s:"ok",t:"موجود ("+Notification.permission+")"}:{s:"no",t:"غير موجود"}},build:function(b){
+  var t=Two(b);
+  Btn(t,"طلب الإذن",function(){if(!("Notification" in window))throw new Error("غير مدعومة هنا");return Notification.requestPermission().then(function(r){log("Notification.requestPermission",r);refreshBadges()})},"alt");
+  Btn(t,"إشعار تجريبي",function(){if(!("Notification" in window))throw new Error("غير مدعومة هنا");new Notification("مختبر RosTrick",{body:"إشعار تجريبي"});log("Notification","أُرسل")});
+}});
+section({id:"bat",name:"navigator.getBattery",icon:"bat",avail:NAV("getBattery"),build:function(b){
+  var out=Out(b);
+  Btn(b,"قراءة",function(){if(typeof navigator.getBattery!=="function")throw new Error("غير مدعومة هنا");return navigator.getBattery().then(function(x){var r={level:x.level,charging:x.charging};out.set(r);log("getBattery",r)})},"alt");
+}});
+section({id:"nshare",name:"navigator.share",icon:"share",avail:NAV("share"),build:function(b){
+  Btn(b,"مشاركة",function(){if(typeof navigator.share!=="function")throw new Error("غير مدعومة هنا");return navigator.share({title:"RosTrick",text:"مختبر",url:location.href}).then(function(){log("navigator.share","تم")})},"alt");
+}});
+section({id:"contacts",name:"navigator.contacts",icon:"user",avail:NAV("contacts"),build:function(b){
+  var out=Out(b);
+  Btn(b,"اختيار جهة اتصال",function(){if(!navigator.contacts||!navigator.contacts.select)throw new Error("غير مدعومة هنا");return navigator.contacts.select(["name","tel"],{multiple:false}).then(function(r){out.set(r);log("contacts.select",r)})},"alt");
+}});
+section({id:"vib",name:"navigator.vibrate",icon:"vib",avail:NAV("vibrate"),build:function(b){
+  var t=Two(b);
+  Btn(t,"قصير",function(){log("vibrate",navigator.vibrate(60))},"alt");
+  Btn(t,"نمط",function(){log("vibrate",navigator.vibrate([80,60,80,60,200]))},"alt");
+}});
+section({id:"sw",name:"serviceWorker",icon:"gear",avail:NAV("serviceWorker"),build:function(b){
+  var out=Out(b);
+  Btn(b,"التسجيلات الحالية",function(){if(!navigator.serviceWorker)throw new Error("غير مدعومة هنا");return navigator.serviceWorker.getRegistrations().then(function(r){var x=r.map(function(g){return g.scope});out.set(x);log("serviceWorker",x)})},"alt");
+}});
+
+grp("عتاد (تحتاج أذونات/أجهزة)");
+section({id:"hw",name:"bluetooth · usb · serial",icon:"chip",avail:function(){var n=["bluetooth","usb","serial"].filter(function(k){return k in navigator}).length;return n?{s:"ok",t:n+"/3 موجودة"}:{s:"no",t:"غير موجودة"}},build:function(b){
+  var out=Out(b);
+  Btn(b,"bluetooth.requestDevice",function(){if(!navigator.bluetooth)throw new Error("غير موجود");return navigator.bluetooth.requestDevice({acceptAllDevices:true}).then(function(d){out.set({name:d.name,id:d.id});log("bluetooth",d.name)})},"alt");
+  Btn(b,"usb.requestDevice",function(){if(!navigator.usb)throw new Error("غير موجود");return navigator.usb.requestDevice({filters:[]}).then(function(d){out.set({product:d.productName});log("usb",d.productName)})},"alt");
+  Btn(b,"serial.requestPort",function(){if(!navigator.serial)throw new Error("غير موجود");return navigator.serial.requestPort().then(function(){log("serial","اختير منفذ")})},"alt");
+}});
+
+/* ===== الإقلاع ===== */
+scan();refreshBadges();
+["rtnative-ready","rtdevice-ready","rtapp-ready","rtback-ready","rtwebview-ready","rtoverlay-ready","rtscreen-ready","rtocr-ready","rtintent-ready"].forEach(function(n){window.addEventListener(n,function(){scan();refreshBadges()})});
+log("المختبر","جاهز");
+})();
+</script>
+</body>
+</html>
