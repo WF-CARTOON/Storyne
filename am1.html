@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>اختبار شريط الحالة</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,sans-serif;background:#f4f6fb;color:#1a1f36;padding:16px;line-height:1.6}
+  h1{font-size:20px;margin:8px 0 4px}
+  p.sub{margin:0 0 14px;color:#5b6477;font-size:14px}
+  .card{background:#fff;border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 1px 4px #0001}
+  .card h2{font-size:15px;margin:0 0 10px}
+  .row{display:flex;flex-wrap:wrap;gap:8px}
+  button{border:0;border-radius:10px;padding:10px 14px;font-size:14px;background:#2563eb;color:#fff}
+  button.alt{background:#e5e9f5;color:#1a1f36}
+  button.red{background:#dc2626} button.green{background:#16a34a} button.dark{background:#111827}
+  #warn{display:none;background:#fff3cd;color:#664d03;border-radius:12px;padding:12px;margin-bottom:12px;font-size:14px}
+  pre{background:#111827;color:#d1fae5;border-radius:10px;padding:10px;font-size:12px;direction:ltr;text-align:left;white-space:pre-wrap;margin:0;max-height:180px;overflow:auto}
+  .spacer{height:40px}
+</style>
+</head>
+<body>
+<!-- إعداد افتراضي عند فتح الصفحة (الكود يتفوّق عليه عند الضغط على الأزرار) -->
+<meta name="rostrick-statusbar" content="color:#2563eb">
+
+<h1>اختبار شريط الحالة</h1>
+<p class="sub">افتح هذه الصفحة داخل تطبيقك وجرّب الأزرار. شريط الحالة هو الشريط العلوي (الساعة والبطارية).</p>
+
+<div id="warn">⚠️ لم يُعثر على جسر RosTrick. هذه الصفحة مفتوحة خارج التطبيق (أو التطبيق مبني من قالب قديم)، فلن يتغيّر شيء.</div>
+
+<div class="card"><h2>الإخفاء والإظهار</h2>
+  <div class="row">
+    <button class="red" onclick="RosTrickStatusBar.hide()">إخفاء</button>
+    <button class="green" onclick="RosTrickStatusBar.show()">إظهار</button>
+    <button class="alt" onclick="RosTrickStatusBar.peek(2500)">إظهار مؤقت 2.5 ثانية</button>
+  </div>
+  <p class="sub" style="margin-top:8px">عند الإخفاء، اسحب من أعلى الشاشة ليظهر الشريط مؤقتًا ثم يختفي.</p>
+</div>
+
+<div class="card"><h2>اللون</h2>
+  <div class="row">
+    <button style="background:#2563eb" onclick="RosTrickStatusBar.color('#2563eb')">أزرق</button>
+    <button style="background:#dc2626" onclick="RosTrickStatusBar.color('#dc2626')">أحمر</button>
+    <button style="background:#16a34a" onclick="RosTrickStatusBar.color('#16a34a')">أخضر</button>
+    <button class="dark" onclick="RosTrickStatusBar.color('#111827')">أسود</button>
+    <button class="alt" onclick="RosTrickStatusBar.color('#ffffff')">أبيض</button>
+    <button class="alt" onclick="RosTrickStatusBar.color('transparent')">شفاف</button>
+    <button class="alt" onclick="RosTrickStatusBar.color('page')">يتبع لون الصفحة</button>
+  </div>
+</div>
+
+<div class="card"><h2>لون الأيقونات (الساعة والبطارية)</h2>
+  <div class="row">
+    <button class="alt" onclick="RosTrickStatusBar.icons('auto')">تلقائي</button>
+    <button class="alt" onclick="RosTrickStatusBar.icons('dark')">داكنة</button>
+    <button class="alt" onclick="RosTrickStatusBar.icons('light')">فاتحة</button>
+  </div>
+</div>
+
+<div class="card"><h2>رسم المحتوى تحت الشريط (Overlay)</h2>
+  <div class="row">
+    <button class="alt" onclick="RosTrickStatusBar.set({color:'transparent',overlay:true})">شفاف + المحتوى تحته</button>
+    <button class="alt" onclick="RosTrickStatusBar.overlay(false)">إيقاف الـ overlay</button>
+  </div>
+  <p class="sub" style="margin-top:8px">مع الـ overlay تمتد الصفحة خلف الشريط، فاحرص ألا يغطي الشريط النصوص المهمة.</p>
+</div>
+
+<div class="card"><h2>إعادة الضبط</h2>
+  <div class="row">
+    <button class="alt" onclick="RosTrickStatusBar.reset()">reset (يعود لما في الـ meta)</button>
+    <button class="alt" onclick="upd()">تحديث الحالة</button>
+  </div>
+</div>
+
+<div class="card"><h2>الحالة الحالية</h2>
+  <pre id="st">…</pre>
+</div>
+<div class="card"><h2>سجل الأحداث</h2>
+  <pre id="log">…</pre>
+</div>
+<div class="spacer"></div>
+
+<script>
+  var logEl=document.getElementById('log'), stEl=document.getElementById('st'), lines=[];
+  function upd(){
+    try{ stEl.textContent = JSON.stringify(RosTrickStatusBar.get(), null, 2); }
+    catch(e){ stEl.textContent = 'RosTrickStatusBar غير موجود'; }
+  }
+  function ready(){
+    if(!window.RosTrickStatusBar){ document.getElementById('warn').style.display='block'; stEl.textContent='RosTrickStatusBar غير موجود'; return; }
+    upd();
+    window.addEventListener('rtstatusbar', function(e){
+      lines.unshift(new Date().toLocaleTimeString()+'  '+JSON.stringify(e.detail||{}));
+      logEl.textContent = lines.slice(0,12).join('\n'); upd();
+    });
+  }
+  // rt-native.js يُحقن بعد تحميل الصفحة، فننتظره
+  if(window.RosTrickStatusBar) ready();
+  else{
+    window.addEventListener('rtnative-ready', ready);
+    setTimeout(function(){ if(!window.RosTrickStatusBar) ready(); }, 2500);
+  }
+</script>
+</body>
+</html>
