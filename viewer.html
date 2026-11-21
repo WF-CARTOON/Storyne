@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>قارئ PDF — تجربة فتح الملفات</title>
+<style>
+  :root{--bg:#0f172a;--card:#1e293b;--tx:#e2e8f0;--mut:#94a3b8;--ok:#34d399;--bad:#f87171;--acc:#38bdf8}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif}
+  header{position:sticky;top:0;z-index:5;background:var(--card);padding:10px 12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;box-shadow:0 2px 8px #0006}
+  header h1{font-size:15px;margin:0;flex:1 1 100%}
+  button,label.btn{background:var(--acc);color:#04202e;border:0;border-radius:10px;padding:9px 14px;font:inherit;font-weight:700;cursor:pointer}
+  button.sec,label.btn.sec{background:#334155;color:var(--tx)}
+  button:disabled{opacity:.4}
+  #info{font-size:13px;color:var(--mut);flex:1 1 auto}
+  #wrap{padding:10px;display:flex;flex-direction:column;align-items:center;gap:10px}
+  .pg{background:#fff;border-radius:4px;box-shadow:0 2px 10px #0008;position:relative;overflow:hidden}
+  .pg canvas{display:block;width:100%;height:100%}
+  .pg i{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-style:normal;font-size:14px}
+  #empty{padding:28px 16px;text-align:center;color:var(--mut);line-height:1.9}
+  #empty b{color:var(--tx)}
+  #files{display:flex;gap:6px;flex-wrap:wrap;padding:8px 12px}
+  details{margin:12px;background:var(--card);border-radius:10px;padding:8px 12px}
+  summary{cursor:pointer;color:var(--mut);font-size:13px}
+  #log{font:12px/1.7 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;word-break:break-all;direction:ltr;text-align:left;max-height:300px;overflow:auto;margin-top:8px}
+  .ok{color:var(--ok)}.bad{color:var(--bad)}
+</style>
+</head>
+<body>
+<header>
+  <h1>📄 قارئ PDF — تجربة «فتح بواسطة»</h1>
+  <label class="btn sec">اختيار PDF يدوياً<input id="pick" type="file" accept="application/pdf,.pdf" hidden></label>
+  <button id="zo" class="sec" disabled>−</button>
+  <button id="zi" class="sec" disabled>+</button>
+  <span id="info">لا يوجد ملف</span>
+</header>
+<div id="files"></div>
+<div id="wrap"><div id="empty">
+  <b>افتح ملف PDF من خارج التطبيق</b> (مدير الملفات ← «فتح بواسطة» ← تطبيقك)،<br>
+  أو شاركه إلى التطبيق، أو اختر ملفاً يدوياً بالزر أعلاه لتجربة العرض وحده.<br>
+  <span style="font-size:12px">حالة الجسر ستظهر في «سجل التشخيص» أسفل الصفحة.</span>
+</div></div>
+<details open><summary>سجل التشخيص (أرسل لي لقطته إن لم يعمل)</summary><div id="log"></div></details>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  var logEl = $("log");
+  function log(msg, cls) {
+    var s = document.createElement("div"); if (cls) s.className = cls;
+    s.textContent = new Date().toLocaleTimeString("en-GB") + "  " + msg; logEl.appendChild(s); logEl.scrollTop = logEl.scrollHeight;
+  }
+  window.addEventListener("error", function (e) { log("خطأ JS: " + e.message, "bad"); });
+  window.addEventListener("unhandledrejection", function (e) { log("وعد مرفوض: " + (e.reason && e.reason.message || e.reason), "bad"); });
+
+  var pdfjs = window.pdfjsLib;
+  if (!pdfjs) { log("تعذّر تحميل pdf.js من الإنترنت (cdnjs). تحقق من الاتصال.", "bad"); }
+  else { pdfjs.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"; log("pdf.js " + pdfjs.version + " جاهز", "ok"); }
+
+  var doc = null, zoom = 1, token = 0, io = null;
+  var MAXDPR = 2;
+
+  function setInfo(t) { $("info").textContent = t; }
+
+  function readBytes(url) {
+    return fetch(url).then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.arrayBuffer(); })
+      .catch(function (e1) {
+        log("fetch فشل (" + (e1 && e1.message) + ") — أجرّب XHR", "bad");
+        return new Promise(function (res, rej) {
+          var x = new XMLHttpRequest(); x.open("GET", url, true); x.responseType = "arraybuffer";
+          x.onload = function () { (x.status === 0 || x.status === 200) && x.response ? res(x.response) : rej(new Error("XHR " + x.status)); };
+          x.onerror = function () { rej(new Error("XHR network error")); }; x.send();
+        });
+      });
+  }
+
+  function openBytes(buf, name) {
+    if (!pdfjs) return;
+    var my = ++token;
+    setInfo("جارٍ التحميل…");
+    log("قراءة " + (buf.byteLength / 1024 | 0) + " KB");
+    return pdfjs.getDocument({ data: new Uint8Array(buf) }).promise.then(function (d) {
+      if (my !== token) return;
+      doc = d; $("zo").disabled = $("zi").disabled = false;
+      log("فُتح الملف: " + d.numPages + " صفحة", "ok");
+      build(name);
+    }).catch(function (e) { setInfo("تعذّر فتح الملف"); log("pdf.js: " + (e && e.message || e), "bad"); });
+  }
+
+  function build(name) {
+    if (!doc) return;
+    var wrap = $("wrap"); wrap.innerHTML = "";
+    if (io) io.disconnect();
+    io = new IntersectionObserver(function (es) {
+      es.forEach(function (en) { if (en.isIntersecting) { var el = en.target; io.unobserve(el); renderPage(el); } });
+    }, { rootMargin: "600px 0px" });
+    var w = Math.min(wrap.clientWidth - 20, 1100) * zoom;
+    var my = token;
+    setInfo((name ? name + " — " : "") + doc.numPages + " صفحة — " + Math.round(zoom * 100) + "%");
+    var chain = Promise.resolve();
+    for (var i = 1; i <= doc.numPages; i++) (function (n) {
+      chain = chain.then(function () {
+        if (my !== token) return;
+        return doc.getPage(n).then(function (p) {
+          var vp = p.getViewport({ scale: 1 }), sc = w / vp.width;
+          var el = document.createElement("div"); el.className = "pg";
+          el.style.width = w + "px"; el.style.height = Math.round(vp.height * sc) + "px";
+          el.dataset.n = n; el.dataset.sc = sc; el.innerHTML = "<i>" + n + "</i>";
+          wrap.appendChild(el); io.observe(el);
+        });
+      });
+    })(i);
+  }
+
+  function renderPage(el) {
+    var n = +el.dataset.n, sc = +el.dataset.sc, my = token;
+    doc.getPage(n).then(function (p) {
+      if (my !== token) return;
+      var dpr = Math.min(window.devicePixelRatio || 1, MAXDPR);
+      var vp = p.getViewport({ scale: sc * dpr });
+      var c = document.createElement("canvas"); c.width = Math.floor(vp.width); c.height = Math.floor(vp.height);
+      return p.render({ canvasContext: c.getContext("2d"), viewport: vp }).promise.then(function () {
+        if (my !== token) return; el.innerHTML = ""; el.appendChild(c);
+      });
+    }).catch(function (e) { log("صفحة " + n + ": " + (e && e.message || e), "bad"); });
+  }
+
+  $("zi").onclick = function () { zoom = Math.min(zoom + 0.25, 3); build(); };
+  $("zo").onclick = function () { zoom = Math.max(zoom - 0.25, 0.5); build(); };
+  $("pick").onchange = function (e) {
+    var f = e.target.files && e.target.files[0]; if (!f) return;
+    log("اختيار يدوي: " + f.name + " (" + f.size + " بايت)");
+    var r = new FileReader(); r.onload = function () { openBytes(r.result, f.name); }; r.onerror = function () { log("تعذّرت قراءة الملف المختار", "bad"); };
+    r.readAsArrayBuffer(f); e.target.value = "";
+  };
+
+  /* ===== استقبال الملف من التطبيق ===== */
+  function isPdf(it) { return it && it.ok && (/pdf/i.test(it.mime || "") || /\.pdf$/i.test(it.name || "")); }
+
+  function openItem(it) {
+    log("فتح: " + it.name + " | " + it.mime + " | " + it.size + " بايت");
+    log("الرابط: " + it.url);
+    return readBytes(it.url).then(function (buf) { return openBytes(buf, it.name); })
+      .catch(function (e) {
+        setInfo("تعذّرت قراءة الملف");
+        log("تعذّرت قراءة الملف من الرابط: " + (e && e.message || e) + " — اختبر الاختيار اليدوي لمعرفة هل المشكلة بالعرض أم بالقراءة", "bad");
+      });
+  }
+
+  function handle(d, from) {
+    log("وصل (" + from + "): " + JSON.stringify(d).slice(0, 600));
+    var items = (d && d.items) || [];
+    var pdfs = items.filter(isPdf);
+    items.forEach(function (it) { if (!it.ok) log("ملف فاشل: " + it.name + " — " + it.error, "bad"); });
+    if (!pdfs.length) { log("لا يوجد ملف PDF صالح ضمن ما وصل", "bad"); return; }
+    var box = $("files"); box.innerHTML = "";
+    if (pdfs.length > 1) pdfs.forEach(function (it) {
+      var b = document.createElement("button"); b.className = "sec"; b.textContent = it.name; b.onclick = function () { openItem(it); }; box.appendChild(b);
+    });
+    openItem(pdfs[0]);
+    try { window.RosTrickIntent.clear(); } catch (e) {}
+  }
+
+  var started = false;
+  function start() {
+    if (started) return; started = true;
+    var R = window.RosTrickIntent;
+    if (!R) { log("جسر RosTrickIntent غير موجود — إمّا أنك خارج التطبيق أو القالب القديم. (الاختيار اليدوي يعمل)", "bad"); return; }
+    log("الجسر موجود | enabled = '" + R.enabled + "'", R.enabled ? "ok" : "bad");
+    if (!/view|send/.test(R.enabled)) log("لا فلاتر view/send معلنة: أضف intents في إعداد البناء وأعد البناء", "bad");
+    R.on(function (d) { handle(d, "حدث أثناء التشغيل"); });
+    R.getInitial().then(function (d) { if (d) handle(d, "عند الإقلاع"); else log("لا ملف عند الإقلاع (جاهز لاستقبال ملف)"); });
+  }
+
+  if (window.RosTrickIntent) start();
+  else {
+    window.addEventListener("rtintent-ready", start, { once: true });
+    setTimeout(function () { if (!window.RosTrickIntent) start(); }, 2500);
+  }
+})();
+</script>
+</body>
+</html>
