@@ -232,14 +232,134 @@ jobs:
           done
           for F in $OUT_FILES; do echo "تم النشر: https://github.com/${{ github.repository }}/releases/download/$TAG/$F"; done
 
-      - name: نشر نسخة عامة للتحميل عبر Cloudflare Worker (تعمل حتى لو المستودع خاص)
+      - name: نشر نسخة عامة للتحميل عبر Cloudflare Worker (الكبيرة تُقسَّم لأجزاء يجمعها الـ Worker)
         run: |
           git config user.name "rostrick-bot"
           git config user.email "rostrick-bot@users.noreply.github.com"
-          CHANGED=0
-          if [ -f "dist/$BASE.apk" ]; then cp "dist/$BASE.apk" "__rostrick_download.apk"; git add "__rostrick_download.apk"; CHANGED=1; fi
-          if [ -f "dist/$BASE.aab" ]; then cp "dist/$BASE.aab" "__rostrick_download.aab"; git add "__rostrick_download.aab"; CHANGED=1; fi
-          if [ "$CHANGED" = "1" ]; then
+          # الـ Worker ينشر مجلد المستودع كاملاً ويرفض أي ملف أكبر من 25MB (فيفشل نشر الموقع كله). لذلك:
+          #   حتى 23MB  => __rostrick_download.<ext> في الجذر (يخدمه الـ Worker كما هو).
+          #   أكبر من 23MB => أجزاء 20MB في rostrick-big/ + ملف .parts.json، وسكربت rostrick-worker.js يجمعها ويقدّمها
+          #                   على نفس الرابط /__rostrick_download.<ext> (يعمل مع المستودع الخاص).
+          WORKER_MAX=$((23 * 1024 * 1024)); PART=$((20 * 1024 * 1024)); BIG_DIR="rostrick-big"
+          CHANGED=0; NEED_WORKER=0
+          for EXT in apk aab; do
+            SRC="dist/$BASE.$EXT"
+            [ -f "$SRC" ] || continue
+            ROOT_COPY="__rostrick_download.$EXT"; BIG_BASE="$BIG_DIR/__rostrick_download.$EXT"
+            # نظّف أي نسخة أو أجزاء سابقة لهذا النوع (بما فيها الملف الكامل من الإصدار القديم لهذه الخطوة)
+            git ls-files -- "$BIG_BASE" "$BIG_BASE.parts.json" "$BIG_BASE.rtp*" | xargs -r git rm -q -f
+            SIZE=$(stat -c%s "$SRC")
+            if [ "$SIZE" -le "$WORKER_MAX" ]; then
+              cp "$SRC" "$ROOT_COPY"; git add "$ROOT_COPY"
+            else
+              [ -f "$ROOT_COPY" ] && git rm -q -f "$ROOT_COPY"
+              mkdir -p "$BIG_DIR"; rm -f "$BIG_BASE".rtp* "$BIG_BASE.parts.json"
+              split -b "$PART" -d -a 3 --numeric-suffixes=1 "$SRC" "$BIG_BASE.rtp"
+              EXT_NAME="$EXT" python3 - <<'PY'
+          import json, os
+          ext = os.environ["EXT_NAME"]
+          d = "rostrick-big"
+          base = "__rostrick_download." + ext
+          names = sorted(f for f in os.listdir(d) if f.startswith(base + ".rtp"))
+          parts = [{"f": f, "s": os.path.getsize(os.path.join(d, f))} for f in names]
+          json.dump({"rtparts": 1, "name": base, "total": sum(p["s"] for p in parts), "parts": parts}, open(os.path.join(d, base + ".parts.json"), "w"))
+          PY
+              git add "$BIG_DIR"
+              NEED_WORKER=1
+            fi
+            CHANGED=1
+          done
+          if [ "$NEED_WORKER" = "1" ]; then
+            cat > rostrick-worker.js <<'JS'
+          // RosTrick: يقدّم الملف الكبير (apk/aab) المقسّم في rostrick-big/ كملف واحد على /__rostrick_download.<ext>
+          export default {
+            async fetch(request, env, ctx) {
+              const url = new URL(request.url);
+              const m = /^\/__rostrick_download\.(apk|aab)$/.exec(url.pathname);
+              const pass = () => env.ASSETS.fetch(request);
+              if (!m || (request.method !== "GET" && request.method !== "HEAD")) return pass();
+              const direct = await pass();
+              if (direct.status !== 404) return direct;
+              const ext = m[1];
+              const get = (p) => env.ASSETS.fetch(new Request(url.origin + "/rostrick-big/" + p));
+              const mr = await get("__rostrick_download." + ext + ".parts.json");
+              if (!mr.ok) return direct;
+              let mf;
+              try { mf = await mr.json(); } catch (e) { return direct; }
+              const parts = Array.isArray(mf.parts) ? mf.parts : [];
+              const total = parts.reduce((a, p) => a + (Number(p.s) || 0), 0);
+              if (!parts.length || !total) return direct;
+              const headers = new Headers({
+                "Content-Type": ext === "apk" ? "application/vnd.android.package-archive" : "application/octet-stream",
+                "Content-Length": String(total),
+                "Cache-Control": "no-cache"
+              });
+              if (request.method === "HEAD") return new Response(null, { headers });
+              const { readable, writable } = new FixedLengthStream(total);
+              ctx.waitUntil((async () => {
+                try {
+                  for (const p of parts) {
+                    const r = await get(p.f);
+                    if (!r.ok || !r.body) throw new Error("part " + p.f + " " + r.status);
+                    await r.body.pipeTo(writable, { preventClose: true });
+                  }
+                  await writable.close();
+                } catch (e) {
+                  try { await writable.abort(e); } catch (_) {}
+                }
+              })());
+              return new Response(readable, { headers });
+            }
+          };
+          JS
+            python3 - <<'PY'
+          import json, os, re, sys
+          def strip(t):
+              out, i, n, ins = [], 0, len(t), False
+              while i < n:
+                  c = t[i]
+                  if ins:
+                      out.append(c)
+                      if c == "\\" and i + 1 < n:
+                          out.append(t[i + 1]); i += 2; continue
+                      if c == '"': ins = False
+                      i += 1; continue
+                  if c == '"': ins = True; out.append(c); i += 1; continue
+                  if t.startswith("//", i):
+                      while i < n and t[i] != "\n": i += 1
+                      continue
+                  if t.startswith("/*", i):
+                      j = t.find("*/", i + 2); i = n if j < 0 else j + 2; continue
+                  out.append(c); i += 1
+              return re.sub(r",(\s*[}\]])", r"\1", "".join(out))
+          p = "wrangler.jsonc"
+          if not os.path.exists(p):
+              print("::warning::لا يوجد wrangler.jsonc: لن يعمل رابط الملف الكبير حتى تُنشئه اللوحة (أعد حفظ بيانات المشروع)"); sys.exit(0)
+          try:
+              cfg = json.loads(strip(open(p, encoding="utf-8").read()))
+              a = cfg.get("assets")
+              if not isinstance(cfg, dict) or not isinstance(a, dict): raise ValueError("assets")
+          except Exception as e:
+              print("::warning::تعذّرت قراءة wrangler.jsonc (%s): لن يعمل رابط الملف الكبير" % e); sys.exit(0)
+          before = json.dumps(cfg, sort_keys=True)
+          cfg["main"] = "rostrick-worker.js"
+          a["binding"] = "ASSETS"
+          if a.get("not_found_handling") and not a.get("run_worker_first"):
+              a["run_worker_first"] = ["/__rostrick_download.*"]
+          if json.dumps(cfg, sort_keys=True) != before:
+              open(p, "w", encoding="utf-8").write(json.dumps(cfg, indent=2, ensure_ascii=False) + "\n")
+          PY
+            # .assetsignore: السكربت لا يُنشر كملف عام، ومجلد الأجزاء يجب أن يُنشر (نزيل استثناءه القديم إن وُجد)
+            touch .assetsignore
+            python3 - <<'PY'
+          lines = open(".assetsignore", encoding="utf-8").read().splitlines()
+          lines = [l for l in lines if l.strip().rstrip("/") != "rostrick-big"]
+          if "rostrick-worker.js" not in [l.strip() for l in lines]: lines.append("rostrick-worker.js")
+          open(".assetsignore", "w", encoding="utf-8").write("\n".join(lines) + "\n")
+          PY
+            git add .assetsignore rostrick-worker.js wrangler.jsonc 2>/dev/null || git add .assetsignore rostrick-worker.js
+          fi
+          if [ "$CHANGED" = "1" ] && ! git diff --cached --quiet; then
             git commit -m "RosTrick: تحديث نسخة التحميل العامة (بناء رقم ${{ github.run_number }})"
             for i in 1 2 3; do git push && break || { git pull --rebase; sleep 2; }; done
           fi
