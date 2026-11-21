@@ -72,7 +72,9 @@
     "view": [
       "application/pdf"
     ],
-    "send": [],
+    "send": [
+      "*/*"
+    ],
     "process_text": true
   },
   "hardware": {
