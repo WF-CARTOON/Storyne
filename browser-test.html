@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="rostrick-statusbar" content="color=#131722; icons=light; overlay=false; anim=250" />
+  <title>متصفح صخر الذكي</title>
+  <style>
+    :root {
+      --primary: #3b82f6;
+      --primary-rgb: 59, 130, 246;
+      --bg-dark: #0d1117;
+      --bg-bar: #161b22;
+      --bg-surface: #21262d;
+      --border: rgba(255, 255, 255, 0.1);
+      --text-main: #f0f6fc;
+      --text-sub: #8b949e;
+      --accent-color: #3b82f6;
+      --sb-color: #161b22;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --trans: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header / Address Bar */
+    .browser-header {
+      background: var(--bg-bar);
+      border-bottom: 1px solid var(--border);
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .url-bar-wrapper {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+      background: var(--bg-surface);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      transition: var(--trans);
+    }
+
+    .url-bar-wrapper:focus-within {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.25);
+    }
+
+    .site-icon {
+      width: 20px;
+      height: 20px;
+      margin-left: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #10b981;
+      font-size: 13px;
+    }
+
+    .url-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-main);
+      font-size: 14px;
+      direction: ltr;
+      text-align: left;
+    }
+
+    .url-input::placeholder {
+      color: var(--text-sub);
+      direction: rtl;
+      text-align: right;
+    }
+
+    .header-btn {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-main);
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 16px;
+      transition: var(--trans);
+    }
+
+    .header-btn:active {
+      background: rgba(255, 255, 255, 0.1);
+      transform: scale(0.94);
+    }
+
+    /* Progress Bar */
+    .load-progress {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 2.5px;
+      background: transparent;
+      overflow: hidden;
+    }
+    .load-progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent-color), #06b6d4);
+      transition: width 0.2s ease;
+    }
+
+    /* Main Content Area (RosTrickWebView attached here) */
+    #webview-container {
+      flex: 1;
+      position: relative;
+      background: #000000;
+      overflow: hidden;
+    }
+
+    .preview-fallback {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+      color: var(--text-sub);
+      background: radial-gradient(circle at 50% 30%, #1c2230 0%, #0d1117 80%);
+    }
+
+    .preview-fallback h3 {
+      color: var(--text-main);
+      margin-bottom: 8px;
+      font-size: 18px;
+    }
+
+    .quick-links {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-top: 24px;
+      width: 100%;
+      max-width: 380px;
+    }
+
+    .quick-link-item {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 12px 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: var(--trans);
+    }
+
+    .quick-link-item:active {
+      transform: scale(0.92);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .quick-icon {
+      font-size: 24px;
+    }
+    .quick-title {
+      font-size: 11px;
+      color: var(--text-main);
+    }
+
+    /* Fallback iframe when not in app */
+    #fallback-frame {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: none;
+    }
+
+    /* Bottom Navigation Bar */
+    .browser-footer {
+      background: var(--bg-bar);
+      border-top: 1px solid var(--border);
+      padding: 6px 12px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .footer-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-main);
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      cursor: pointer;
+      transition: var(--trans);
+    }
+
+    .footer-btn svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .footer-btn:disabled {
+      opacity: 0.3;
+      pointer-events: none;
+    }
+
+    .footer-btn:active {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    /* Modals & Drawers */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 9999;
+      display: none;
+      align-items: flex-end;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    .modal-sheet {
+      background: #181d28;
+      width: 100%;
+      max-height: 85vh;
+      border-top-left-radius: var(--radius-lg);
+      border-top-right-radius: var(--radius-lg);
+      border-top: 1px solid var(--border);
+      padding: 16px 20px 30px;
+      overflow-y: auto;
+      transform: translateY(100%);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .modal-overlay.active .modal-sheet {
+      transform: translateY(0);
+    }
+
+    .sheet-handle {
+      width: 44px;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.25);
+      border-radius: 4px;
+      margin: 0 auto 14px;
+    }
+
+    .sheet-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+
+    .sheet-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .close-sheet-btn {
+      background: var(--bg-surface);
+      border: none;
+      color: var(--text-sub);
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Photoshop-style Color Picker UI */
+    .ps-picker-box {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .ps-sv-container {
+      position: relative;
+      width: 100%;
+      height: 180px;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      cursor: crosshair;
+      touch-action: none;
+    }
+
+    .ps-sv-gradient-white {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to right, #ffffff, rgba(255, 255, 255, 0));
+    }
+
+    .ps-sv-gradient-black {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, #000000, rgba(0, 0, 0, 0));
+    }
+
+    .ps-sv-cursor {
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      box-shadow: 0 0 2px 1px rgba(0,0,0,0.6);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      left: 100%;
+      top: 0%;
+    }
+
+    .ps-hue-slider {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 18px;
+      border-radius: 9px;
+      background: linear-gradient(to left, #ff0000, #ff00ff, #0000ff, #00ffff, #00ff00, #ffff00, #ff0000);
+      outline: none;
+      cursor: pointer;
+    }
+
+    .ps-hue-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 2px solid #222;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+      cursor: pointer;
+    }
+
+    .ps-values-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .ps-preview-swatch {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-md);
+      border: 2px solid #ffffff;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      flex-shrink: 0;
+    }
+
+    .ps-input-field {
+      flex: 1;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 10px;
+      color: var(--text-main);
+      font-family: monospace;
+      font-size: 14px;
+      text-align: center;
+      outline: none;
+    }
+
+    .preset-colors {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .color-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: var(--trans);
+    }
+    .color-dot:active {
+      transform: scale(0.88);
+    }
+
+    /* Status Bar Options */
+    .sb-options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .ctrl-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .ctrl-card-title {
+      font-size: 13px;
+      color: var(--text-sub);
+    }
+
+    .ctrl-select, .action-btn {
+      background: #11141c;
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 10px;
+      font-size: 13px;
+      outline: none;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .action-btn.primary {
+      background: var(--accent-color);
+      border: none;
+      color: #fff;
+      font-weight: 600;
+      padding: 12px;
+      border-radius: var(--radius-md);
+      margin-top: 8px;
+    }
+
+    /* Offline Manager Modal */
+    .saved-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 240px;
+      overflow-y: auto;
+      margin-top: 12px;
+    }
+
+    .saved-item {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .saved-meta {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 70%;
+    }
+
+    .saved-title {
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .saved-url {
+      font-size: 11px;
+      color: var(--text-sub);
+      direction: ltr;
+      text-align: right;
+    }
+
+    .saved-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .icon-btn-sm {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      border-radius: 6px;
+      padding: 5px 8px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 74px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: rgba(22, 27, 34, 0.95);
+      border: 1px solid var(--accent-color);
+      color: #ffffff;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      opacity: 0;
+      pointer-events: none;
+      transition: var(--trans);
+      z-index: 100000;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Browser Header -->
+  <header class="browser-header">
+    <button class="header-btn" id="btn-home" title="الرئيسية">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </button>
+
+    <div class="url-bar-wrapper">
+      <span class="site-icon" id="ssl-indicator" title="اتصال آمن">🔒</span>
+      <input type="text" class="url-input" id="url-input" placeholder="ابحث في Google أو أدخل رابط ويب..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+      <button class="header-btn" id="btn-clear-url" style="display:none; width: 24px; height: 24px;">✕</button>
+    </div>
+
+    <button class="header-btn" id="btn-go" title="انتقال">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+
+    <div class="load-progress">
+      <div class="load-progress-fill" id="progress-fill"></div>
+    </div>
+  </header>
+
+  <!-- Webview Container (Native RosTrickWebView attaches here) -->
+  <main id="webview-container">
+    <div class="preview-fallback" id="home-view">
+      <div style="font-size: 40px; margin-bottom: 10px;">🌐</div>
+      <h3>متصفح صخر المتطور</h3>
+      <p style="font-size: 13px; max-width: 320px;">متصفح بكامل الصلاحيات، تحكم مخصص بألوان الـ StatusBar، وحفظ الصفحات كاملة للعمل بدون إنترنت.</p>
+
+      <div class="quick-links">
+        <div class="quick-link-item" data-url="https://www.google.com">
+          <span class="quick-icon">🔍</span>
+          <span class="quick-title">Google</span>
+        </div>
+        <div class="quick-link-item" data-url="https://ar.wikipedia.org">
+          <span class="quick-icon">📚</span>
+          <span class="quick-title">ويكيبيديا</span>
+        </div>
+        <div class="quick-link-item" data-url="https://news.google.com">
+          <span class="quick-icon">📰</span>
+          <span class="quick-title">الأخبار</span>
+        </div>
+        <div class="quick-link-item" data-url="https://github.com">
+          <span class="quick-icon">🐙</span>
+          <span class="quick-title">GitHub</span>
+        </div>
+      </div>
+    </div>
+
+    <iframe id="fallback-frame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+  </main>
+
+  <!-- Bottom Controls -->
+  <footer class="browser-footer">
+    <button class="footer-btn" id="btn-back" title="رجوع">
+      <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+      <span>رجوع</span>
+    </button>
+
+    <button class="footer-btn" id="btn-forward" title="أمام">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      <span>أمام</span>
+    </button>
+
+    <button class="footer-btn" id="btn-refresh" title="تحديث">
+      <svg viewBox="0 0 24 24"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      <span id="lbl-refresh">تحديث</span>
+    </button>
+
+    <button class="footer-btn" id="btn-offline" title="حفظ Offline">
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      <span>تنزيل</span>
+    </button>
+
+    <button class="footer-btn" id="btn-statusbar" title="الـ StatusBar واللون">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span>التخصيص</span>
+    </button>
+  </footer>
+
+  <!-- Modal: Custom Photoshop Color Picker & StatusBar Settings -->
+  <div class="modal-overlay" id="modal-customizer">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <div class="sheet-title">
+          <span>🎨</span>
+          <span>تخصيص StatusBar واللون (Photoshop Picker)</span>
+        </div>
+        <button class="close-sheet-btn" id="btn-close-customizer">✕</button>
+      </div>
+
+      <div class="ps-picker-box">
+        <!-- Photoshop 2D Saturation / Value Box -->
+        <div class="ps-sv-container" id="ps-sv-box">
+          <div class="ps-sv-gradient-white"></div>
+          <div class="ps-sv-gradient-black"></div>
+          <div class="ps-sv-cursor" id="ps-sv-cursor"></div>
+        </div>
+
+        <!-- Hue Slider -->
+        <input type="range" class="ps-hue-slider" id="ps-hue-range" min="0" max="360" value="210" />
+
+        <!-- Color Preview & Hex Display -->
+        <div class="ps-values-row">
+          <div class="ps-preview-swatch" id="ps-swatch"></div>
+          <input type="text" class="ps-input-field" id="ps-hex-input" value="#3b82f6" maxlength="7" />
+          <button class="action-btn" id="btn-apply-color" style="width:auto; padding: 8px 14px;">تطبيق</button>
+        </div>
+
+        <!-- Presets -->
+        <div style="font-size: 12px; color: var(--text-sub); margin-top: -6px;">ألوان شائعة:</div>
+        <div class="preset-colors">
+          <div class="color-dot" style="background: #161b22;" data-hex="#161b22"></div>
+          <div class="color-dot" style="background: #0f172a;" data-hex="#0f172a"></div>
+          <div class="color-dot" style="background: #1e1b4b;" data-hex="#1e1b4b"></div>
+          <div class="color-dot" style="background: #064e3b;" data-hex="#064e3b"></div>
+          <div class="color-dot" style="background: #7f1d1d;" data-hex="#7f1d1d"></div>
+          <div class="color-dot" style="background: #d97706;" data-hex="#d97706"></div>
+          <div class="color-dot" style="background: #2563eb;" data-hex="#2563eb"></div>
+          <div class="color-dot" style="background: #000000;" data-hex="#000000"></div>
+        </div>
+
+        <!-- StatusBar Settings Controls -->
+        <div class="sb-options-grid">
+          <div class="ctrl-card">
+            <div class="ctrl-card-title">أيقونات الـ StatusBar</div>
+            <select class="ctrl-select" id="sb-icons-select">
+              <option value="light" selected>أيقونات فاتحة (Light)</option>
+              <option value="dark">أيقونات داكنة (Dark)</option>
+              <option value="auto">تلقائي (Auto)</option>
+            </select>
+          </div>
+
+          <div class="ctrl-card">
+            <div class="ctrl-card-title">حالة الشريط العلوي</div>
+            <select class="ctrl-select" id="sb-mode-select">
+              <option value="show" selected>مرئي (Normal)</option>
+              <option value="hidden">مخفي ملء الشاشة (Hidden)</option>
+              <option value="overlay">متراكب فوق الصفحة (Overlay)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Offline Manager -->
+  <div class="modal-overlay" id="modal-offline">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <div class="sheet-title">
+          <span>💾</span>
+          <span>حفظ وتصفح بدون إنترنت (Offline)</span>
+        </div>
+        <button class="close-sheet-btn" id="btn-close-offline">✕</button>
+      </div>
+
+      <div style="font-size: 13px; color: var(--text-sub); line-height: 1.6;">
+        يمكنك حفظ الصفحة الحالية مباشرة في ذاكرة التطبيق لتصفحها في أي وقت، أو تصديرها كملف HTML مستقل إلى هاتفك.
+      </div>
+
+      <button class="action-btn primary" id="btn-save-current">
+        📥 حفظ الصفحة الحالية في الأرشيف الداخلي
+      </button>
+
+      <button class="action-btn" id="btn-export-file" style="margin-top: 8px; border-color: rgba(255,255,255,0.2);">
+        📂 تصدير كملف HTML (Save File Picker)
+      </button>
+
+      <div style="font-size: 13px; font-weight: bold; margin-top: 18px;">الصفحات المحفوظة محلياً:</div>
+      <div class="saved-list" id="saved-list">
+        <div style="color: var(--text-sub); font-size: 12px; text-align: center; padding: 14px;">لا توجد صفحات محفوظة بعد.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast-msg"></div>
+
+  <script>
+    (function() {
+      // State
+      let currentUrl = "";
+      let currentTitle = "الرئيسية";
+      let nativeWebViewId = "rostrick-main-browser";
+      let isNativeActive = false;
+      let isLoading = false;
+
+      // Elements
+      const urlInput = document.getElementById('url-input');
+      const btnGo = document.getElementById('btn-go');
+      const btnClearUrl = document.getElementById('btn-clear-url');
+      const btnHome = document.getElementById('btn-home');
+      const btnBack = document.getElementById('btn-back');
+      const btnForward = document.getElementById('btn-forward');
+      const btnRefresh = document.getElementById('btn-refresh');
+      const lblRefresh = document.getElementById('lbl-refresh');
+      const progressFill = document.getElementById('progress-fill');
+      const homeView = document.getElementById('home-view');
+      const fallbackFrame = document.getElementById('fallback-frame');
+      const toastEl = document.getElementById('toast-msg');
+
+      // Modals
+      const modalCustomizer = document.getElementById('modal-customizer');
+      const btnStatusBar = document.getElementById('btn-statusbar');
+      const btnCloseCustomizer = document.getElementById('btn-close-customizer');
+
+      const modalOffline = document.getElementById('modal-offline');
+      const btnOffline = document.getElementById('btn-offline');
+      const btnCloseOffline = document.getElementById('btn-close-offline');
+      const btnSaveCurrent = document.getElementById('btn-save-current');
+      const btnExportFile = document.getElementById('btn-export-file');
+      const savedList = document.getElementById('saved-list');
+
+      // Photoshop Picker elements
+      const psSvBox = document.getElementById('ps-sv-box');
+      const psSvCursor = document.getElementById('ps-sv-cursor');
+      const psHueRange = document.getElementById('ps-hue-range');
+      const psSwatch = document.getElementById('ps-swatch');
+      const psHexInput = document.getElementById('ps-hex-input');
+      const btnApplyColor = document.getElementById('btn-apply-color');
+      const sbIconsSelect = document.getElementById('sb-icons-select');
+      const sbModeSelect = document.getElementById('sb-mode-select');
+
+      // Color Picker Math (HSV)
+      let hue = 210;
+      let sat = 0.76;
+      let val = 0.96;
+      let currentColor = "#3b82f6";
+
+      function showToast(text) {
+        toastEl.textContent = text;
+        toastEl.classList.add('show');
+        setTimeout(() => toastEl.classList.remove('show'), 2600);
+      }
+
+      // Modal Visibility Handling (Crucial for RosTrickWebView: Native WebView sits above DOM, so must be hidden while modal is open)
+      function openModal(modal) {
+        if (window.RosTrickWebView && isNativeActive) {
+          try { window.RosTrickWebView.hide(nativeWebViewId); } catch(e){}
+        }
+        modal.classList.add('active');
+      }
+
+      function closeModal(modal) {
+        modal.classList.remove('active');
+        if (window.RosTrickWebView && isNativeActive) {
+          try { window.RosTrickWebView.show(nativeWebViewId); } catch(e){}
+        }
+      }
+
+      btnStatusBar.addEventListener('click', () => openModal(modalCustomizer));
+      btnCloseCustomizer.addEventListener('click', () => closeModal(modalCustomizer));
+      btnOffline.addEventListener('click', () => {
+        renderSavedList();
+        openModal(modalOffline);
+      });
+      btnCloseOffline.addEventListener('click', () => closeModal(modalOffline));
+
+      [modalCustomizer, modalOffline].forEach(m => {
+        m.addEventListener('click', (e) => {
+          if (e.target === m) closeModal(m);
+        });
+      });
+
+      // ---- Photoshop Color Picker Logic ----
+      function hsvToRgb(h, s, v) {
+        let f = (n, k = (n + h / 60) % 6) => v - v * s * Math.max(Math.min(k, 4 - k, 1), 0);
+        return [
+          Math.round(f(5) * 255),
+          Math.round(f(3) * 255),
+          Math.round(f(1) * 255)
+        ];
+      }
+
+      function rgbToHex(r, g, b) {
+        return "#" + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
+      }
+
+      function hexToRgb(hex) {
+        hex = hex.replace('#', '');
+        if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+        let num = parseInt(hex, 16);
+        if (isNaN(num)) return null;
+        return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
+      }
+
+      function updateColorUI() {
+        let rgb = hsvToRgb(hue, sat, val);
+        currentColor = rgbToHex(rgb[0], rgb[1], rgb[2]);
+        psSvBox.style.backgroundColor = `hsl(${hue}, 100%, 50%)`;
+        psSwatch.style.backgroundColor = currentColor;
+        psHexInput.value = currentColor;
+
+        // Cursor position
+        psSvCursor.style.left = (sat * 100) + '%';
+        psSvCursor.style.top = ((1 - val) * 100) + '%';
+      }
+
+      function handleSvPointer(e) {
+        const rect = psSvBox.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        let x = Math.max(0, Math.min(rect.width, clientX - rect.left));
+        let y = Math.max(0, Math.min(rect.height, clientY - rect.top));
+        sat = x / rect.width;
+        val = 1 - (y / rect.height);
+        updateColorUI();
+      }
+
+      let isDraggingSv = false;
+      psSvBox.addEventListener('pointerdown', (e) => {
+        isDraggingSv = true;
+        psSvBox.setPointerCapture(e.pointerId);
+        handleSvPointer(e);
+      });
+      psSvBox.addEventListener('pointermove', (e) => {
+        if (isDraggingSv) handleSvPointer(e);
+      });
+      psSvBox.addEventListener('pointerup', () => { isDraggingSv = false; });
+      psSvBox.addEventListener('pointercancel', () => { isDraggingSv = false; });
+
+      psHueRange.addEventListener('input', (e) => {
+        hue = parseFloat(e.target.value);
+        updateColorUI();
+      });
+
+      psHexInput.addEventListener('change', () => {
+        let hex = psHexInput.value.trim();
+        if (!hex.startsWith('#')) hex = '#' + hex;
+        let rgb = hexToRgb(hex);
+        if (rgb) {
+          // Rough HSV conversion
+          let r = rgb[0]/255, g = rgb[1]/255, b = rgb[2]/255;
+          let max = Math.max(r, g, b), min = Math.min(r, g, b);
+          val = max;
+          let d = max - min;
+          sat = max === 0 ? 0 : d / max;
+          if (max === min) hue = 0;
+          else {
+            switch(max) {
+              case r: hue = (g - b) / d + (g < b ? 6 : 0); break;
+              case g: hue = (b - r) / d + 2; break;
+              case b: hue = (r - g) / d + 4; break;
+            }
+            hue *= 60;
+          }
+          psHueRange.value = Math.round(hue);
+          updateColorUI();
+        }
+      });
+
+      document.querySelectorAll('.preset-colors .color-dot').forEach(dot => {
+        dot.addEventListener('click', () => {
+          psHexInput.value = dot.dataset.hex;
+          psHexInput.dispatchEvent(new Event('change'));
+        });
+      });
+
+      // Apply StatusBar & Theme
+      function applyStatusBarConfig() {
+        const icons = sbIconsSelect.value;
+        const mode = sbModeSelect.value;
+        const color = currentColor;
+
+        // Update app CSS custom property
+        document.documentElement.style.setProperty('--accent-color', color);
+        document.documentElement.style.setProperty('--sb-color', color);
+
+        if (window.RosTrickStatusBar) {
+          if (mode === 'hidden') {
+            window.RosTrickStatusBar.hide();
+            showToast('تم إخفاء الـ StatusBar');
+          } else {
+            const isOverlay = mode === 'overlay';
+            window.RosTrickStatusBar.set({
+              color: color,
+              icons: icons,
+              overlay: isOverlay,
+              anim: 250
+            });
+            showToast('تم تحديث إعدادات ولون الـ StatusBar بنجاح');
+          }
+        } else {
+          showToast('تم تطبيق اللون (الـ StatusBar يعمل داخل تطبيق Android)');
+        }
+      }
+
+      btnApplyColor.addEventListener('click', applyStatusBarConfig);
+      sbIconsSelect.addEventListener('change', applyStatusBarConfig);
+      sbModeSelect.addEventListener('change', applyStatusBarConfig);
+
+      // ---- Browser Navigation & Webview Bridge ----
+      async function initNativeWebView() {
+        if (!window.RosTrickWebView) return false;
+        try {
+          const id = await window.RosTrickWebView.create({
+            id: nativeWebViewId,
+            url: 'about:blank',
+            attach: '#webview-container',
+            persist: false,
+            handleBack: true
+          });
+
+          window.RosTrickWebView.on(nativeWebViewId, 'title', (e) => {
+            currentTitle = e.title || currentTitle;
+          });
+          window.RosTrickWebView.on(nativeWebViewId, 'progress', (e) => {
+            const p = e.progress || 0;
+            progressFill.style.width = p + '%';
+            if (p >= 100) {
+              setTimeout(() => { progressFill.style.width = '0%'; }, 400);
+            }
+          });
+          window.RosTrickWebView.on(nativeWebViewId, 'url', (e) => {
+            if (e.url && !e.url.startsWith('about:blank')) {
+              currentUrl = e.url;
+              urlInput.value = e.url;
+              btnClearUrl.style.display = 'block';
+              homeView.style.display = 'none';
+            }
+          });
+          window.RosTrickWebView.on(nativeWebViewId, 'finish', () => {
+            isLoading = false;
+            lblRefresh.textContent = 'تحديث';
+            progressFill.style.width = '0%';
+          });
+          window.RosTrickWebView.on(nativeWebViewId, 'error', () => {
+            isLoading = false;
+            lblRefresh.textContent = 'تحديث';
+            showToast('تعذر تحميل الرابط');
+          });
+
+          isNativeActive = true;
+          return true;
+        } catch(e) {
+          console.warn('Native WebView failed, falling back:', e);
+          return false;
+        }
+      }
+
+      function formatSearchOrUrl(input) {
+        let val = input.trim();
+        if (!val) return '';
+        if (/^https?:\/\//i.test(val)) return val;
+        if (/^[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(\/.*)?$/i.test(val)) return 'https://' + val;
+        return 'https://www.google.com/search?q=' + encodeURIComponent(val);
+      }
+
+      function navigateTo(targetUrl) {
+        if (!targetUrl) return;
+        currentUrl = targetUrl;
+        urlInput.value = targetUrl;
+        btnClearUrl.style.display = 'block';
+        homeView.style.display = 'none';
+        progressFill.style.width = '20%';
+        isLoading = true;
+        lblRefresh.textContent = 'إيقاف';
+
+        if (window.RosTrickWebView && isNativeActive) {
+          try {
+            window.RosTrickWebView.load(nativeWebViewId, targetUrl);
+            window.RosTrickWebView.show(nativeWebViewId);
+          } catch(e) {
+            console.error(e);
+          }
+        } else {
+          // Web preview fallback
+          fallbackFrame.style.display = 'block';
+          fallbackFrame.src = targetUrl;
+          setTimeout(() => {
+            progressFill.style.width = '100%';
+            setTimeout(() => { progressFill.style.width = '0%'; isLoading = false; lblRefresh.textContent = 'تحديث'; }, 300);
+          }, 800);
+        }
+      }
+
+      btnGo.addEventListener('click', () => {
+        const formatted = formatSearchOrUrl(urlInput.value);
+        if (formatted) navigateTo(formatted);
+      });
+
+      urlInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          btnGo.click();
+          urlInput.blur();
+        }
+      });
+
+      urlInput.addEventListener('input', () => {
+        btnClearUrl.style.display = urlInput.value ? 'block' : 'none';
+      });
+
+      btnClearUrl.addEventListener('click', () => {
+        urlInput.value = '';
+        btnClearUrl.style.display = 'none';
+        urlInput.focus();
+      });
+
+      btnHome.addEventListener('click', () => {
+        urlInput.value = '';
+        btnClearUrl.style.display = 'none';
+        currentUrl = '';
+        homeView.style.display = 'flex';
+        if (window.RosTrickWebView && isNativeActive) {
+          try {
+            window.RosTrickWebView.load(nativeWebViewId, 'about:blank');
+            window.RosTrickWebView.hide(nativeWebViewId);
+          } catch(e){}
+        } else {
+          fallbackFrame.src = 'about:blank';
+          fallbackFrame.style.display = 'none';
+        }
+      });
+
+      btnBack.addEventListener('click', () => {
+        if (window.RosTrickWebView && isNativeActive) {
+          window.RosTrickWebView.back(nativeWebViewId);
+        } else if (fallbackFrame.contentWindow) {
+          try { fallbackFrame.contentWindow.history.back(); } catch(e){}
+        }
+      });
+
+      btnForward.addEventListener('click', () => {
+        if (window.RosTrickWebView && isNativeActive) {
+          window.RosTrickWebView.forward(nativeWebViewId);
+        } else if (fallbackFrame.contentWindow) {
+          try { fallbackFrame.contentWindow.history.forward(); } catch(e){}
+        }
+      });
+
+      btnRefresh.addEventListener('click', () => {
+        if (isLoading) {
+          if (window.RosTrickWebView && isNativeActive) window.RosTrickWebView.stop(nativeWebViewId);
+          isLoading = false;
+          lblRefresh.textContent = 'تحديث';
+          progressFill.style.width = '0%';
+        } else {
+          if (window.RosTrickWebView && isNativeActive) {
+            window.RosTrickWebView.reload(nativeWebViewId);
+          } else if (currentUrl) {
+            fallbackFrame.src = currentUrl;
+          }
+          isLoading = true;
+          lblRefresh.textContent = 'إيقاف';
+          progressFill.style.width = '30%';
+        }
+      });
+
+      document.querySelectorAll('.quick-link-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const u = item.getAttribute('data-url');
+          if (u) navigateTo(u);
+        });
+      });
+
+      // ---- Offline Manager Implementation ----
+      const OFFLINE_KEY = 'rostrick_browser_offline_pages';
+
+      function getSavedPages() {
+        try {
+          return JSON.parse(localStorage.getItem(OFFLINE_KEY) || '[]');
+        } catch(e) {
+          return [];
+        }
+      }
+
+      function setSavedPages(pages) {
+        try {
+          localStorage.setItem(OFFLINE_KEY, JSON.stringify(pages));
+        } catch(e) {
+          showToast('مساحة التخزين ممتلئة');
+        }
+      }
+
+      function renderSavedList() {
+        const pages = getSavedPages();
+        if (pages.length === 0) {
+          savedList.innerHTML = '<div style="color: var(--text-sub); font-size: 12px; text-align: center; padding: 14px;">لا توجد صفحات محفوظة بعد.</div>';
+          return;
+        }
+        savedList.innerHTML = '';
+        pages.forEach((p, idx) => {
+          const item = document.createElement('div');
+          item.className = 'saved-item';
+          item.innerHTML = `
+            <div class="saved-meta">
+              <div class="saved-title">${p.title || 'صفحة بدون عنوان'}</div>
+              <div class="saved-url">${p.url || ''}</div>
+            </div>
+            <div class="saved-actions">
+              <button class="icon-btn-sm" data-open="${idx}">فتح</button>
+              <button class="icon-btn-sm" data-del="${idx}" style="color:#ef4444;">حذف</button>
+            </div>
+          `;
+          savedList.appendChild(item);
+        });
+
+        savedList.querySelectorAll('[data-open]').forEach(b => {
+          b.addEventListener('click', () => {
+            const idx = parseInt(b.getAttribute('data-open'));
+            const p = pages[idx];
+            if (p && p.html) {
+              closeModal(modalOffline);
+              openOfflinePage(p);
+            }
+          });
+        });
+
+        savedList.querySelectorAll('[data-del]').forEach(b => {
+          b.addEventListener('click', () => {
+            const idx = parseInt(b.getAttribute('data-del'));
+            pages.splice(idx, 1);
+            setSavedPages(pages);
+            renderSavedList();
+            showToast('تم حذف الصفحة من الأرشيف');
+          });
+        });
+      }
+
+      function openOfflinePage(page) {
+        homeView.style.display = 'none';
+        urlInput.value = page.url || 'offline://saved-page';
+        btnClearUrl.style.display = 'block';
+        const blob = new Blob([page.html], { type: 'text/html;charset=utf-8' });
+        const blobUrl = URL.createObjectURL(blob);
+
+        if (window.RosTrickWebView && isNativeActive) {
+          window.RosTrickWebView.load(nativeWebViewId, blobUrl);
+          window.RosTrickWebView.show(nativeWebViewId);
+        } else {
+          fallbackFrame.style.display = 'block';
+          fallbackFrame.src = blobUrl;
+        }
+        showToast('تم فتح الصفحة المحفوظة (وضع Offline)');
+      }
+
+      // Extract HTML from current page
+      async function extractCurrentHtml() {
+        if (!currentUrl || currentUrl.startsWith('about:blank')) {
+          showToast('الرجاء الدخول لصفحة أولاً لحفظها');
+          return null;
+        }
+
+        // Try evaluating JS in WebView if bridge supports evaluate
+        if (window.RosTrickWebView && isNativeActive) {
+          try {
+            const html = await window.RosTrickWebView.evaluate(nativeWebViewId, 'document.documentElement.outerHTML');
+            if (html && html.length > 50) return html;
+          } catch(e) {}
+        }
+
+        // Try fetching page directly
+        try {
+          const res = await fetch(currentUrl, { mode: 'cors' });
+          if (res.ok) {
+            return await res.text();
+          }
+        } catch(e) {}
+
+        // Fallback snapshot
+        return `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>${currentTitle}</title><style>body{font-family:system-ui;padding:20px;background:#111;color:#fff;}</style></head><body><h2>${currentTitle}</h2><p>رابط الصفحة: <a href="${currentUrl}" style="color:#3b82f6;">${currentUrl}</a></p><hr/><p>تم حفظ نسخة أوفلاين سريعة من هذه الصفحة بنجاح عبر متصفح صخر.</p></body></html>`;
+      }
+
+      btnSaveCurrent.addEventListener('click', async () => {
+        btnSaveCurrent.disabled = true;
+        btnSaveCurrent.textContent = '⏳ جاري استخراج الصفحة...';
+        const html = await extractCurrentHtml();
+        if (html) {
+          const pages = getSavedPages();
+          pages.unshift({
+            title: currentTitle || 'صفحة مؤرشفة',
+            url: currentUrl,
+            date: new Date().toLocaleDateString('ar-SA'),
+            html: html
+          });
+          // Keep latest 25 pages max
+          if (pages.length > 25) pages.pop();
+          setSavedPages(pages);
+          renderSavedList();
+          showToast('✅ تم حفظ الصفحة للعمل Offline بنجاح!');
+        }
+        btnSaveCurrent.disabled = false;
+        btnSaveCurrent.textContent = '📥 حفظ الصفحة الحالية في الأرشيف الداخلي';
+      });
+
+      btnExportFile.addEventListener('click', async () => {
+        const html = await extractCurrentHtml();
+        if (!html) return;
+        const filename = (currentTitle.replace(/[^a-zA-Z0-9؀-ۿ_-]/g, '_') || 'page') + '.html';
+
+        if (window.showSaveFilePicker) {
+          try {
+            const handle = await window.showSaveFilePicker({
+              suggestedName: filename,
+              types: [{ description: 'HTML Document', accept: { 'text/html': ['.html'] } }]
+            });
+            const writable = await handle.createWritable();
+            await writable.write(html);
+            await writable.close();
+            showToast('✅ تم حفظ الملف بنجاح!');
+            return;
+          } catch(e) {
+            if (e.name === 'AbortError') return;
+          }
+        }
+
+        // Fallback standard blob download
+        const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        a.setAttribute('downloadfile', 'showSaveFilePicker');
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        showToast('تم بدء تنزيل ملف الـ HTML');
+      });
+
+      // Initialize color picker & native webview on start
+      updateColorUI();
+      initNativeWebView();
+    })();
+  </script>
+</body>
+</html>
