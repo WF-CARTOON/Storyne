@@ -240,6 +240,8 @@ jobs:
           #   حتى 23MB  => __rostrick_download.<ext> في الجذر (يخدمه الـ Worker كما هو).
           #   أكبر من 23MB => أجزاء 20MB في rostrick-big/ + ملف .parts.json، وسكربت rostrick-worker.js يجمعها ويقدّمها
           #                   على نفس الرابط /__rostrick_download.<ext> (يعمل مع المستودع الخاص).
+          # actions/checkout أعلاه يسحب rostrick-build فقط (sparse-checkout)؛ أجزاء rostrick-big من بناء سابق تكون خارجه فيرفض git حذفها.
+          git sparse-checkout disable 2>/dev/null || true
           WORKER_MAX=$((23 * 1024 * 1024)); PART=$((20 * 1024 * 1024)); BIG_DIR="rostrick-big"
           CHANGED=0; NEED_WORKER=0
           for EXT in apk aab; do
