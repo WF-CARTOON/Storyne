@@ -97,6 +97,10 @@ nav button.on{background:var(--s2);color:var(--ac)}
     <div class="meta"><span class="pill" id="mReg"></span><span class="pill" id="mSpd"></span><span class="pill" id="mSrv"></span></div>
   </div>
 
+  <div class="card"><h2>الملف الشخصي · لكل لعبة أو تطبيق</h2><div class="chips" id="profs"></div>
+    <div class="chips" style="margin-top:12px"><input type="text" id="profN" placeholder="اسم الملف" style="flex:1;min-width:130px"><button class="btn sm pri" id="profAdd" type="button">＋ جديد</button><button class="btn sm" id="profRen" type="button">تسمية</button><button class="btn sm" id="profDel" type="button">حذف</button></div>
+    <div class="hint" style="margin-top:8px">كل ملف يحفظ المناطق (حتى منطقتين) والتوقيت والشكل والترجمة. أي تغيير يُحفظ تلقائياً في الملف الحالي، و«جديد» ينسخ الإعدادات بدون مناطق.</div></div>
+
   <div class="card"><h2>التجهيز</h2>
     <div class="step" id="s1"><div class="ic">🪟</div><div class="t"><b>العرض فوق التطبيقات</b><small></small></div><button class="btn sm" id="b1" hidden>منح الإذن</button></div>
     <div class="step" id="s2"><div class="ic">📱</div><div class="t"><b>تسجيل الشاشة</b><small></small></div><button class="btn sm" id="b2" hidden>بدء الجلسة</button></div>
@@ -167,7 +171,7 @@ var DEF = {
   ocrLang: "", psm: "6", ocrQ: "acc", invert: "auto",
   trOn: true, trLang: "ar", trSrc: "auto", prov: "google", fallback: true,
   px: 20, color: "#ffffff", bgc: "#000000", bga: 62, rad: 14, align: "center", bold: true, shadow: true, showOrig: false,
-  pos: "auto", cover: false, probe: 4000, width: 100, cx: "", cy: "", cw: "", ch: "", outline: false,
+  fullHold: 15000, pos: "auto", cover: false, probe: 4000, width: 100, outline: false,
   dkColor: "#0ea5a0", dkOp: 100, keepAlive: false,
   mmEmail: "", lingvaUrl: "", libUrl: "", libKey: "", gemKey: "", gemModel: "gemini-2.5-flash", oaUrl: "https://api.openai.com/v1", oaKey: "", oaModel: "gpt-4o-mini", gKey: "", azKey: "", azReg: ""
 };
@@ -204,6 +208,7 @@ var GROUPS = [
     { k: "settle", ty: "ch", ms: 1, t: "انتظار استقرار الصورة", h: "للنص الذي يظهر حرفاً حرفاً: ينتظر يكتمل ثم يقرأ.", o: msOpts([0, 150, 300, 500, 1000, 2000]) },
     { k: "hold", ty: "ch", ms: 1, neg: 1, t: "تثبيت الترجمة عند اختفاء النص", h: "∞ = تبقى حتى يظهر نص جديد.", o: msOpts([500, 1000, 2000, 3000, 5000, 10000, -1]) },
     { k: "minShow", ty: "ch", ms: 1, t: "أقل مدة عرض لكل ترجمة", h: "الترجمة الجديدة تنتظر انتهاء المدة كي تلحق تقرأ السابقة.", o: msOpts([0, 1000, 1500, 2000, 3000, 5000]) },
+    { k: "fullHold", ty: "ch", ms: 1, neg: 1, t: "مدة بقاء ترجمة الشاشة كاملة", h: "تبقى الترجمة فوق الشاشة هذه المدة ثم تُغلق وحدها. الشاشة تحتها تبقى قابلة للمس والتمرير.", o: msOpts([5000, 10000, 15000, 30000, -1]) },
     { k: "stab", ty: "ch", t: "ثبات الترجمة", h: "عالٍ = يتجاهل الفروق الصغيرة فلا تتبدّل الترجمة بلا داعٍ.", o: [["low", "منخفض"], ["mid", "متوسط"], ["high", "عالٍ"]] },
     { k: "gate", ty: "tg", t: "لا تقرأ إن لم تتغيّر الصورة" }
   ] },
@@ -263,7 +268,7 @@ var opt = (function () {
   for (var k in ITEM) { var it = ITEM[k]; if (it.ty === "ch" && typeof it.o === "function") continue; var v = coerce(k, opt[k]); opt[k] = v === undefined ? DEF[k] : v; }
   ["mmEmail","lingvaUrl","libUrl","libKey","gemKey","gemModel","oaUrl","oaKey","oaModel","gKey","azKey","azReg"].forEach(function (k) { opt[k] = String(opt[k] == null ? "" : opt[k]); });
 })();
-var save = function () { LS.set("ft2_opt", opt); };
+var save = function () { LS.set("ft2_opt", opt); if (typeof profSync === "function") profSync(); };
 var SIM = { low: 0.95, mid: 0.85, high: 0.7 };
 
 /* ============ نصوص وتشابه ============ */
@@ -452,19 +457,17 @@ var DOCK_CSS = "#w{display:flex;align-items:center;height:100%;padding:8px;gap:8
   "#pn{position:absolute;top:-4px;left:-4px;width:20px;height:20px;border-radius:50%;background:#fbbf24;display:none;place-items:center;font-size:11px}" +
   "#bar{display:none;flex:1;min-width:0;height:52px;border-radius:26px;background:rgba(14,20,30,.96);border:1px solid #2c3a52;padding:2px 4px;box-shadow:0 4px 14px rgba(0,0,0,.5)}" +
   "#bar button{flex:1;min-width:0;border:0;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;font-size:9px;font-weight:700;padding:0}#bar button b{font-size:17px;line-height:1.15;font-weight:400}#bar .on{color:#fbbf24}#bar .x{color:#fb7185}";
-var DOCK_JS = "var open=false,idle=0,gx=0,gy=0,down=false,moved=false,wait=false,orb=$('orb'),bar=$('bar'),box=$('w');" +
-  "orb.style.background=D.c;orb.style.opacity=D.op/100;" +
-  "D.acts.forEach(function(a){var b=mk('button',a.c||'');b.setAttribute('data-a',a.a);var i=mk('b','',a.i);b.appendChild(i);b.appendChild(document.createTextNode(a.t));b.onclick=function(){send({t:'act',a:a.a});rs()};bar.appendChild(b)});" +
-  "function rs(){clearTimeout(idle);if(open)idle=setTimeout(function(){send({t:'collapse'})},6500)}" +
-  "function setOpen(v,side){open=v;bar.style.display=v?'flex':'none';box.className=side==='l'?'L':'';rs()}" +
-  "orb.addEventListener('pointerdown',function(e){down=true;moved=false;wait=false;gx=e.clientX;gy=e.clientY;try{orb.setPointerCapture(e.pointerId)}catch(x){}});" +
-  "orb.addEventListener('pointermove',function(e){if(!down)return;var dx=e.clientX-gx,dy=e.clientY-gy;if(!moved&&Math.abs(dx)+Math.abs(dy)<9)return;moved=true;if(wait)return;wait=true;setTimeout(function(){wait=false},140);send({t:'mv',dx:Math.round(dx),dy:Math.round(dy)})});" +
-  "function up(){if(!down)return;down=false;if(moved)send({t:'mend'});else send({t:open?'collapse':'expand'})}" +
-  "orb.addEventListener('pointerup',up);orb.addEventListener('pointercancel',function(){down=false;if(moved)send({t:'mend'})});" +
-  "ready(function(){recv(function(d){if(!d)return;if(d.ack)wait=false;if(d.open!==undefined)setOpen(d.open,d.side);if(d.busy!==undefined)orb.className=d.busy?'busy':'';if(d.pinned!==undefined){$('pn').style.display=d.pinned?'grid':'none';var p=bar.querySelector('[data-a=pin]');if(p)p.className=d.pinned?'on':''}})})";
+var DOCK_JS = "var open=false,idle=0,side='r',orb=$('orb'),bar=$('bar'),box=$('w');orb.style.background=D.c;orb.style.opacity=D.op/100;" +
+  "D.acts.forEach(function(a){var b=mk('button',a.c||'');b.setAttribute('data-a',a.a);b.appendChild(mk('b','',a.i));b.appendChild(document.createTextNode(a.t));b.onclick=function(){send({t:'act',a:a.a});rs()};bar.appendChild(b)});" +
+  "function rs(){clearTimeout(idle);if(open)idle=setTimeout(collapse,6500)}" +
+  "function expand(){var R=RosTrickOverlay,i=R.info(),W=Math.min(D.sw-8,372);side=(i.x+32>D.sw/2)?'r':'l';var nx=side==='r'?i.x+64-W:i.x;nx=Math.max(0,Math.min(D.sw-W,nx));R.resize(W,64);R.move(Math.round(nx),Math.round(i.y));open=true;bar.style.display='flex';box.className=side==='l'?'L':'';rs()}" +
+  "function collapse(){if(!open)return;var R=RosTrickOverlay,i=R.info(),cx=side==='r'?i.x+i.w-64:i.x;open=false;clearTimeout(idle);bar.style.display='none';box.className='';R.resize(64,64);R.move(Math.round(Math.max(0,cx)),Math.round(i.y))}" +
+  "function report(){setTimeout(function(){var i=RosTrickOverlay.info();send({t:'pos',x:Math.round(i.x),y:Math.round(i.y)})},450)}" +
+  "ready(function(){var R=RosTrickOverlay;R.drag(orb,{snap:true,onTap:function(){if(open)collapse();else expand()},onDrop:function(){if(open)collapse();report()}});" +
+  "recv(function(d){if(!d)return;if(d.collapse)collapse();if(d.busy!==undefined)orb.className=d.busy?'busy':'';if(d.pinned!==undefined){$('pn').style.display=d.pinned?'grid':'none';var p=bar.querySelector('[data-a=pin]');if(p)p.className=d.pinned?'on':''}})})";
 function dockHtml() {
   var acts = [{ a: "now", i: "⟳", t: "ترجم" }, { a: "pin", i: "📌", t: "ثبّت" }, { a: "alt", i: "🔁", t: "بديلة" }, { a: "region", i: "⬚", t: "منطقة" }, { a: "full", i: "🧩", t: "الشاشة" }, { a: "sheet", i: "⚙", t: "إعدادات" }, { a: "stop", i: "✕", t: "إيقاف", c: "x" }];
-  return page(DOCK_CSS, '<div id="w"><div id="orb"><svg viewBox="0 0 24 24"><path d="M4 5h9M8.5 3v2M6 5c0 4 3 7 7 8M12 5c0 4-3 7-7 8M13 21l4-10 4 10M14.5 18h5"/></svg><i id="pn">📌</i></div><div id="bar"></div></div>', DOCK_JS, { c: opt.dkColor, op: opt.dkOp, acts: acts });
+  return page(DOCK_CSS, '<div id="w"><div id="orb"><svg viewBox="0 0 24 24"><path d="M4 5h9M8.5 3v2M6 5c0 4 3 7 7 8M12 5c0 4-3 7-7 8M13 21l4-10 4 10M14.5 18h5"/></svg><i id="pn">📌</i></div><div id="bar"></div></div>', DOCK_JS, { c: opt.dkColor, op: opt.dkOp, acts: acts, sw: scr().w });
 }
 
 /* --- نافذة الترجمة (لا تلتقط اللمس) --- */
@@ -505,7 +508,7 @@ function pickHtml(d) {
 /* --- لوحة الإعدادات (ورقة سفلية) --- */
 var SHEET_CSS = "#pn{position:absolute;inset:0;background:#0f1622;border:1px solid #2a3850;border-radius:22px;display:flex;flex-direction:column;box-shadow:0 -6px 30px rgba(0,0,0,.55)}#gp{width:44px;height:5px;border-radius:3px;background:#34445f;margin:8px auto 0}" +
   "#hd{display:flex;align-items:center;gap:8px;padding:8px 14px 0}#hd b{flex:1;font-size:15px}#hd button{min-height:38px;padding:0 14px;border:0;border-radius:19px;background:#1c283b;font-size:13px;font-weight:700}#hd .ok{background:#5eead4;color:#04302b}#hd .st{color:#fb7185}" +
-  "#tb{display:flex;gap:6px;padding:10px 12px 0}#tb button{flex:1;min-height:40px;border:0;border-radius:12px;background:#141d2c;color:#8fa0ba;font-size:13px;font-weight:700}#tb .on{background:#5eead4;color:#04302b}" +
+  "#tb{display:flex;gap:6px;padding:10px 12px 0}#tb button{flex:1;min-width:0;min-height:40px;border:0;border-radius:12px;background:#141d2c;color:#8fa0ba;font-size:12px;font-weight:700;padding:0 2px}#tb .on{background:#5eead4;color:#04302b}" +
   "#nt{padding:4px 16px 0;min-height:18px;font-size:12px;color:#5eead4}#bd{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:2px 14px 16px}" +
   ".it{margin:12px 0}.lb{font-size:13px;color:#aab8cd;margin-bottom:6px}.lb i{font-style:normal;color:#fff;margin-right:6px}" +
   ".ch,.ac,.tg{min-height:40px;border:0;border-radius:12px;background:#1a2538;font-size:13px;margin:0 0 6px 6px;padding:0 13px}.ch.on{background:#5eead4;color:#04302b;font-weight:800}.ac{background:#2a3c58;font-weight:700}.tg{display:block;width:100%;text-align:right;margin-left:0}.tg.on{background:#134e4a;color:#5eead4;font-weight:800}" +
@@ -520,31 +523,70 @@ var SHEET_JS = "var V=D.v||{},T=D.tabs||[],cur=T.length?T[0].id:'',bd=$('bd'),tb
   "else if(it.ty==='tg'){var g=mk('button','tg'+(V[it.k]?' on':''),it.t+' : '+(V[it.k]?'مفعّل':'متوقف'));g.onclick=function(){setV(it.k,!V[it.k]);render();bd.scrollTop=sc};w.appendChild(g)}" +
   "else if(it.ty==='rg'){var l=mk('div','lb');var n=mk('i','',V[it.k]);l.appendChild(document.createTextNode(it.t));l.appendChild(n);w.appendChild(l);var r=document.createElement('input');r.type='range';r.min=it.mn;r.max=it.mx;r.step=it.st;r.value=V[it.k];r.oninput=function(){n.textContent=r.value;setV(it.k,Number(r.value))};w.appendChild(r)}" +
   "else if(it.ty==='sw'){w.appendChild(mk('div','lb',it.t));var s=mk('div','sw');D.sw.forEach(function(c){var b=mk('button',String(V[it.k]).toLowerCase()===c?'on':'');b.style.background=c;b.onclick=function(){setV(it.k,c);render();bd.scrollTop=sc};s.appendChild(b)});w.appendChild(s)}" +
+  "else if(it.ty==='pf'){w.appendChild(mk('div','lb','بدّل الملف (لكل لعبة أو تطبيق)'));D.profs.forEach(function(p){var b=mk('button','ch'+(p.id===D.cur?' on':''),p.n);b.onclick=function(){send({t:'prof',id:p.id})};w.appendChild(b)})}" +
   "else{w.appendChild(mk('div','lb',it.t));it.o.forEach(function(o){var b=mk('button','ch'+(String(V[it.k])===String(o[0])?' on':''),o[1]);b.onclick=function(){setV(it.k,o[0]);render();bd.scrollTop=sc};w.appendChild(b)})}" +
   "bd.appendChild(w)});bd.scrollTop=sc}" +
   "ready(function(){$('ok').onclick=function(){send({t:'close'})};$('st').onclick=function(){send({t:'act',a:'stop'})};" +
-  "recv(function(d){if(!d)return;if(d.v){V=d.v;render()}if(d.note!==undefined){nt.textContent=d.note;clearTimeout(ntT);ntT=setTimeout(function(){nt.textContent=''},2500)}});render()})";
+  "recv(function(d){if(!d)return;if(d.cur)D.cur=d.cur;if(d.profs)D.profs=d.profs;if(d.v){V=d.v;render()}if(d.note!==undefined){nt.textContent=d.note;clearTimeout(ntT);ntT=setTimeout(function(){nt.textContent=''},2500)}});render()})";
 function sheetHtml(d) { return page(SHEET_CSS, '<div id="pn"><div id="gp"></div><div id="hd"><b>إعدادات سريعة</b><button class="st" id="st" type="button">إيقاف الأداة</button><button class="ok" id="ok" type="button">تم</button></div><div id="tb"></div><div id="nt"></div><div id="bd"></div></div>', SHEET_JS, d); }
 
 /* --- نتيجة ترجمة الشاشة كاملة --- */
-var FULL_CSS = ".l{position:absolute;background:rgba(8,12,20,.93);color:#fff;border-radius:5px;padding:0 5px;line-height:1.25;display:flex;align-items:center;justify-content:center;text-align:center;word-break:break-word;overflow:hidden}.l.o{background:rgba(30,58,120,.95);direction:ltr}" +
-  "#bar{position:absolute;bottom:36px;left:0;right:0;display:flex;justify-content:center;gap:8px;flex-wrap:wrap;padding:0 10px}#bar button{min-height:44px;padding:0 16px;border:0;border-radius:22px;background:#fff;color:#0f172a;font-weight:800;font-size:14px}#bar .x{background:#fb7185;color:#fff}#ms{position:absolute;top:44%;left:0;right:0;text-align:center;font-weight:800;font-size:16px;text-shadow:0 1px 6px #000}";
-var FULL_JS = "var L=D.lines||[],els=[],orig=false;ready(function(){var Hh=innerHeight;if(!L.length){$('ms').textContent=D.msg;$('tg').style.display='none';$('cp').style.display='none'}" +
-  "L.forEach(function(l){var d=mk('div','l',l.t);d.style.left=(l.x*100)+'%';d.style.top=(l.y*100)+'%';d.style.minWidth=(l.w*100)+'%';d.style.minHeight=(l.h*100)+'%';d.style.fontSize=Math.max(10,Math.min(40,l.h*Hh*0.7))+'px';d.dir=D.rtl?'rtl':'ltr';" +
-  "d.onclick=function(){var o=d.classList.toggle('o');d.textContent=o?l.o:l.t;d.dir=o?'ltr':(D.rtl?'rtl':'ltr')};document.body.appendChild(d);els.push([d,l])});" +
-  "$('x').onclick=function(){send({t:'close'})};$('cp').onclick=function(){send({t:'copy'})};" +
-  "$('tg').onclick=function(){orig=!orig;els.forEach(function(p){p[0].classList.toggle('o',orig);p[0].textContent=orig?p[1].o:p[1].t;p[0].dir=orig?'ltr':(D.rtl?'rtl':'ltr')})}})";
-function fullHtml(d) { return page(FULL_CSS, '<div id="ms"></div><div id="bar"><button class="x" id="x" type="button">إغلاق</button><button id="tg" type="button">الأصل / الترجمة</button><button id="cp" type="button">نسخ الكل</button></div>', FULL_JS, d); }
+var FULL_CSS = ".l{position:absolute;background:rgba(8,12,20,.93);color:#fff;border-radius:5px;padding:0 5px;line-height:1.25;display:flex;align-items:center;justify-content:center;text-align:center;word-break:break-word;overflow:hidden}.l.o{background:rgba(30,58,120,.95);direction:ltr}";
+var FULL_JS = "var L=D.lines||[],els=[];ready(function(){var Hh=innerHeight;" +
+  "L.forEach(function(l){var d=mk('div','l',l.t);d.style.left=(l.x*100)+'%';d.style.top=(l.y*100)+'%';d.style.minWidth=(l.w*100)+'%';d.style.minHeight=(l.h*100)+'%';d.style.fontSize=Math.max(10,Math.min(40,l.h*Hh*0.7))+'px';d.dir=D.rtl?'rtl':'ltr';document.body.appendChild(d);els.push([d,l])});" +
+  "recv(function(m){if(m&&m.orig!==undefined)els.forEach(function(p){p[0].classList.toggle('o',m.orig);p[0].textContent=m.orig?p[1].o:p[1].t;p[0].dir=m.orig?'ltr':(D.rtl?'rtl':'ltr')})})})";
+function fullHtml(d) { return page(FULL_CSS, "", FULL_JS, d); }
+var FBAR_CSS = "#b{display:flex;gap:6px;height:100%;padding:6px;background:rgba(14,20,30,.96);border:1px solid #2c3a52;border-radius:28px;box-shadow:0 4px 16px rgba(0,0,0,.5)}#b button{flex:1;border:0;border-radius:22px;background:#1c283b;font-size:13px;font-weight:800}#b .x{background:#fb7185;color:#fff}";
+function fbarHtml() { return page(FBAR_CSS, '<div id="b"><button class="x" id="x" type="button">إغلاق</button><button id="tg" type="button">الأصل / الترجمة</button><button id="cp" type="button">نسخ</button></div>', "ready(function(){$('x').onclick=function(){send({t:'close'})};$('tg').onclick=function(){send({t:'orig'})};$('cp').onclick=function(){send({t:'copy'})}})", {}); }
 
 function toastHtml(t) { return page("#m{margin:4px;padding:10px 14px;border-radius:14px;background:rgba(14,20,30,.96);border:1px solid #5eead4;font-size:14px;font-weight:600;text-align:center;line-height:1.45}", '<div id="m"></div>', "$('m').textContent=D.t", { t: t }); }
 var FRAME_HTML = '<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;height:100%;background:transparent;overflow:hidden}div{box-sizing:border-box;width:100%;height:100%;border:3px dashed rgba(255,255,255,.9);border-radius:6px;box-shadow:0 0 0 1px rgba(0,0,0,.55)}</style></head><body><div></div></body></html>';
 
 /* ============ الحالة العامة ============ */
-var REG = LS.get("ft2_reg", null);
-if (!(REG && REG.w >= 20 && REG.h >= 10 && isFinite(REG.x) && isFinite(REG.y))) REG = null;
+var MAXR = 2;
+var REGS = (function () {
+  var a = LS.get("ft2_regs", null), old = LS.get("ft2_reg", null), out = [];
+  if (!Array.isArray(a)) a = old ? [old] : [];
+  a.forEach(function (r) { if (r && r.w >= 20 && r.h >= 10 && isFinite(r.x) && isFinite(r.y) && out.length < MAXR) out.push({ x: r.x, y: r.y, w: r.w, h: r.h, sr: r.sr && r.sr.w >= 20 ? r.sr : undefined }); });
+  return out;
+})();
 var DK = LS.get("ft2_dock", null); if (!(DK && isFinite(DK.x) && isFinite(DK.y))) DK = { x: 0, y: 260 };
-var ID = { dock: "ft-dock", sub: "ft-sub", pick: "ft-pick", sheet: "ft-sheet", full: "ft-full", toast: "ft-toast", frame: "ft-frame" };
-var G = { on: false, busy: false, L: null, pinned: false, shown: null, shownAt: 0, queued: null, queueT: 0, cur: null, cycle: 0, empty: 0, trCtl: null, tok: 0, offs: {}, dockOpen: false, side: "r", pickT: "region", fsLines: [], rsT: 0, last: null, svc: false };
+var ID = { dock: "ft-dock", pick: "ft-pick", sheet: "ft-sheet", full: "ft-full", fbar: "ft-fbar", toast: "ft-toast", frame: "ft-frame", menu: "ft-menu" };
+var G = { on: false, busy: false, R: [], pinned: false, offs: {}, pickT: "region", pickI: 0, fsLines: [], fsOrig: false, fullOpen: false, fullT: 0, rsT: 0, last: null, svc: false, sheetBack: false, trCtl: null };
+
+/* ---- الملفات الشخصية: كل ملف يحفظ المناطق والإعدادات (بدون المفاتيح والزر العائم) ---- */
+var PEX = ["mmEmail", "lingvaUrl", "libUrl", "libKey", "gemKey", "gemModel", "oaUrl", "oaKey", "oaModel", "gKey", "azKey", "azReg", "dkColor", "dkOp", "keepAlive"];
+var pkeys = function () { return Object.keys(DEF).filter(function (k) { return PEX.indexOf(k) < 0; }); };
+var jcopy = function (x) { return JSON.parse(JSON.stringify(x)); };
+function psnap() { var v = {}; pkeys().forEach(function (k) { v[k] = opt[k]; }); return v; }
+var PROFS = LS.get("ft2_profs", null), CURP = LS.get("ft2_prof", "");
+if (!Array.isArray(PROFS) || !PROFS.length) { PROFS = [{ id: "p1", n: "الافتراضي", regs: jcopy(REGS), v: psnap() }]; CURP = "p1"; LS.set("ft2_profs", PROFS); LS.set("ft2_prof", CURP); }
+if (!PROFS.some(function (p) { return p.id === CURP; })) CURP = PROFS[0].id;
+function pcur() { for (var i = 0; i < PROFS.length; i++) if (PROFS[i].id === CURP) return PROFS[i]; return null; }
+function profSync() { var p = PROFS && pcur(); if (!p) return; p.v = psnap(); p.regs = jcopy(REGS); LS.set("ft2_profs", PROFS); }
+var profList = function () { return PROFS.map(function (p) { return { id: p.id, n: p.n }; }); };
+function profApply(id) {
+  var p = null; PROFS.forEach(function (x) { if (x.id === id) p = x; }); if (!p) return;
+  CURP = id; LS.set("ft2_prof", CURP);
+  pkeys().forEach(function (k) { var nv = ITEM[k] ? coerce(k, p.v[k]) : (typeof p.v[k] === typeof DEF[k] ? p.v[k] : undefined); opt[k] = nv === undefined ? DEF[k] : nv; });
+  REGS = jcopy(p.regs || []).slice(0, MAXR); LS.set("ft2_regs", REGS); LS.set("ft2_opt", opt);
+  if (G.on) { loopStop(); frame(); loopStart(); }
+  renderSettings(); renderHome(); profDraw(); ovPost(ID.sheet, { v: sheetVals(), cur: CURP, profs: profList() });
+}
+function profNew(name) {
+  name = String(name || "").trim() || "ملف " + (PROFS.length + 1); profSync();
+  var id = "p" + Date.now().toString(36); PROFS.push({ id: id, n: name.slice(0, 24), regs: [], v: psnap() }); LS.set("ft2_profs", PROFS); profApply(id); toast("أُنشئ ملف «" + name.slice(0, 24) + "» بنفس الإعدادات وبدون مناطق");
+}
+function profRename(name) { var p = pcur(); name = String(name || "").trim(); if (!p || !name) return; p.n = name.slice(0, 24); LS.set("ft2_profs", PROFS); profDraw(); }
+function profDel() {
+  if (PROFS.length < 2) { toast("لا يمكن حذف الملف الوحيد"); return; }
+  PROFS = PROFS.filter(function (p) { return p.id !== CURP; }); LS.set("ft2_profs", PROFS); profApply(PROFS[0].id);
+}
+function profDraw() {
+  var b = $("profs"); if (!b) return; b.textContent = "";
+  PROFS.forEach(function (p) { var c = el("button", "ch" + (p.id === CURP ? " on" : ""), p.n); c.onclick = function () { if (p.id !== CURP) { profApply(p.id); hap(); } }; b.appendChild(c); });
+  var c = pcur(); if (c && document.activeElement !== $("profN")) $("profN").value = c.n;
+}
 
 function ovKill(id) { var o = OV(); if (!o) return Promise.resolve(); try { return Promise.resolve(o.destroy(id)).then(null, function () {}); } catch (e) { return Promise.resolve(); } }
 function ovMake(opts) { var o = OV(); if (!o) return Promise.reject({ code: "none" }); return ovKill(opts.id).then(function () { return o.create(opts); }); }
@@ -558,30 +600,22 @@ function ovHide(id) { try { OV().hide(id); } catch (e) {} }
 function ovShow(id) { try { OV().show(id); } catch (e) {} }
 function flash(text, ms) { var s = scr(); ovMake({ id: ID.toast, html: toastHtml(text), x: 12, y: 56, w: s.w - 24, h: 66, touchable: false, focusable: false }).then(function () { setTimeout(function () { ovKill(ID.toast); }, ms || 3200); }, function () {}); }
 
-/* ---- الزر العائم ---- */
-var DW = 64;
-function dockRect(open) {
-  var s = scr(), w = open ? Math.min(s.w - 8, 372) : DW, x = DK.x, side = DK.x + DW / 2 > s.w / 2 ? "r" : "l";
-  if (open) x = side === "r" ? DK.x + DW - w : DK.x;
-  return { x: Math.round(clamp(x, 0, s.w - w)), y: Math.round(clamp(DK.y, 24, s.h - DW - 8)), w: w, h: DW, side: side };
-}
+/* ---- الزر العائم: السحب والتمدد داخل النافذة نفسها (RosTrickOverlay.drag/move/resize) ---- */
 function dockHandle(d) {
   if (!d) return;
-  if (d.t === "expand") { var r = dockRect(true); G.dockOpen = true; G.side = r.side; ovUpd(ID.dock, { x: r.x, y: r.y, w: r.w, h: r.h }); setTimeout(function () { ovPost(ID.dock, { open: true, side: r.side }); }, 60); }
-  else if (d.t === "collapse") dockCollapse();
-  else if (d.t === "mv") { var s = scr(); DK.x = clamp(DK.x + d.dx, 0, s.w - DW); DK.y = clamp(DK.y + d.dy, 24, s.h - DW - 8); var q = dockRect(G.dockOpen); ovUpd(ID.dock, { x: q.x, y: q.y }); setTimeout(function () { ovPost(ID.dock, { ack: 1 }); }, 28); }
-  else if (d.t === "mend") { var s2 = scr(); DK.x = DK.x + DW / 2 < s2.w / 2 ? 0 : s2.w - DW; LS.set("ft2_dock", DK); var q2 = dockRect(G.dockOpen); ovUpd(ID.dock, { x: q2.x, y: q2.y }); if (G.dockOpen) ovPost(ID.dock, { open: true, side: q2.side }); }
+  if (d.t === "pos") { DK = { x: d.x, y: d.y }; LS.set("ft2_dock", DK); }
   else if (d.t === "act") dockAct(d.a);
 }
-function dockCollapse() { if (!G.dockOpen) return; G.dockOpen = false; var r = dockRect(false); ovPost(ID.dock, { open: false }); ovUpd(ID.dock, { x: r.x, y: r.y, w: r.w, h: r.h }); }
+function dockCollapse() { ovPost(ID.dock, { collapse: true }); }
 function dockAct(a) {
   hap();
   if (a === "stop") { stopAll(); return; }
   if (a === "pin") { setPin(!G.pinned); return; }
   dockCollapse();
-  if (a === "now") nowRead(); else if (a === "alt") altTr(); else if (a === "region") openPicker("region"); else if (a === "full") setTimeout(fullTranslate, 250); else if (a === "sheet") sheetOpen();
+  if (a === "now") nowRead(); else if (a === "alt") altTr(); else if (a === "region") chooser("region");
+  else if (a === "full") { if (G.fullOpen) fullClose(); else setTimeout(fullTranslate, 250); } else if (a === "sheet") sheetOpen();
 }
-function setPin(v) { G.pinned = !!v; ovPost(ID.dock, { pinned: G.pinned }); if (!v && G.L) { G.L.dirty = true; } }
+function setPin(v) { G.pinned = !!v; ovPost(ID.dock, { pinned: G.pinned }); if (!v) G.R.forEach(function (C) { C.dirty = true; }); }
 function dockBusy(b) { ovPost(ID.dock, { busy: b }); }
 
 /* ---- تشغيل / إيقاف ---- */
@@ -594,12 +628,12 @@ async function startAll() {
   } catch (e) { toast("تعذّر طلب الإذن"); renderHome(); return; }
   if (!s || !c) { toast("ينقص خيار في البناء، راجع قسم التجهيز"); renderHome(); return; }
   try {
-    await ovMake(dockCreate()); G.on = true; G.dockOpen = false; hookEvents();
+    await ovMake(dockCreate()); G.on = true; hookEvents(); try { RosTrickBack.exitMode("minimize"); } catch (e) {}
     if (opt.keepAlive && bgSvc()) { try { RosTrickBackground.service.start({ title: "المترجم العائم", text: "الأداة تعمل" }); G.svc = true; } catch (e) {} }
-    renderHome(); frame(); if (REG) loopStart(); minimizeApp();
+    renderHome(); frame(); if (REGS.length) loopStart(); minimizeApp();
   } catch (e) { G.on = false; renderHome(); toast("تعذّر إنشاء الزر العائم (" + ((e && e.code) || "؟") + ")"); }
 }
-function dockCreate() { var r = dockRect(false); return { id: ID.dock, html: dockHtml(), x: r.x, y: r.y, w: r.w, h: r.h, touchable: true, focusable: false, keep: true }; }
+function dockCreate() { var s = scr(); return { id: ID.dock, html: dockHtml(), x: Math.round(clamp(DK.x, 0, s.w - 64)), y: Math.round(clamp(DK.y, 24, s.h - 72)), w: 64, h: 64, touchable: true, focusable: false, keep: true }; }
 function hookEvents() {
   ovOn(ID.dock, dockHandle);
   var o = OV(); try { G.offs.closed = o.on("closed", function (d) { if (d && d.id === ID.dock && G.on) stopAll(true); }); } catch (e) {}
@@ -614,138 +648,168 @@ function stopAll(fromEvent) {
   renderHome();
 }
 
-/* ---- منطقة القراءة ---- */
-function openPicker(kind) {
+/* ---- مناطق القراءة (حتى منطقتين؛ لكل منطقة قناة مستقلة بترجمتها ونافذتها) ---- */
+var subId = function (i) { return "ft-sub" + i; };
+function newCh(i, r) { return { i: i, r: r, t: 0, prev: null, dirty: true, last: 0, fail: 0, ms: 0, paused: false, hidden: false, made: false, sp: null, frac: 0, fixed: false, h: 0, cur: null, shown: null, shownAt: 0, queued: null, queueT: 0, empty: 0, trCtl: null, tok: 0, cycle: 0 }; }
+function regsSave() { LS.set("ft2_regs", REGS); profSync(); }
+function pauseAll(kill) { G.R.forEach(function (C) { C.paused = true; clearTimeout(C.t); if (kill) { ovKill(subId(C.i)); C.made = false; } }); }
+function resumeAll(rebuild) { G.R.forEach(function (C) { C.paused = false; if (rebuild) { C.made = false; pushShow(C); } nextTick(C, Date.now()); }); }
+
+var MENU_CSS = "#bd{position:absolute;inset:0;background:rgba(5,8,14,.62);display:flex;align-items:center;justify-content:center}#pn{width:84%;max-width:340px;background:#141b26;border:1px solid #2a3850;border-radius:22px;padding:8px}#pn button{display:block;width:100%;min-height:48px;margin:5px 0;border:0;border-radius:14px;background:#1c283b;font-size:15px;font-weight:700;text-align:right;padding:0 16px}#pn .dng{color:#fb7185}#pn .cl{background:transparent;color:#8fa0ba;text-align:center}";
+var MENU_JS = "ready(function(){var pn=$('pn');D.items.forEach(function(it){var b=mk('button',it.c||'',it.t);b.onclick=function(){send({a:it.a,i:it.i})};pn.appendChild(b)});$('bd').onclick=function(e){if(e.target===this)send({a:'x'})}})";
+function chooser(kind) {
   if (!OV() || !G.on) { toast("شغّل الأداة أولاً"); return; }
-  var s = SC(); if (s && !s.isActive()) { flash("انتهت جلسة تسجيل الشاشة. أعد التشغيل من التطبيق."); return; }
-  G.pickT = kind; var L = G.L; if (L) { L.paused = true; clearTimeout(L.t); }
-  ovKill(ID.sub); ovKill(ID.full); ovKill(ID.sheet); ovKill(ID.frame); ovHide(ID.dock);
-  var d = { mode: kind };
-  if (kind === "region") d.rect = REG; else { var pl = opt.pos === "custom" ? customRect() : subPlace(subEst()); d.rect = { x: pl.x, y: pl.y, w: pl.w, h: pl.h }; d.sample = "هكذا ستظهر الترجمة"; d.sty = { color: opt.color, bold: opt.bold, px: opt.px, align: opt.align, rgb: rgbOf(opt.bgc), a: opt.bga / 100, rad: opt.rad }; }
-  ovMake({ id: ID.pick, html: pickHtml(d), x: 0, y: 0, w: "full", h: "full", touchable: true, focusable: false }).then(function () { ovOn(ID.pick, pickMsg); }, function () { pickEnd(); toast("تعذّر فتح النافذة"); });
-}
-function pickMsg(m) {
-  if (!m) return; var kind = G.pickT;
-  if (m.t === "ok" && m.rect) {
-    if (kind === "region") { REG = m.rect; LS.set("ft2_reg", REG); pickEnd(true); }
-    else { opt.cx = String(m.rect.x); opt.cy = String(m.rect.y); opt.cw = String(m.rect.w); opt.ch = String(m.rect.h); opt.pos = "custom"; save(); pickEnd(false); renderSettings(); }
-  } else if (m.t === "extra") {
-    if (kind === "region") { var s = scr(); REG = { x: 0, y: 0, w: s.w, h: s.h }; LS.set("ft2_reg", REG); pickEnd(true); }
-    else { opt.pos = "auto"; save(); pickEnd(false); renderSettings(); }
-  } else pickEnd(false);
-}
-function pickEnd(newReg) {
-  ovKill(ID.pick); if (typeof G.offs[ID.pick] === "function") { try { G.offs[ID.pick](); } catch (e) {} G.offs[ID.pick] = null; }
-  ovShow(ID.dock); frame(); renderHome();
-  if (newReg) { loopStop(); loopStart(); } else if (G.L) { G.L.paused = false; G.L.made = false; pushShow(); nextTick(G.L, Date.now()); }
-  if (G.sheetBack) { G.sheetBack = false; sheetOpen(); }
-}
-function frame() {
-  var o = OV(); if (!o || !G.on) return; ovKill(ID.frame);
-  if (!(opt.outline && REG)) return;
-  ovMake({ id: ID.frame, html: FRAME_HTML, x: REG.x - 4, y: REG.y - 4, w: REG.w + 8, h: REG.h + 8, touchable: false, focusable: false }).then(null, function () {});
+  if (kind === "place" && !REGS.length) { flash("حدّد منطقة القراءة أولاً"); if (G.sheetBack) { G.sheetBack = false; sheetOpen(); } return; }
+  if (kind === "region" && !REGS.length) { openPicker("region", 0); return; }
+  if (kind === "place" && REGS.length === 1) { openPicker("place", 0); return; }
+  var items = [];
+  REGS.forEach(function (r, i) { items.push({ a: "pick", i: i, t: (kind === "region" ? "✏️ تعديل منطقة القراءة " : "↔️ تحريك ترجمة المنطقة ") + (i + 1) }); });
+  if (kind === "region") { if (REGS.length < MAXR) items.push({ a: "pick", i: REGS.length, t: "＋ إضافة منطقة ثانية" }); else items.push({ a: "del", i: 1, t: "🗑 حذف المنطقة 2", c: "dng" }); }
+  items.push({ a: "x", t: "إلغاء", c: "cl" });
+  ovHide(ID.dock); ovKill(ID.frame);
+  ovMake({ id: ID.menu, html: page(MENU_CSS, '<div id="bd"><div id="pn"></div></div>', MENU_JS, { items: items }), x: 0, y: 0, w: "full", h: "full", touchable: true, focusable: false }).then(function () {
+    ovOn(ID.menu, function (m) {
+      if (!m) return; ovKill(ID.menu); ovShow(ID.dock);
+      if (m.a === "pick") openPicker(kind, m.i);
+      else if (m.a === "del") { REGS.splice(m.i, 1); regsSave(); loopStop(); loopStart(); frame(); renderHome(); }
+      else { frame(); if (G.sheetBack) { G.sheetBack = false; sheetOpen(); } }
+    });
+  }, function () { ovShow(ID.dock); frame(); });
 }
 
-/* ---- نافذة الترجمة ---- */
-function rgbOf(h) { return parseInt(h.substr(1, 2), 16) + "," + parseInt(h.substr(3, 2), 16) + "," + parseInt(h.substr(5, 2), 16); }
-var nOpt = function (v, d) { if (v === "" || v == null) return d; var n = parseFloat(v); return isFinite(n) ? n : d; };
-function subEst() { return Math.round(opt.px * 2.4) + 18; }
-function customRect() {
-  var s = scr(), r = REG || { x: 20, y: 200, w: 300, h: 80 }, w = clamp(Math.round(nOpt(opt.cw, r.w)), 40, s.w), h = clamp(Math.round(nOpt(opt.ch, r.h)), 24, s.h);
-  return { x: Math.round(clamp(nOpt(opt.cx, r.x), 0, s.w - w)), y: Math.round(clamp(nOpt(opt.cy, r.y), 0, s.h - h)), w: w, h: h };
+function openPicker(kind, idx) {
+  idx = idx | 0; if (!OV() || !G.on) { toast("شغّل الأداة أولاً"); return; }
+  var s = SC(); if (s && !s.isActive()) { flash("انتهت جلسة تسجيل الشاشة. أعد التشغيل من التطبيق."); return; }
+  G.pickT = kind; G.pickI = idx; pauseAll(true); fullClose(true); ovKill(ID.sheet); ovKill(ID.menu); ovKill(ID.frame); ovHide(ID.dock);
+  var d = { mode: kind };
+  if (kind === "region") d.rect = REGS[idx] ? { x: REGS[idx].x, y: REGS[idx].y, w: REGS[idx].w, h: REGS[idx].h } : null;
+  else {
+    var C = G.R[idx], pl = subPlace(C, C.h || subEst()); d.rect = { x: pl.x, y: pl.y, w: pl.w, h: pl.h }; d.sample = "هكذا ستظهر الترجمة";
+    d.sty = { color: opt.color, bold: opt.bold, px: opt.px, align: opt.align, rgb: rgbOf(opt.bgc), a: opt.bga / 100, rad: opt.rad };
+  }
+  ovMake({ id: ID.pick, html: pickHtml(d), x: 0, y: 0, w: "full", h: "full", touchable: true, focusable: false }).then(function () { ovOn(ID.pick, pickMsg); }, function () { pickEnd(false); toast("تعذّر فتح النافذة"); });
 }
-function subPlace(h) {
-  var s = scr(), r = REG || { x: 0, y: 0, w: 0, h: 0 }, pl;
-  if (opt.pos === "region" && REG) { var rw = clamp(r.w, 40, s.w), rh = clamp(r.h, 24, s.h); pl = { x: Math.round(clamp(r.x, 0, s.w - rw)), y: Math.round(clamp(r.y, 0, s.h - rh)), w: rw, h: rh, fixed: true }; }
-  else if (opt.pos === "custom") { pl = customRect(); pl.fixed = true; }
+function pickMsg(m) {
+  if (!m) return; var kind = G.pickT, i = G.pickI;
+  if (m.t === "ok" && m.rect) {
+    if (kind === "region") { var old = REGS[i] || {}; REGS[i] = { x: m.rect.x, y: m.rect.y, w: m.rect.w, h: m.rect.h, sr: old.sr }; regsSave(); pickEnd(true); }
+    else { if (REGS[i]) REGS[i].sr = m.rect; opt.pos = "custom"; save(); regsSave(); pickEnd(false); renderSettings(); }
+  } else if (m.t === "extra") {
+    if (kind === "region") { var sz = scr(); REGS[i] = { x: 0, y: 0, w: sz.w, h: sz.h, sr: (REGS[i] || {}).sr }; regsSave(); pickEnd(true); }
+    else { if (REGS[i]) delete REGS[i].sr; regsSave(); pickEnd(false); renderSettings(); }
+  } else pickEnd(false);
+}
+function pickEnd(newRegs) {
+  ovKill(ID.pick); if (typeof G.offs[ID.pick] === "function") { try { G.offs[ID.pick](); } catch (e) {} G.offs[ID.pick] = null; }
+  ovShow(ID.dock); frame(); renderHome();
+  if (newRegs) { loopStop(); loopStart(); } else resumeAll(true);
+  if (G.sheetBack) { G.sheetBack = false; sheetOpen(); }
+}
+var FR_CSS = ".f{position:absolute;box-sizing:border-box;border:3px dashed rgba(255,255,255,.9);border-radius:6px;box-shadow:0 0 0 1px rgba(0,0,0,.55)}";
+var FR_JS = "ready(function(){D.rs.forEach(function(r){var d=mk('div','f');d.style.left=(r.x-4)+'px';d.style.top=(r.y-4)+'px';d.style.width=(r.w+8)+'px';d.style.height=(r.h+8)+'px';document.body.appendChild(d)})})";
+function frame() {
+  if (!OV() || !G.on) return; ovKill(ID.frame); if (!(opt.outline && REGS.length)) return;
+  ovMake({ id: ID.frame, html: page(FR_CSS, "", FR_JS, { rs: REGS.map(function (r) { return { x: r.x, y: r.y, w: r.w, h: r.h }; }) }), x: 0, y: 0, w: "full", h: "full", touchable: false, focusable: false }).then(null, function () {});
+}
+
+function rgbOf(h) { return parseInt(h.substr(1, 2), 16) + "," + parseInt(h.substr(3, 2), 16) + "," + parseInt(h.substr(5, 2), 16); }
+function subEst() { return Math.round(opt.px * 2.4) + 18; }
+function srRect(C) {
+  var s = scr(), q = C.r.sr; if (!q) return null; var w = clamp(Math.round(q.w), 40, s.w), h = clamp(Math.round(q.h), 24, s.h);
+  return { x: Math.round(clamp(q.x, 0, s.w - w)), y: Math.round(clamp(q.y, 0, s.h - h)), w: w, h: h };
+}
+function stackOff(C) { var o = 0; for (var k = 0; k < C.i; k++) { var P = G.R[k]; if (P) o += (P.h || subEst()) + 6; } return o; }
+function subPlace(C, h) {
+  var s = scr(), r = C.r, pl, sr = srRect(C);
+  if (opt.pos === "region") { var rw = clamp(r.w, 40, s.w), rh = clamp(r.h, 24, s.h); pl = { x: Math.round(clamp(r.x, 0, s.w - rw)), y: Math.round(clamp(r.y, 0, s.h - rh)), w: rw, h: rh, fixed: true }; }
+  else if (opt.pos === "custom" && sr) { pl = sr; pl.fixed = true; }
   else {
     var w = Math.round(Math.min(s.w - 16, 560) * opt.width / 100), x = Math.round((s.w - w) / 2), y;
-    if (opt.pos === "top") y = 52; else if (opt.pos === "bottom") y = s.h - h - 72; else { y = r.y + r.h + 8; if (y + h > s.h - 8) y = r.y - h - 8; }
+    if (opt.pos === "top") y = 52 + stackOff(C); else if (opt.pos === "bottom") y = s.h - h - 72 - stackOff(C); else { y = r.y + r.h + 8; if (y + h > s.h - 8) y = r.y - h - 8; }
     pl = { x: x, y: Math.round(clamp(y, 24, Math.max(24, s.h - h))), w: w, h: h, fixed: false };
   }
   var ix = Math.max(0, Math.min(pl.x + pl.w, r.x + r.w) - Math.max(pl.x, r.x)), iy = Math.max(0, Math.min(pl.y + pl.h, r.y + r.h) - Math.max(pl.y, r.y));
-  pl.frac = r.w > 0 && r.h > 0 ? (ix * iy) / (r.w * r.h) : 0;
-  return pl;
+  pl.frac = r.w > 0 && r.h > 0 ? (ix * iy) / (r.w * r.h) : 0; return pl;
 }
 var coverOn = function () { return (opt.pos === "region" || opt.pos === "custom") && opt.cover; };
-function showPayload() { return G.shown && G.shown.text ? { text: G.shown.text, orig: opt.showOrig && opt.trOn && G.shown.orig !== G.shown.text ? G.shown.orig : "", note: G.shown.note || "", rtl: opt.trOn && RTLS.indexOf(opt.trLang) >= 0 } : null; }
-function subData(fixed) { return { px: opt.px, color: opt.color, bgc: opt.bgc, bga: coverOn() ? 1 : opt.bga / 100, rad: opt.rad, bold: opt.bold, shadow: opt.shadow, align: opt.align, fixed: !!fixed, show: showPayload() }; }
-function subMake(L) {
-  if (!OV() || G.L !== L) return Promise.resolve();
-  var pl = subPlace(subEst()); L.h = pl.h; L.sr = pl; L.frac = pl.frac; L.prev = null; L.fixed = pl.fixed; L.made = true;
-  return ovMake({ id: ID.sub, html: subHtml(subData(pl.fixed)), x: pl.x, y: pl.y, w: pl.w, h: pl.h, touchable: false, focusable: false }).then(function () { ovOn(ID.sub, function (m) { if (m && m.t === "size") subSize(m.h); }); }, function () {});
+function showPayload(C) { return C.shown && C.shown.text ? { text: C.shown.text, orig: opt.showOrig && opt.trOn && C.shown.orig !== C.shown.text ? C.shown.orig : "", note: C.shown.note || "", rtl: opt.trOn && RTLS.indexOf(opt.trLang) >= 0 } : null; }
+function subData(C, fixed) { return { px: opt.px, color: opt.color, bgc: opt.bgc, bga: coverOn() ? 1 : opt.bga / 100, rad: opt.rad, bold: opt.bold, shadow: opt.shadow, align: opt.align, fixed: !!fixed, show: showPayload(C) }; }
+function subMake(C) {
+  if (!OV() || G.R[C.i] !== C) return Promise.resolve();
+  var pl = subPlace(C, subEst()); C.h = pl.h; C.sp = pl; C.frac = pl.frac; C.prev = null; C.fixed = pl.fixed; C.made = true;
+  return ovMake({ id: subId(C.i), html: subHtml(subData(C, pl.fixed)), x: pl.x, y: pl.y, w: pl.w, h: pl.h, touchable: false, focusable: false, keep: true }).then(function () { ovOn(subId(C.i), function (m) { if (m && m.t === "size") subSize(C, m.h); }); }, function () {});
 }
-function subSize(h) {
-  var L = G.L; if (!L || !L.made || L.fixed) return; var s = scr(); h = clamp(Math.round(+h || 0), 10, Math.round(s.h * 0.4));
-  if (L.h && Math.abs(h - L.h) < 2) return; var pl = subPlace(h); L.h = h; L.sr = pl; L.frac = pl.frac; L.prev = null; ovUpd(ID.sub, { x: pl.x, y: pl.y, w: pl.w, h: pl.h });
+function subSize(C, h) {
+  if (G.R[C.i] !== C || !C.made || C.fixed) return; var s = scr(); h = clamp(Math.round(+h || 0), 10, Math.round(s.h * 0.4));
+  if (C.h && Math.abs(h - C.h) < 2) return; var pl = subPlace(C, h); C.h = h; C.sp = pl; C.frac = pl.frac; C.prev = null; ovUpd(subId(C.i), { x: pl.x, y: pl.y, w: pl.w, h: pl.h });
+  G.R.forEach(function (D2) { if (D2.i > C.i && D2.made && !D2.fixed && (opt.pos === "top" || opt.pos === "bottom")) { var q = subPlace(D2, D2.h || subEst()); D2.sp = q; D2.frac = q.frac; ovUpd(subId(D2.i), { x: q.x, y: q.y }); } });
 }
-function pushShow() { var L = G.L; if (!L || L.hidden) return; if (!L.made) { if (G.shown && G.shown.text) subMake(L); return; } ovPost(ID.sub, { show: showPayload() }); }
-function restyleSoon() { clearTimeout(G.rsT); G.rsT = setTimeout(function () { var L = G.L; if (L && L.made && !L.hidden) subMake(L); }, 120); }
+function pushShow(C) { if (C.hidden) return; if (!C.made) { if (C.shown && C.shown.text) subMake(C); return; } ovPost(subId(C.i), { show: showPayload(C) }); }
+function restyleSoon() { clearTimeout(G.rsT); G.rsT = setTimeout(function () { G.R.forEach(function (C) { if (C.made && !C.hidden) subMake(C); }); }, 120); }
 
-/* ---- عرض ثابت ---- */
-function present(orig, tr, via, note) {
+function present(C, orig, tr, via, note) {
   var now = Date.now();
-  if (opt.minShow > 0 && G.shown && G.shown.text && now - G.shownAt < opt.minShow) {
-    G.queued = { o: orig, t: tr, v: via, n: note };
-    if (!G.queueT) G.queueT = setTimeout(function () { G.queueT = 0; if (G.queued) { var q = G.queued; G.queued = null; apply(q.o, q.t, q.v, q.n); } }, opt.minShow - (now - G.shownAt));
+  if (opt.minShow > 0 && C.shown && C.shown.text && now - C.shownAt < opt.minShow) {
+    C.queued = { o: orig, t: tr, v: via, n: note };
+    if (!C.queueT) C.queueT = setTimeout(function () { C.queueT = 0; if (C.queued) { var q = C.queued; C.queued = null; apply(C, q.o, q.t, q.v, q.n); } }, opt.minShow - (now - C.shownAt));
     return;
   }
-  apply(orig, tr, via, note);
+  apply(C, orig, tr, via, note);
 }
-function apply(orig, tr, via, note) {
-  G.shown = { orig: orig, text: tr, via: via, note: note }; G.shownAt = Date.now(); G.last = { o: orig, t: tr, v: via }; pushShow(); drawLast();
+function apply(C, orig, tr, via, note) {
+  C.shown = { orig: orig, text: tr, via: via, note: note }; C.shownAt = Date.now(); G.last = { o: orig, t: tr, v: via }; pushShow(C); drawLast();
   if (tr && !note) hAdd(orig, tr);
 }
-function clearShown() { G.shown = null; G.cur = null; G.queued = null; G.empty = 0; pushShow(); }
-function handleText(text) {
+function clearShown(C) { C.shown = null; C.cur = null; C.queued = null; C.empty = 0; pushShow(C); }
+function handleText(C, text) {
   var now = Date.now();
-  if (!text) { if (!G.empty) G.empty = now; return; }
-  G.empty = 0; if (G.pinned) return;
+  if (!text) { if (!C.empty) C.empty = now; return; }
+  C.empty = 0; if (G.pinned) return;
   var n = norm(text); if (!n) return;
-  if (G.cur && G.cur.n && sim(n, G.cur.n) >= SIM[opt.stab]) return;
-  if (G.shown && G.shown.text && opt.trOn && sim(n, norm(G.shown.text)) >= 0.6) return;
-  G.cur = { o: text, n: n }; G.cycle = 0;
-  if (!opt.trOn) { G.tok++; ctlAbort(G.trCtl); present(text, text, "", ""); return; }
-  runTr(text, {});
+  if (C.cur && C.cur.n && sim(n, C.cur.n) >= SIM[opt.stab]) return;
+  if (C.shown && C.shown.text && opt.trOn && sim(n, norm(C.shown.text)) >= 0.6) return;
+  C.cur = { o: text, n: n }; C.cycle = 0;
+  if (!opt.trOn) { C.tok++; ctlAbort(C.trCtl); present(C, text, text, "", ""); return; }
+  runTr(C, text, {});
 }
-function runTr(text, o) {
-  var tok = ++G.tok; ctlAbort(G.trCtl); var ctl = G.trCtl = ctlNew();
+function runTr(C, text, o) {
+  var tok = ++C.tok; ctlAbort(C.trCtl); var ctl = C.trCtl = ctlNew();
   return translate(text, { ctl: ctl, shift: o.shift || 0, nocache: o.nocache }).then(function (r) {
-    if (tok !== G.tok) return; if (r.same) present(text, text, "", ""); else present(text, r.text, r.via, "");
+    if (tok !== C.tok) return; if (r.same) present(C, text, text, "", ""); else present(C, text, r.text, r.via, "");
   }, function (e) {
-    if (tok !== G.tok) return; var t = e && e.tr; if (t && t.why === "abort") return; if (G.cur) G.cur.n = "";
-    present(text, text, "", "تعذّرت الترجمة: " + why(t));
+    if (tok !== C.tok) return; var t = e && e.tr; if (t && t.why === "abort") return; if (C.cur) C.cur.n = "";
+    present(C, text, text, "", "تعذّرت الترجمة: " + why(t));
   });
 }
-function holdCheck(now) { if (G.empty && !G.pinned && G.shown && opt.hold >= 0 && now - G.empty >= opt.hold) clearShown(); }
+function holdCheck(C, now) { if (C.empty && !G.pinned && C.shown && opt.hold >= 0 && now - C.empty >= opt.hold) clearShown(C); }
 function altTr() {
-  if (G.cur && G.cur.o) { G.cycle++; if (order(0).length < 2) flash("أضف مفتاح خدمة ثانية لتجربة ترجمة مختلفة."); runTr(G.cur.o, { shift: G.cycle, nocache: true }); }
-  else nowRead();
+  var any = false; G.R.forEach(function (C) { if (C.cur && C.cur.o) { any = true; C.cycle++; runTr(C, C.cur.o, { shift: C.cycle, nocache: true }); } });
+  if (!any) nowRead(); else if (order(0).length < 2) flash("أضف مفتاح خدمة ثانية لتجربة ترجمة مختلفة.");
 }
 
-/* ---- حلقة القراءة ---- */
 function loopStart() {
-  if (!OV() || !REG) return; loopStop(); G.cur = null; G.shown = null; G.queued = null; G.empty = 0; G.tok++; ctlAbort(G.trCtl);
-  var L = { r: REG, t: 0, prev: null, dirty: true, last: 0, fail: 0, ms: 0, paused: false, hidden: false, made: false, sr: null, frac: 0, fixed: false, h: 0 };
-  G.L = L; tick(L, true);
+  if (!OV() || !REGS.length) return; loopStop();
+  G.R = REGS.map(function (r, i) { return newCh(i, r); });
+  G.R.forEach(function (C, k) { setTimeout(function () { if (G.R[C.i] === C) tick(C, true); }, k * 400); });
 }
-function loopStop() { var L = G.L; if (L) { clearTimeout(L.t); G.L = null; G.busy = false; } ovKill(ID.sub); }
-function nextTick(L, t0) {
-  if (G.L !== L || L.paused || !(opt.interval > 0)) return; clearTimeout(L.t);
-  var iv = opt.interval; if (L.frac >= 0.85) { if (!(opt.probe > 0)) return; iv = Math.max(iv, opt.probe); }
-  L.t = setTimeout(function () { tick(L, false); }, Math.max(40, iv - (Date.now() - t0)));
+function loopStop() { G.R.forEach(function (C) { clearTimeout(C.t); clearTimeout(C.queueT); ctlAbort(C.trCtl); ovKill(subId(C.i)); }); G.R = []; G.busy = false; }
+function nextTick(C, t0) {
+  if (G.R[C.i] !== C || C.paused || !(opt.interval > 0)) return; clearTimeout(C.t);
+  var iv = opt.interval; if (C.frac >= 0.85) { if (!(opt.probe > 0)) return; iv = Math.max(iv, opt.probe); }
+  C.t = setTimeout(function () { tick(C, false); }, Math.max(40, iv - (Date.now() - t0)));
 }
 function nowRead() {
-  if (!REG) { openPicker("region"); return; }
+  if (!REGS.length) { chooser("region"); return; }
   if (G.pinned) setPin(false);
-  if (!G.L) loopStart(); else { G.L.paused = false; G.L.hidden = false; tick(G.L, true); }
+  if (!G.R.length) loopStart(); else G.R.forEach(function (C, k) { C.paused = false; C.hidden = false; setTimeout(function () { tick(C, true); }, k * 350); });
 }
 function shoot(r, hide) {
   var d = DPR(), w = Math.max(8, Math.round(r.w * d)), h = Math.max(8, Math.round(r.h * d)), sc = Math.min(1, 1500 / Math.max(w, h));
   return SC().capture({ region: { x: Math.round(r.x * d), y: Math.round(r.y * d), w: w, h: h }, unit: "px", scale: sc, format: "jpeg", quality: 85, dataUrl: true, hideOverlays: !!hide });
 }
 function sigOf(url, mk) {
-  return new Promise(function (res) {
+  return new Promise(function (res0) {
+    var dn = false, res = function (v) { if (!dn) { dn = true; res0(v); } }; setTimeout(function () { res(null); }, 1500);
     if (!url) { res(null); return; } var im = new Image();
     im.onload = function () {
       try {
@@ -756,11 +820,11 @@ function sigOf(url, mk) {
         res(g);
       } catch (e) { res(null); }
     };
-    im.onerror = function () { res(null); }; im.src = url;
+    im.onerror = function () { res(null); }; im.spc = url;
   });
 }
 function maskOf(L) {
-  if (!L.sr || !(L.frac > 0)) return null; var r = L.r, s = L.sr;
+  if (!L.sp || !(L.frac > 0)) return null; var r = L.r, s = L.sp;
   return { x0: Math.max(0, (s.x - r.x) / r.w), y0: Math.max(0, (s.y - r.y) / r.h), x1: Math.min(1, (s.x + s.w - r.x) / r.w), y1: Math.min(1, (s.y + s.h - r.y) / r.h) };
 }
 function sdiff(a, b) { if (!a || !b || a.length !== b.length) return 1; var n = 0; for (var i = 0; i < a.length; i++) if (Math.abs(a[i] - b[i]) > 16) n++; return n / a.length; }
@@ -771,36 +835,40 @@ function ocrOpts() {
 }
 var srcOf = function (cap) { return cap && cap.dataUrl ? { dataUrl: cap.dataUrl } : cap && cap.path ? { path: cap.path } : { url: cap && cap.url }; };
 function codeOf(e) { return String((e && (e.code || e.message)) || ""); }
-async function tick(L, manual) {
-  var c = OC(); if (G.L !== L || !G.on || !c || L.paused) return;
-  if (G.busy) { if (!manual) L.t = setTimeout(function () { tick(L, false); }, 120); return; }
-  clearTimeout(L.t); var t0 = Date.now(); holdCheck(t0);
-  if (G.pinned && !manual) { nextTick(L, t0); return; }
+async function tick(C, manual) {
+  var c = OC(); if (G.R[C.i] !== C || !G.on || !c || C.paused) return;
+  if (G.busy || (G.hold && !manual)) { C.t = setTimeout(function () { tick(C, manual); }, manual ? 150 : 120); return; }
+  clearTimeout(C.t); var t0 = Date.now(); holdCheck(C, t0);
+  if (G.pinned && !manual) { nextTick(C, t0); return; }
   G.busy = true; if (manual) dockBusy(true);
   try {
-    var heavy = L.frac >= 0.85, cap = await shoot(L.r, manual ? L.frac > 0 : (heavy || (opt.gate === false && L.frac > 0))); if (G.L !== L) return;
+    var heavy = C.frac >= 0.85, cap = await shoot(C.r, manual ? C.frac > 0 : (heavy || (opt.gate === false && C.frac > 0))); if (G.R[C.i] !== C) return;
     var read = manual || opt.gate === false;
     if (!read) {
-      var sg = await sigOf(cap.dataUrl, heavy ? null : maskOf(L)), now = Date.now(), ch = !!L.prev && sdiff(sg, L.prev) >= 0.003; L.prev = sg;
-      if (ch) { L.dirty = true; L.last = now; } read = L.dirty && now - L.last >= opt.settle;
+      var sg = await sigOf(cap.dataUrl, heavy ? null : maskOf(C)), now = Date.now(), ch = !!C.prev && sdiff(sg, C.prev) >= 0.003; C.prev = sg;
+      if (ch) { C.dirty = true; C.last = now; } read = C.dirty && now - C.last >= opt.settle;
     }
-    if (read) { L.dirty = false; if (!manual && !heavy && L.frac > 0 && opt.gate !== false) { cap = await shoot(L.r, true); if (G.L !== L) return; } var r = await c.recognize(srcOf(cap), ocrOpts()); if (G.L !== L) return; L.ms = Math.round(+r.ms || (Date.now() - t0)); var lines = (r.lines || []).map(function (l) { return String(l.text || ""); }); if (!lines.length && r.text) lines = String(r.text).split("\n"); handleText(clean(lines.join("\n"))); }
-    L.fail = 0;
+    if (read) {
+      C.dirty = false; if (!manual && !heavy && C.frac > 0 && opt.gate !== false) { cap = await shoot(C.r, true); if (G.R[C.i] !== C) return; }
+      var r = await c.recognize(srcOf(cap), ocrOpts()); if (G.R[C.i] !== C) return; C.ms = Math.round(+r.ms || (Date.now() - t0));
+      var lines = (r.lines || []).map(function (l) { return String(l.text || ""); }); if (!lines.length && r.text) lines = String(r.text).split("\n"); handleText(C, clean(lines.join("\n")));
+    }
+    C.fail = 0;
   } catch (e) {
-    if (G.L === L) {
-      L.prev = null; var cd = codeOf(e);
-      if (cd === "not_active" || cd === "screen_unavailable") { loopStop(); flash("انتهت جلسة تسجيل الشاشة. أعد تشغيل الأداة."); stopAll(true); }
-      else if (cd !== "no_frame" && cd !== "recording" && ++L.fail >= 3) { loopStop(); flash("تعذّرت القراءة (" + cd + ")"); }
+    if (G.R[C.i] === C) {
+      C.prev = null; var cd = codeOf(e);
+      if (cd === "not_active" || cd === "screen_unavailable") { flash("انتهت جلسة تسجيل الشاشة. أعد تشغيل الأداة."); stopAll(true); }
+      else if (cd !== "no_frame" && cd !== "recording" && ++C.fail >= 3) { flash("تعذّرت قراءة المنطقة " + (C.i + 1) + " (" + cd + ")"); C.paused = true; }
     }
-  } finally { G.busy = false; if (manual) dockBusy(false); nextTick(L, t0); }
+  } finally { G.busy = false; if (manual) dockBusy(false); nextTick(C, t0); }
 }
 
 /* ---- ترجمة الشاشة كاملة ---- */
-async function fullTranslate() {
+async function fullTranslate(n) {
   var o = OV(), s = SC(), c = OC();
   if (!o || !s || !c || !G.on) { toast("شغّل الأداة أولاً"); return; }
-  if (G.busy) return; if (!s.isActive()) { flash("انتهت جلسة تسجيل الشاشة."); return; }
-  G.busy = true; dockBusy(true); ovKill(ID.full);
+  if (G.busy) { if ((n | 0) < 40) { G.hold = true; setTimeout(function () { fullTranslate((n | 0) + 1); }, 150); } else G.hold = false; return; } if (!s.isActive()) { flash("انتهت جلسة تسجيل الشاشة."); return; }
+  G.hold = false; G.busy = true; dockBusy(true); fullClose(true); ovKill(ID.frame);
   try {
     var sz = scr(), d = DPR(), W0 = Math.round(sz.w * d), H0 = Math.round(sz.h * d), sc = Math.min(1, 2000 / Math.max(W0, H0));
     var cap = await s.capture({ region: { x: 0, y: 0, w: W0, h: H0 }, unit: "px", scale: sc, format: "jpeg", quality: 88, dataUrl: true, hideOverlays: true });
@@ -816,12 +884,21 @@ async function fullTranslate() {
       }
     };
     await Promise.all([worker(), worker(), worker(), worker()]);
-    G.fsLines = lines;
-    await ovMake({ id: ID.full, html: fullHtml({ lines: lines, rtl: RTLS.indexOf(opt.trLang) >= 0, msg: "لم أجد نصاً على الشاشة" }), x: 0, y: 0, w: "full", h: "full", touchable: true, focusable: false });
-    ovOn(ID.full, function (m) { if (!m) return; if (m.t === "close") ovKill(ID.full); else if (m.t === "copy") copyText(G.fsLines.map(function (x) { return x.t; }).join("\n")); });
+    if (!lines.length) { flash("لم أجد نصاً على الشاشة"); return; }
+    G.fsLines = lines; G.fsOrig = false; var sz2 = scr();
+    await ovMake({ id: ID.full, html: fullHtml({ lines: lines, rtl: RTLS.indexOf(opt.trLang) >= 0 }), x: 0, y: 0, w: "full", h: "full", touchable: false, focusable: false });
+    await ovMake({ id: ID.fbar, html: fbarHtml(), x: Math.round((sz2.w - 300) / 2), y: Math.max(40, sz2.h - 140), w: 300, h: 56, touchable: true, focusable: false });
+    ovOn(ID.fbar, function (m) {
+      if (!m) return; if (m.t === "close") fullClose();
+      else if (m.t === "orig") { G.fsOrig = !G.fsOrig; ovPost(ID.full, { orig: G.fsOrig }); }
+      else if (m.t === "copy") copyText(G.fsLines.map(function (x) { return x.t; }).join("\n")).then(function (ok) { flash(ok ? "نُسخت الترجمة" : "تعذّر النسخ", 1600); });
+    });
+    G.fullOpen = true; clearTimeout(G.fullT); if (opt.fullHold > 0) G.fullT = setTimeout(fullClose, opt.fullHold);
   } catch (e) { flash("تعذّرت ترجمة الشاشة (" + codeOf(e) + ")"); }
   finally { G.busy = false; dockBusy(false); }
 }
+
+function fullClose(nf) { clearTimeout(G.fullT); var was = G.fullOpen; G.fullOpen = false; ovKill(ID.full); ovKill(ID.fbar); if (!nf && was && G.on) frame(); }
 
 /* ---- لوحة الإعدادات العائمة ---- */
 function sheetData() {
@@ -834,43 +911,45 @@ function sheetData() {
     });
     tabs.push({ id: g.id, t: g.sh, items: items });
   });
-  return { tabs: tabs, v: v, sw: SW };
+  tabs.push({ id: "prof", t: "الملف", items: [{ ty: "pf" }] });
+  return { tabs: tabs, v: v, sw: SW, profs: profList(), cur: CURP };
 }
 function sheetVals() { var v = {}; GROUPS.forEach(function (g) { if (!g.main) g.items.forEach(function (it) { if (it.k) v[it.k] = opt[it.k]; }); }); return v; }
 function sheetRect() {
-  var s = scr(), h = Math.round(clamp(s.h * 0.56, 320, 480)), top = 34, pl = subPlace(G.L && G.L.h || subEst());
-  var hit = function (y) { return !(pl.y + pl.h <= y || pl.y >= y + h); }, y = s.h - h; if (hit(y) && !hit(top)) y = top;
+  var s = scr(), h = Math.round(clamp(s.h * 0.56, 320, 480)), top = 34, pls = G.R.map(function (C) { return C.sp || subPlace(C, C.h || subEst()); });
+  var hit = function (y) { return pls.some(function (pl) { return !(pl.y + pl.h <= y || pl.y >= y + h); }); }, y = s.h - h; if (hit(y) && !hit(top)) y = top;
   return { x: 6, y: Math.max(top, y), w: s.w - 12, h: Math.min(h, s.h - top) };
 }
 function sheetOpen() {
   if (!OV() || !G.on) { toast("شغّل الأداة أولاً"); return; }
-  var L = G.L; if (L) { L.paused = true; clearTimeout(L.t); } var r = sheetRect();
+  pauseAll(false); ovKill(ID.frame); var r = sheetRect();
   ovMake({ id: ID.sheet, html: sheetHtml(sheetData()), x: r.x, y: r.y, w: r.w, h: r.h, touchable: true, focusable: false }).then(function () { ovOn(ID.sheet, sheetMsg); }, function () { sheetClose(); });
 }
-function sheetClose() { ovKill(ID.sheet); G.offs[ID.sheet] = null; var L = G.L; if (L && L.paused) { L.paused = false; nextTick(L, Date.now()); } }
+function sheetClose() { ovKill(ID.sheet); G.offs[ID.sheet] = null; G.R.forEach(function (C) { if (C.paused) { C.paused = false; nextTick(C, Date.now()); } }); frame(); }
 function sheetMsg(m) {
   if (!m) return;
   if (m.t === "close") sheetClose();
   else if (m.t === "set") { if (setOpt(m.k, m.v, true) && ITEM[m.k].ty !== "rg") ovPost(ID.sheet, { v: sheetVals() }); }
+  else if (m.t === "prof") profApply(m.id);
   else if (m.t === "act") {
-    if (m.a === "stop") stopAll(); else if (m.a === "place") { ovKill(ID.sheet); G.sheetBack = true; openPicker("place"); }
-    else if (m.a === "resetpos") { opt.pos = "auto"; opt.cx = opt.cy = opt.cw = opt.ch = ""; save(); restyleSoon(); renderSettings(); ovPost(ID.sheet, { v: sheetVals(), note: "أُعيد ضبط المكان" }); }
+    if (m.a === "stop") stopAll(); else if (m.a === "place") { ovKill(ID.sheet); G.sheetBack = true; chooser("place"); }
+    else if (m.a === "resetpos") { REGS.forEach(function (r) { delete r.sr; }); opt.pos = "auto"; save(); regsSave(); restyleSoon(); renderSettings(); ovPost(ID.sheet, { v: sheetVals(), note: "أُعيد ضبط المكان" }); }
   }
 }
 
 /* ---- تطبيق تغيّر إعداد ---- */
-var STYLE = ["px", "color", "bgc", "bga", "rad", "align", "bold", "shadow", "showOrig", "pos", "cover", "width", "cx", "cy", "cw", "ch"];
+var STYLE = ["px", "color", "bgc", "bga", "rad", "align", "bold", "shadow", "showOrig", "pos", "cover", "width"];
 function setOpt(k, v, fromSheet, quiet) {
   var nv = coerce(k, v); if (nv === undefined) return false; opt[k] = nv; if (k === "pos" && nv === "region") opt.cover = true; opt.preset = ""; save(); changed(k, fromSheet, quiet); return true;
 }
 function changed(k, fromSheet, quiet) {
-  var L = G.L;
+  var Cs = G.R;
   if (STYLE.indexOf(k) >= 0) restyleSoon();
-  if (k === "interval" && L) { clearTimeout(L.t); nextTick(L, Date.now()); }
-  if (["trOn", "trLang", "trSrc", "prov", "fallback"].indexOf(k) >= 0 && G.cur && G.cur.o) { if (opt.trOn) runTr(G.cur.o, {}); else present(G.cur.o, G.cur.o, "", ""); }
+  if (k === "interval") Cs.forEach(function (C) { clearTimeout(C.t); nextTick(C, Date.now()); });
+  if (["trOn", "trLang", "trSrc", "prov", "fallback"].indexOf(k) >= 0) Cs.forEach(function (C) { if (C.cur && C.cur.o) { if (opt.trOn) runTr(C, C.cur.o, {}); else present(C, C.cur.o, C.cur.o, "", ""); } });
   if (k === "outline") frame();
   if (["dkColor", "dkOp"].indexOf(k) >= 0 && G.on) ovMake(dockCreate()).then(function () { ovOn(ID.dock, dockHandle); ovPost(ID.dock, { pinned: G.pinned }); });
-  if (k === "gate" && L) { L.prev = null; L.dirty = true; }
+  if (k === "gate") Cs.forEach(function (C) { C.prev = null; C.dirty = true; });
   if (!fromSheet) ovPost(ID.sheet, { v: sheetVals() });
   drawPrev(); drawHome(); if (fromSheet || !quiet) renderSettings();
 }
@@ -950,7 +1029,7 @@ function drawLast() { var b = $("last"); if (!b) return; if (!G.last) { b.textCo
 function step(id, cls, txt) { var e = $(id); e.className = "step " + cls; e.querySelector("small").textContent = txt; }
 function drawHome() {
   var i = G.on;
-  $("mReg").textContent = REG ? "المنطقة: " + REG.w + "×" + REG.h : "لا توجد منطقة بعد"; $("mSpd").textContent = opt.interval > 0 ? "تحديث كل " + (opt.interval / 1000) + "ث" : "تحديث يدوي"; $("mSrv").textContent = PN[opt.prov] || opt.prov;
+  $("mReg").textContent = REGS.length ? "المناطق: " + REGS.length : "لا توجد منطقة بعد"; $("mSpd").textContent = opt.interval > 0 ? "تحديث كل " + (opt.interval / 1000) + "ث" : "تحديث يدوي"; $("mSrv").textContent = PN[opt.prov] || opt.prov;
   $("st").className = "chip-st" + (i ? " on" : ""); $("stT").textContent = i ? "يعمل" : "متوقف";
   Array.prototype.forEach.call(document.querySelectorAll(".preset"), function (b) { b.classList.toggle("on", b.getAttribute("data-id") === opt.preset); });
 }
@@ -965,16 +1044,16 @@ function renderHome() {
   var ls = []; try { ls = c ? c.languages() || [] : []; } catch (e) {}
   step("s3", !c ? "bad" : "ok", !c ? "غير مفعّل. فعّل في إعدادات البناء الخيار «قراءة النص من الصور (OCR)» واختر اللغات التي ستقرؤها." : "اللغات: " + (ls.map(function (x) { return OCRN[x] || x; }).join("، ") || "—"));
   var go = $("go"); go.disabled = !G.on && !(o && s && c); go.className = G.on ? "run" : ""; $("goT").textContent = G.on ? "إيقاف" : "تشغيل"; $("ring").className = "ring" + (G.on || !go.disabled ? "" : " off");
-  $("goH").textContent = G.on ? (REG ? "الأداة تعمل. اضغط الزر العائم لفتح شريط الأدوات." : "اذهب لأي تطبيق، اضغط الزر العائم ثم «منطقة» وحدّد النص.") : go.disabled ? "أكمل التجهيز بالأسفل أولاً." : "سيُصغَّر التطبيق ويظهر زر عائم تسحبه أينما شئت.";
+  $("goH").textContent = G.on ? (REGS.length ? "الأداة تعمل. اضغط الزر العائم لفتح شريط الأدوات." : "اذهب لأي تطبيق، اضغط الزر العائم ثم «منطقة» وحدّد النص.") : go.disabled ? "أكمل التجهيز بالأسفل أولاً." : "سيُصغَّر التطبيق ويظهر زر عائم تسحبه أينما شئت.";
   drawHome();
 }
 function mainAct(a) {
   var need = function () { if (!G.on) { toast("شغّل الأداة أولاً"); return false; } return true; };
-  if (a === "region") { if (need()) { minimizeApp(); setTimeout(function () { openPicker("region"); }, 700); } }
+  if (a === "region") { if (need()) { minimizeApp(); setTimeout(function () { chooser("region"); }, 700); } }
   else if (a === "full") { if (need()) { minimizeApp(); setTimeout(fullTranslate, 900); } }
-  else if (a === "place") { if (need()) { minimizeApp(); setTimeout(function () { openPicker("place"); }, 700); } }
+  else if (a === "place") { if (need()) { minimizeApp(); setTimeout(function () { chooser("place"); }, 700); } }
   else if (a === "sheet") { if (need()) { minimizeApp(); setTimeout(sheetOpen, 700); } }
-  else if (a === "resetpos") { opt.pos = "auto"; opt.cx = opt.cy = opt.cw = opt.ch = ""; save(); restyleSoon(); renderSettings(); toast("أُعيد ضبط المكان"); }
+  else if (a === "resetpos") { REGS.forEach(function (r) { delete r.sr; }); opt.pos = "auto"; save(); regsSave(); restyleSoon(); renderSettings(); toast("أُعيد ضبط المكان"); }
 }
 function bind() {
   $("go").onclick = function () { if (G.on) stopAll(); else startAll(); };
@@ -983,9 +1062,12 @@ function bind() {
   $("aReg").onclick = function () { mainAct("region"); }; $("aFull").onclick = function () { mainAct("full"); }; $("aPlace").onclick = function () { mainAct("place"); }; $("aSheet").onclick = function () { mainAct("sheet"); };
   var pr = $("presets"); PRESETS.forEach(function (p) {
     var b = el("button", "preset"); b.setAttribute("data-id", p.id); b.appendChild(el("b", "", p.n)); b.appendChild(el("small", "", p.d));
-    b.onclick = function () { for (var k in p.v) opt[k] = p.v[k]; opt.preset = p.id; save(); var L = G.L; if (L) { clearTimeout(L.t); nextTick(L, Date.now()); } ovPost(ID.sheet, { v: sheetVals() }); renderSettings(); drawHome(); hap(); toast("طُبّق نمط «" + p.n + "»"); };
+    b.onclick = function () { for (var k in p.v) opt[k] = p.v[k]; opt.preset = p.id; save(); G.R.forEach(function (C) { clearTimeout(C.t); nextTick(C, Date.now()); }); ovPost(ID.sheet, { v: sheetVals() }); renderSettings(); drawHome(); hap(); toast("طُبّق نمط «" + p.n + "»"); };
     pr.appendChild(b);
   });
+  $("profAdd").onclick = function () { var n = $("profN").value, c = pcur(); profNew(c && n.trim() === c.n ? "" : n); };
+  $("profRen").onclick = function () { profRename($("profN").value); toast("تم تغيير الاسم"); };
+  $("profDel").onclick = function () { profDel(); };
   $("hCl").onclick = function () { LS.set("ft2_hist", []); hDraw(); };
   $("hCp").onclick = function () { var h = hGet(); if (!h.length) return; copyText(h.map(function (x) { return x.o + "\n" + x.t; }).join("\n\n")).then(function (ok) { toast(ok ? "تم النسخ" : "تعذّر النسخ"); }); };
   var nb = document.querySelectorAll("#nav button");
@@ -997,7 +1079,7 @@ function bind() {
 }
 function start() {
   var o = OV(); if (o) { try { o.destroyAll(); } catch (e) {} }
-  bind(); renderSettings(); renderServices(); renderHome(); hDraw(); drawLast();
+  bind(); renderSettings(); renderServices(); renderHome(); hDraw(); drawLast(); profDraw();
   window.addEventListener("focus", renderHome); document.addEventListener("visibilitychange", function () { if (!document.hidden) renderHome(); });
   setInterval(function () { if (!document.hidden) renderHome(); }, 2500); setTimeout(function () { renderSettings(); renderHome(); }, 1200);
 }
