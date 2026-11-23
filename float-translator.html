@@ -457,17 +457,22 @@ var DOCK_CSS = "#w{display:flex;align-items:center;height:100%;padding:8px;gap:8
   "#pn{position:absolute;top:-4px;left:-4px;width:20px;height:20px;border-radius:50%;background:#fbbf24;display:none;place-items:center;font-size:11px}" +
   "#bar{display:none;flex:1;min-width:0;height:52px;border-radius:26px;background:rgba(14,20,30,.96);border:1px solid #2c3a52;padding:2px 4px;box-shadow:0 4px 14px rgba(0,0,0,.5)}" +
   "#bar button{flex:1;min-width:0;border:0;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;font-size:9px;font-weight:700;padding:0}#bar button b{font-size:17px;line-height:1.15;font-weight:400}#bar .on{color:#fbbf24}#bar .x{color:#fb7185}";
-var DOCK_JS = "var open=false,idle=0,side='r',orb=$('orb'),bar=$('bar'),box=$('w');orb.style.background=D.c;orb.style.opacity=D.op/100;" +
+var DOCK_JS = "var open=false,idle=0,side='r',tapT=0,P={x:D.x,y:D.y,w:64,h:64},orb=$('orb'),bar=$('bar'),box=$('w');orb.style.background=D.c;orb.style.opacity=D.op/100;" +
+  "window.onerror=function(m){send({t:'err',m:String(m)})};" +
   "D.acts.forEach(function(a){var b=mk('button',a.c||'');b.setAttribute('data-a',a.a);b.appendChild(mk('b','',a.i));b.appendChild(document.createTextNode(a.t));b.onclick=function(){send({t:'act',a:a.a});rs()};bar.appendChild(b)});" +
   "function rs(){clearTimeout(idle);if(open)idle=setTimeout(collapse,6500)}" +
-  "function expand(){var R=RosTrickOverlay,i=R.info(),W=Math.min(D.sw-8,372);side=(i.x+32>D.sw/2)?'r':'l';var nx=side==='r'?i.x+64-W:i.x;nx=Math.max(0,Math.min(D.sw-W,nx));R.resize(W,64);R.move(Math.round(nx),Math.round(i.y));open=true;bar.style.display='flex';box.className=side==='l'?'L':'';rs()}" +
-  "function collapse(){if(!open)return;var R=RosTrickOverlay,i=R.info(),cx=side==='r'?i.x+i.w-64:i.x;open=false;clearTimeout(idle);bar.style.display='none';box.className='';R.resize(64,64);R.move(Math.round(Math.max(0,cx)),Math.round(i.y))}" +
-  "function report(){setTimeout(function(){var i=RosTrickOverlay.info();send({t:'pos',x:Math.round(i.x),y:Math.round(i.y)})},450)}" +
-  "ready(function(){var R=RosTrickOverlay;R.drag(orb,{snap:true,onTap:function(){if(open)collapse();else expand()},onDrop:function(){if(open)collapse();report()}});" +
+  "function getI(cb){var f=function(i){cb(i&&isFinite(i.x)&&isFinite(i.y)?{x:i.x,y:i.y,w:isFinite(i.w)?i.w:P.w,h:64}:{x:P.x,y:P.y,w:P.w,h:64})};try{Promise.resolve(RosTrickOverlay.info()).then(f,function(){f(null)})}catch(e){f(null)}}" +
+  "function put(x,y,w){P.x=Math.round(x);P.y=Math.round(y);P.w=w;try{RosTrickOverlay.resize(w,64)}catch(e){}try{RosTrickOverlay.move(P.x,P.y)}catch(e){}}" +
+  "function expand(){getI(function(i){var W=Math.min(D.sw-8,372);side=(i.x+32>D.sw/2)?'r':'l';var nx=side==='r'?i.x+i.w-W:i.x;nx=Math.max(0,Math.min(D.sw-W,nx));open=true;bar.style.display='flex';box.className=side==='l'?'L':'';put(nx,i.y,W);rs()})}" +
+  "function collapse(){if(!open)return;getI(function(i){var cx=side==='r'?i.x+i.w-64:i.x;open=false;clearTimeout(idle);bar.style.display='none';box.className='';put(Math.max(0,cx),i.y,64)})}" +
+  "function toggle(){if(open)collapse();else expand()}" +
+  "function report(){setTimeout(function(){getI(function(i){P.x=i.x;P.y=i.y;send({t:'pos',x:Math.round(i.x),y:Math.round(i.y)})})},450)}" +
+  "ready(function(){var R=RosTrickOverlay;try{R.drag(orb,{snap:true,onTap:function(){tapT=Date.now();toggle()},onDrop:function(){tapT=Date.now();if(open)collapse();report()}})}catch(e){send({t:'err',m:'drag '+e})}" +
+  "orb.addEventListener('click',function(){setTimeout(function(){if(Date.now()-tapT>400)toggle()},60)});" +
   "recv(function(d){if(!d)return;if(d.collapse)collapse();if(d.busy!==undefined)orb.className=d.busy?'busy':'';if(d.pinned!==undefined){$('pn').style.display=d.pinned?'grid':'none';var p=bar.querySelector('[data-a=pin]');if(p)p.className=d.pinned?'on':''}})})";
 function dockHtml() {
   var acts = [{ a: "now", i: "⟳", t: "ترجم" }, { a: "pin", i: "📌", t: "ثبّت" }, { a: "alt", i: "🔁", t: "بديلة" }, { a: "region", i: "⬚", t: "منطقة" }, { a: "full", i: "🧩", t: "الشاشة" }, { a: "sheet", i: "⚙", t: "إعدادات" }, { a: "stop", i: "✕", t: "إيقاف", c: "x" }];
-  return page(DOCK_CSS, '<div id="w"><div id="orb"><svg viewBox="0 0 24 24"><path d="M4 5h9M8.5 3v2M6 5c0 4 3 7 7 8M12 5c0 4-3 7-7 8M13 21l4-10 4 10M14.5 18h5"/></svg><i id="pn">📌</i></div><div id="bar"></div></div>', DOCK_JS, { c: opt.dkColor, op: opt.dkOp, acts: acts, sw: scr().w });
+  return page(DOCK_CSS, '<div id="w"><div id="orb"><svg viewBox="0 0 24 24"><path d="M4 5h9M8.5 3v2M6 5c0 4 3 7 7 8M12 5c0 4-3 7-7 8M13 21l4-10 4 10M14.5 18h5"/></svg><i id="pn">📌</i></div><div id="bar"></div></div>', DOCK_JS, { c: opt.dkColor, op: opt.dkOp, acts: acts, sw: scr().w, x: DK.x, y: DK.y });
 }
 
 /* --- نافذة الترجمة (لا تلتقط اللمس) --- */
@@ -605,6 +610,7 @@ function dockHandle(d) {
   if (!d) return;
   if (d.t === "pos") { DK = { x: d.x, y: d.y }; LS.set("ft2_dock", DK); }
   else if (d.t === "act") dockAct(d.a);
+  else if (d.t === "err") flash("خطأ الزر العائم: " + String(d.m).slice(0, 90), 4500);
 }
 function dockCollapse() { ovPost(ID.dock, { collapse: true }); }
 function dockAct(a) {
@@ -858,7 +864,7 @@ async function tick(C, manual) {
     if (G.R[C.i] === C) {
       C.prev = null; var cd = codeOf(e);
       if (cd === "not_active" || cd === "screen_unavailable") { flash("انتهت جلسة تسجيل الشاشة. أعد تشغيل الأداة."); stopAll(true); }
-      else if (cd !== "no_frame" && cd !== "recording" && ++C.fail >= 3) { flash("تعذّرت قراءة المنطقة " + (C.i + 1) + " (" + cd + ")"); C.paused = true; }
+      else if (cd !== "no_frame" && cd !== "recording" && ++C.fail >= 2) { flash("تعذّرت قراءة المنطقة " + (C.i + 1) + " (" + cd + ")", 5000); C.paused = true; }
     }
   } finally { G.busy = false; if (manual) dockBusy(false); nextTick(C, t0); }
 }
