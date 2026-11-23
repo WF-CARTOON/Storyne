@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b0f17">
+<title>مترجم الشاشة الفوري — OCR</title>
+<style>
+:root{
+  --bg:#0b0f17;--card:#131a26;--card2:#0f1522;--line:#223049;--txt:#e8eefc;--mut:#8fa1c4;
+  --acc:#35e0a1;--acc2:#6aa8ff;--bad:#ff5d73;--warn:#ffc857;
+  --safe-t:env(safe-area-inset-top,0px);--safe-b:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif;font-size:16px;line-height:1.5}
+body{padding:calc(10px + var(--safe-t)) 10px calc(24px + var(--safe-b));min-height:100vh}
+.wrap{max-width:1100px;margin:0 auto}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;justify-content:space-between;margin-bottom:10px}
+h1{font-size:1.25rem;margin:0;display:flex;align-items:center;gap:8px}
+h1 small{font-weight:400;color:var(--mut);font-size:.8rem}
+.chips-status{display:flex;flex-wrap:wrap;gap:6px}
+.st{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:.8rem;color:var(--mut);white-space:nowrap}
+.st.ok{color:var(--acc);border-color:#1d5a45}.st.bad{color:var(--bad);border-color:#6a2230}.st.warn{color:var(--warn)}
+#stageWrap{display:flex;justify-content:center;background:#05080d;border:1px solid var(--line);border-radius:14px;padding:6px;overflow:hidden}
+#stage{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden;touch-action:none;user-select:none}
+#stage video,#stage img.src{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;display:none}
+#empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px;text-align:center;color:var(--mut)}
+#empty b{color:var(--txt);font-size:1.05rem}
+#regionBox{position:absolute;border:2px dashed var(--acc);background:rgba(53,224,161,.08);display:none;pointer-events:none}
+#selLayer{position:absolute;inset:0;cursor:crosshair;display:none;background:rgba(0,0,0,.25)}
+#selLayer.on{display:block}
+#selHint{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:var(--acc);color:#04210f;padding:4px 12px;border-radius:999px;font-size:.85rem;pointer-events:none;display:none;z-index:5}
+.tbox{position:absolute;transform:translate(-50%,-50%);padding:.5em .8em;border-radius:.6em;text-align:center;cursor:move;touch-action:none;z-index:4;word-break:break-word;box-shadow:0 4px 18px rgba(0,0,0,.5)}
+.tbox .tr{font-weight:600;line-height:1.45}
+.tbox .og{opacity:.65;font-size:.65em;margin-top:.35em;line-height:1.3}
+.bar{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.btn{min-height:44px;padding:8px 14px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--txt);font:inherit;font-size:.92rem;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{border-color:var(--acc2)}
+.btn.pri{background:var(--acc);color:#04210f;border-color:var(--acc);font-weight:700}
+.btn.on{background:#173a5e;border-color:var(--acc2)}
+.btn.danger{border-color:#6a2230;color:var(--bad)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+details{background:var(--card);border:1px solid var(--line);border-radius:14px;margin:10px 0;overflow:hidden}
+summary{padding:12px 14px;cursor:pointer;font-weight:600;min-height:44px;display:flex;align-items:center}
+details>.in{padding:4px 14px 14px;display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.f{display:flex;flex-direction:column;gap:6px;min-width:0}
+.f>label,.f>.lb{font-size:.88rem;color:var(--mut)}
+.f .hint{font-size:.76rem;color:#6e82a8}
+input[type=text],input[type=password],input[type=number],select,textarea{width:100%;min-height:44px;background:var(--card2);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font:inherit}
+textarea{min-height:80px;resize:vertical}
+input[type=range]{width:100%;min-height:32px;accent-color:var(--acc)}
+input[type=color]{width:100%;height:44px;border:1px solid var(--line);border-radius:10px;background:var(--card2);padding:3px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.chk{display:flex;align-items:center;gap:8px;min-height:44px;color:var(--txt)!important;font-size:.92rem!important}
+.chk input{width:22px;height:22px;accent-color:var(--acc)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.chip{min-height:40px;padding:4px 12px;border:1px solid var(--line);background:var(--card2);color:var(--txt);border-radius:999px;font:inherit;font-size:.85rem;cursor:pointer}
+.chip.on{background:var(--acc);color:#04210f;border-color:var(--acc);font-weight:700}
+.chipin{width:110px!important;min-height:40px!important;border-radius:999px!important;font-size:.82rem}
+.langs{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:2px 10px}
+.svc{border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--card2);display:flex;flex-direction:column;gap:8px}
+.svc.prim{border-color:var(--acc)}
+.svc .hd{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+.svc .hd b{font-size:.95rem}
+.svc .d{font-size:.76rem;color:#6e82a8}
+.hk{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:6px 10px}
+.hk button{min-width:110px}
+#dbg{font-size:.8rem;color:var(--mut);background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:10px;white-space:pre-wrap;word-break:break-word;direction:ltr;text-align:left;min-height:64px}
+#hist{max-height:320px;overflow:auto;display:flex;flex-direction:column;gap:6px;grid-column:1/-1}
+.hi{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;cursor:pointer}
+.hi .o{font-size:.8rem;color:var(--mut);direction:auto}
+.hi .t{font-weight:600}
+#toast{position:fixed;bottom:calc(18px + var(--safe-b));left:50%;transform:translateX(-50%);background:#1b2740;border:1px solid var(--acc2);padding:10px 16px;border-radius:12px;z-index:99;display:none;max-width:90vw;text-align:center}
+#fs{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:80;display:none;flex-direction:column;padding:calc(8px + var(--safe-t)) 8px calc(8px + var(--safe-b))}
+#fs.on{display:flex}
+#fsBar{display:flex;gap:8px;flex-wrap:wrap;padding-bottom:8px}
+#fsBody{flex:1;overflow:auto;display:flex;justify-content:center;align-items:flex-start}
+#fsStage{position:relative;max-width:100%}
+#fsStage img{display:block;width:100%;height:auto}
+.fl{position:absolute;background:rgba(0,0,0,.82);color:#fff;border-radius:3px;padding:0 .25em;line-height:1.2;overflow:hidden;display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer}
+.fl.orig{background:rgba(30,60,120,.85);direction:ltr}
+.spin{display:inline-block;width:12px;height:12px;border:2px solid var(--mut);border-top-color:var(--acc);border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (min-width:900px){body{font-size:17px}.btn{font-size:1rem}}
+@media (min-width:1600px){.wrap{max-width:1400px}body{font-size:19px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🌐 مترجم الشاشة الفوري <small>OCR + ترجمة مثبّتة</small></h1>
+    <div class="chips-status">
+      <span class="st" id="stRun">⏹ متوقف</span>
+      <span class="st" id="stOcr">OCR —</span>
+      <span class="st" id="stSvc">خدمة —</span>
+      <span class="st" id="stDiff">تغيّر —</span>
+    </div>
+  </header>
+
+  <div id="stageWrap">
+    <div id="stage">
+      <video id="vid" playsinline muted></video>
+      <img id="img" class="src" alt="">
+      <div id="empty">
+        <b>اختر مصدر الصورة</b>
+        <span>شارك الشاشة/النافذة (كمبيوتر) • كاميرا • صورة (أو الصقها Ctrl+V) • فيديو</span>
+        <span id="envNote" style="font-size:.8rem"></span>
+      </div>
+      <div id="regionBox"></div>
+      <div id="selLayer"></div>
+      <div id="selHint">اسحب لتحديد منطقة النص</div>
+      <div id="tbox" class="tbox" style="display:none"></div>
+    </div>
+  </div>
+
+  <div class="bar" id="srcBar">
+    <button class="btn" id="bScreen">🖥️ مشاركة الشاشة / نافذة</button>
+    <button class="btn" id="bCam">📷 كاميرا</button>
+    <button class="btn" id="bImg">🖼️ صورة</button>
+    <button class="btn" id="bVid">🎞️ فيديو</button>
+    <button class="btn danger" id="bStop">✖ إيقاف المصدر</button>
+  </div>
+
+  <div class="bar" id="ctlBar">
+    <button class="btn pri" id="bRun">▶ تشغيل الترجمة التلقائية</button>
+    <button class="btn" id="bNow" title="قراءة وترجمة فورية الآن">⚡ ترجمة الآن</button>
+    <button class="btn" id="bAlt" title="يعيد ترجمة النص الحالي بخدمة أخرى، وإن ما فيه نص يعيد القراءة">🔁 ترجمة بديلة</button>
+    <button class="btn" id="bFreeze">📌 تثبيت</button>
+    <button class="btn" id="bFull">🧩 ترجمة الشاشة كاملة</button>
+    <button class="btn" id="bRegion">⬚ تحديد منطقة القراءة</button>
+    <button class="btn" id="bRegionX">⛶ كل الشاشة</button>
+    <button class="btn" id="bPip">🪟 نافذة عائمة</button>
+    <button class="btn" id="bBox">👁 إخفاء/إظهار الصندوق</button>
+    <button class="btn" id="bCopy">📋 نسخ</button>
+  </div>
+
+  <details open>
+    <summary>⏱ التوقيت والتثبيت</summary>
+    <div class="in">
+      <div class="f"><span class="lb">كل كم يفحص الشاشة؟ (التقاط)</span>
+        <div class="chips" data-k="interval" data-vals="100,300,500,1000,1500,2000,3000,5000"></div>
+        <span class="hint">القراءة نفسها (OCR) تحصل فقط عند تغيّر الصورة، فالفحص السريع خفيف.</span></div>
+      <div class="f"><span class="lb">انتظار استقرار الصورة قبل القراءة</span>
+        <div class="chips" data-k="settle" data-vals="0,150,300,500,1000,2000"></div>
+        <span class="hint">مفيد للنص الذي يظهر حرفاً حرفاً: ينتظر يكتمل ثم يقرأ.</span></div>
+      <div class="f"><span class="lb">تثبيت الترجمة عند اختفاء النص (scroll)</span>
+        <div class="chips" data-k="hold" data-vals="300,500,1000,2000,3000,5000,10000,-1"></div>
+        <span class="hint">إذا ما لقى نصاً، تبقى الترجمة ظاهرة هذه المدة. ∞ = تبقى حتى يظهر نص جديد.</span></div>
+      <div class="f"><span class="lb">أقل مدة عرض لكل ترجمة (للقراءة)</span>
+        <div class="chips" data-k="minShow" data-vals="0,1000,1500,2000,3000,5000"></div>
+        <span class="hint">الترجمة الجديدة تنتظر حتى تنتهي هذه المدة، فما تتبدّل بسرعة قبل ما تقرأها.</span></div>
+      <div class="f"><label>حساسية التغيّر (%) <span class="val" id="v_sens"></span></label>
+        <input type="range" data-k="sens" min="0.05" max="10" step="0.05" data-out="v_sens">
+        <span class="hint">أقل = أكثر حساسية. ارفعها إذا الفيديو مليان تشويش.</span></div>
+      <div class="f"><label>درجة تشابه النص لاعتباره نفس النص <span id="v_sim"></span></label>
+        <input type="range" data-k="sim" min="0.5" max="1" step="0.01" data-out="v_sim">
+        <span class="hint">يمنع إعادة الترجمة بسبب أخطاء OCR الصغيرة، فتبقى الترجمة ثابتة.</span></div>
+      <div class="f"><span class="lb">إعادة قراءة إجبارية كل (حتى لو ما تغيّرت الصورة)</span>
+        <div class="chips" data-k="force" data-vals="0,3000,5000,10000"></div></div>
+      <div class="f"><label class="chk"><input type="checkbox" data-k="tts"> نطق الترجمة صوتياً</label></div>
+    </div>
+  </details>
+
+  <details>
+    <summary>🔤 قراءة النص (OCR)</summary>
+    <div class="in">
+      <div class="f"><label>محرك القراءة</label>
+        <select data-k="ocrEngine">
+          <option value="tesseract">Tesseract (داخل المتصفح، مجاني)</option>
+          <option value="gemini">Gemini Vision (أدق للألعاب والخطوط الصعبة — يحتاج مفتاح)</option>
+        </select>
+        <span class="hint">مفتاح Gemini يُدخل في قسم خدمات الترجمة.</span></div>
+      <div class="f"><span class="lb">لغة (لغات) النص في الشاشة</span><div class="langs" id="ocrLangs"></div>
+        <span class="hint">كل لغة إضافية تبطّئ القراءة. اختر ما تحتاج فقط.</span></div>
+      <div class="f"><label>نمط تقسيم الصفحة</label>
+        <select data-k="psm">
+          <option value="6">كتلة نص واحدة (الأنسب للحوارات)</option>
+          <option value="7">سطر واحد</option>
+          <option value="11">نص متناثر (أزرار وقوائم)</option>
+          <option value="3">تلقائي كامل</option>
+          <option value="13">سطر خام</option>
+        </select></div>
+      <div class="f"><label>أقل ثقة لقبول السطر: <span id="v_minConf"></span></label>
+        <input type="range" data-k="minConf" min="0" max="95" step="1" data-out="v_minConf"></div>
+      <div class="f"><label>أقل عدد حروف للنص</label>
+        <input type="number" data-k="minChars" min="1" max="50"></div>
+      <div class="f"><label>تكبير الصورة قبل القراءة: <span id="v_scale"></span>×</label>
+        <input type="range" data-k="scale" min="1" max="4" step="0.5" data-out="v_scale"></div>
+      <div class="f"><label class="chk"><input type="checkbox" data-k="gray"> معالجة الصورة (تدرّج رمادي)</label>
+        <label>التباين: <span id="v_contrast"></span></label>
+        <input type="range" data-k="contrast" min="0.5" max="3" step="0.1" data-out="v_contrast">
+        <label class="chk"><input type="checkbox" data-k="invert"> عكس الألوان (نص فاتح على خلفية داكنة)</label>
+        <label>عتبة الأبيض/الأسود (0 = معطّل): <span id="v_thresh"></span></label>
+        <input type="range" data-k="thresh" min="0" max="255" step="5" data-out="v_thresh"></div>
+      <div class="f"><label class="chk"><input type="checkbox" data-k="keepBreaks"> إبقاء فواصل الأسطر في الترجمة</label>
+        <label>تجاهل أسطر تحتوي (سطر لكل كلمة)</label>
+        <textarea data-k="ignore" placeholder="مثال: HP&#10;MENU&#10;FPS"></textarea></div>
+      <div class="f" style="grid-column:1/-1"><span class="lb">آخر قراءة (للمعايرة)</span><div id="dbg">—</div></div>
+    </div>
+  </details>
+
+  <details>
+    <summary>🌍 اللغات وخدمات الترجمة</summary>
+    <div class="in">
+      <div class="f"><label>لغة النص الأصلي (للترجمة)</label><select data-k="srcLang" id="srcLang"></select></div>
+      <div class="f"><label>الترجمة إلى</label><select data-k="tgtLang" id="tgtLang"></select></div>
+      <div class="f"><label class="chk"><input type="checkbox" data-k="fallback"> إذا فشلت خدمة، جرّب الخدمات المفعّلة الأخرى تلقائياً</label>
+        <span class="hint">الأولى (الدائرة) هي الأساسية. فعّل أكثر من خدمة للاحتياط ولزر «ترجمة بديلة».</span></div>
+      <div class="f" style="grid-column:1/-1"><div id="svcs" style="display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))"></div>
+        <span class="hint">المفاتيح تُحفظ في جهازك فقط. لا تشاركها مع أحد. (DeepL غير متاح مباشرة من المتصفح بسبب CORS، لكن تقدر تستخدمه عبر OpenRouter أو خادم LibreTranslate.)</span></div>
+    </div>
+  </details>
+
+  <details>
+    <summary>🎨 شكل ومكان صندوق الترجمة</summary>
+    <div class="in">
+      <div class="f"><span class="lb">المكان (تقدر تسحب الصندوق بإصبعك/الماوس على الشاشة)</span>
+        <div class="chips" id="posChips"></div></div>
+      <div class="f"><label>حجم الخط: <span id="v_bfont"></span></label>
+        <input type="range" data-k="box.font" min="10" max="64" step="1" data-out="v_bfont"></div>
+      <div class="f"><label>عرض الصندوق %: <span id="v_bw"></span></label>
+        <input type="range" data-k="box.w" min="20" max="100" step="1" data-out="v_bw"></div>
+      <div class="f"><label>الشفافية %: <span id="v_bop"></span></label>
+        <input type="range" data-k="box.opacity" min="0" max="100" step="1" data-out="v_bop"></div>
+      <div class="f"><label>لون الخلفية</label><input type="color" data-k="box.bg"></div>
+      <div class="f"><label>لون النص</label><input type="color" data-k="box.fg"></div>
+      <div class="f"><label class="chk"><input type="checkbox" data-k="box.showOrig"> إظهار النص الأصلي تحت الترجمة</label>
+        <label>المحاذاة</label>
+        <select data-k="box.align"><option value="center">وسط</option><option value="right">يمين</option><option value="left">يسار</option></select></div>
+    </div>
+  </details>
+
+  <details>
+    <summary>⌨ الاختصارات (تعمل والصفحة أو النافذة العائمة في المقدمة)</summary>
+    <div class="in" id="hkList"></div>
+  </details>
+
+  <details>
+    <summary>📜 السجل</summary>
+    <div class="in">
+      <div class="row" style="grid-column:1/-1">
+        <button class="btn" id="hCopy">نسخ الكل</button>
+        <button class="btn" id="hSave">حفظ txt</button>
+        <button class="btn danger" id="hClear">مسح</button>
+      </div>
+      <div id="hist"></div>
+    </div>
+  </details>
+
+  <details>
+    <summary>ℹ️ ملاحظات مهمة</summary>
+    <div class="in" style="display:block;color:var(--mut);font-size:.88rem">
+      <p>• التقاط الشاشة (مشاركة شاشة/نافذة) يعمل في Chrome / Edge / Firefox على الكمبيوتر. داخل تطبيق الأندرويد (WebView) غالباً غير مدعوم، فاستخدم الكاميرا أو صورة أو فيديو.</p>
+      <p>• المتصفح لا يسمح للصفحة بالرسم فوق اللعبة مباشرة. الحل: زر «نافذة عائمة» (Chrome/Edge 116+) يفتح نافذة صغيرة دائماً في المقدمة تعرض الترجمة، حرّكها فوق اللعبة أو بجانبها.</p>
+      <p>• إذا شاركت الشاشة كاملة، حدّد منطقة القراءة بحيث لا تدخل النافذة العائمة فيها (الصفحة تتجاهل نص يشبه الترجمة الحالية تلقائياً).</p>
+      <p>• الاختصارات لا تعمل والتركيز داخل اللعبة (قيد المتصفح). اضغط على النافذة العائمة أو الصفحة أولاً.</p>
+      <p>• أول مرة لكل لغة يحمّل نموذج OCR (بضع ميجابايت) ثم يُحفظ في المتصفح.</p>
+    </div>
+  </details>
+</div>
+
+<div id="fs">
+  <div id="fsBar">
+    <button class="btn danger" id="fsClose">✖ إغلاق</button>
+    <button class="btn" id="fsToggle">🔀 الأصل / الترجمة</button>
+    <button class="btn" id="fsCopy">📋 نسخ النص</button>
+    <span class="st" id="fsSt">…</span>
+  </div>
+  <div id="fsBody"><div id="fsStage"></div></div>
+</div>
+
+<div id="toast"></div>
+<input type="file" id="fImg" accept="image/*" hidden>
+<input type="file" id="fVid" accept="video/*" hidden>
+
+<script>
+(function(){
+'use strict';
+
+/* ================= أدوات ================= */
+const $=s=>document.querySelector(s);
+const $$=s=>Array.from(document.querySelectorAll(s));
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+let toastT=null;
+function toast(msg,ms){const t=$('#toast');t.textContent=msg;t.style.display='block';clearTimeout(toastT);toastT=setTimeout(()=>t.style.display='none',ms||3200);}
+function setChip(id,txt,cls){const e=$('#'+id);if(!e)return;e.textContent=txt;e.className='st'+(cls?' '+cls:'');}
+
+/* ================= اللغات والخدمات ================= */
+const LANGS=[
+{n:'العربية',g:'ar',t:'ara'},{n:'English',g:'en',t:'eng'},{n:'日本語 Japanese',g:'ja',t:'jpn'},{n:'日本語 (عمودي)',g:'ja',t:'jpn_vert'},
+{n:'한국어 Korean',g:'ko',t:'kor'},{n:'中文 简体',g:'zh-CN',t:'chi_sim'},{n:'中文 繁體',g:'zh-TW',t:'chi_tra'},{n:'Русский',g:'ru',t:'rus'},
+{n:'Español',g:'es',t:'spa'},{n:'Français',g:'fr',t:'fra'},{n:'Deutsch',g:'de',t:'deu'},{n:'Türkçe',g:'tr',t:'tur'},
+{n:'Italiano',g:'it',t:'ita'},{n:'Português',g:'pt',t:'por'},{n:'Bahasa Indonesia',g:'id',t:'ind'},{n:'हिन्दी',g:'hi',t:'hin'},
+{n:'ไทย',g:'th',t:'tha'},{n:'Tiếng Việt',g:'vi',t:'vie'},{n:'فارسی',g:'fa',t:'fas'},{n:'اردو',g:'ur',t:'urd'},
+{n:'Українська',g:'uk',t:'ukr'},{n:'Polski',g:'pl',t:'pol'},{n:'Nederlands',g:'nl',t:'nld'},{n:'Ελληνικά',g:'el',t:'ell'},{n:'עברית',g:'he',t:'heb'}
+];
+const RTL=['ar','fa','ur','he'];
+const langName=g=>{const l=LANGS.find(x=>x.g===g);return l?l.n.replace(/[^\sA-Za-z؀-ۿ]/g,'').trim()||l.n:g;};
+
+const SERVICES=[
+ {id:'google',n:'Google Translate',d:'مجاني بدون مفتاح — سريع ودقيق غالباً.'},
+ {id:'mymemory',n:'MyMemory',d:'مجاني بحد يومي. البريد يرفع الحد.',f:[['keys.mmEmail','بريدك (اختياري)','text']]},
+ {id:'lingva',n:'Lingva',d:'واجهة بديلة لـ Google، يمكن تغيير السيرفر.',f:[['keys.lingvaUrl','رابط السيرفر','text']]},
+ {id:'chrome',n:'مترجم Chrome المدمج',d:'يعمل على جهازك بدون إنترنت (Chrome 138+)، يحمّل نموذج اللغة أول مرة.'},
+ {id:'libre',n:'LibreTranslate',d:'خادمك الخاص أو خادم عام بمفتاح.',f:[['keys.libreUrl','رابط الخادم','text'],['keys.libreKey','المفتاح (إن وُجد)','password']]},
+ {id:'gemini',n:'Gemini (ذكاء اصطناعي)',d:'ترجمة سياقية ممتازة للحوارات. يحتاج مفتاح Google AI Studio.',f:[['keys.geminiKey','مفتاح API','password'],['keys.geminiModel','اسم النموذج','text']]},
+ {id:'openai',n:'متوافق مع OpenAI',d:'OpenAI / OpenRouter / Groq / خادم محلي.',f:[['keys.openaiUrl','رابط الأساس','text'],['keys.openaiKey','المفتاح','password'],['keys.openaiModel','النموذج','text']]}
+];
+
+/* ================= الإعدادات ================= */
+const KEY='rt_screen_translator_v1';
+const D={
+ ocrEngine:'tesseract',ocrLangs:['eng'],srcLang:'auto',tgtLang:'ar',
+ interval:500,settle:300,sens:0.3,force:0,hold:3000,minShow:0,sim:0.85,
+ minConf:45,minChars:2,psm:'6',keepBreaks:false,scale:2,gray:true,contrast:1.3,invert:false,thresh:0,ignore:'',
+ primary:'google',enabled:{google:true,mymemory:true,lingva:true,chrome:false,libre:false,gemini:false,openai:false},fallback:true,
+ keys:{mmEmail:'',lingvaUrl:'https://lingva.ml',libreUrl:'https://libretranslate.com',libreKey:'',geminiKey:'',geminiModel:'gemini-2.5-flash',openaiUrl:'https://api.openai.com/v1',openaiKey:'',openaiModel:'gpt-4o-mini'},
+ box:{x:50,y:88,w:80,font:24,opacity:82,bg:'#000000',fg:'#ffffff',showOrig:false,align:'center'},
+ tts:false,region:null,
+ hotkeys:{run:'KeyP',ocr:'KeyR',alt:'KeyN',freeze:'KeyF',full:'KeyG',box:'KeyH',copy:'KeyC',region:'KeyB'}
+};
+function merge(a,b){const o=Array.isArray(a)?a.slice():Object.assign({},a);if(!b||typeof b!=='object')return o;for(const k in b){if(a[k]&&typeof a[k]==='object'&&!Array.isArray(a[k])&&b[k]&&typeof b[k]==='object')o[k]=merge(a[k],b[k]);else o[k]=b[k];}return o;}
+let S=D;
+try{S=merge(D,JSON.parse(localStorage.getItem(KEY)||'{}'));}catch(e){S=merge(D,{});}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+function getP(k){return k.split('.').reduce((o,p)=>o==null?o:o[p],S);}
+function setP(k,v){const p=k.split('.');let o=S;for(let i=0;i<p.length-1;i++)o=o[p[i]];o[p[p.length-1]]=v;}
+
+/* ================= الحالة ================= */
+const vid=$('#vid'),img=$('#img'),stage=$('#stage'),tbox=$('#tbox');
+let mode=null,stream=null;
+let running=false,timer=null,busy=false,pending=false,lastChange=0,lastOcrEnd=0,prevSig=null,emptySince=0;
+let frozen=false,boxVisible=true;
+let curSrc=null,shownSrc='',shownTr='',shownSvc='',shownAt=0,queued=null,queueT=null,seq=0,cycle=0,retry=0,lastText='';
+const cache=new Map();
+const history=[];
+let worker=null,workerLangs='',workerP=null,tessP=null;
+let pipWin=null,pipBox=null;
+
+/* ================= المصدر ================= */
+const srcEl=()=>mode==='img'?img:vid;
+function srcSize(){return mode==='img'?[img.naturalWidth||0,img.naturalHeight||0]:[vid.videoWidth||0,vid.videoHeight||0];}
+function hasSource(){return !!mode&&srcSize()[0]>0;}
+function fitStage(){
+  const wrap=$('#stageWrap');const [w,h]=srcSize();
+  const maxW=Math.max(200,wrap.clientWidth-12);
+  if(!w){stage.style.width='100%';stage.style.aspectRatio='16/9';stage.style.fontSize='';return;}
+  const maxH=Math.max(220,window.innerHeight*0.68);
+  const W=Math.min(maxW,maxH*(w/h));
+  stage.style.width=W+'px';stage.style.aspectRatio=w+'/'+h;
+  renderBoxes();
+}
+function afterSource(){
+  $('#empty').style.display='none';
+  vid.style.display=mode==='video'?'block':'none';
+  img.style.display=mode==='img'?'block':'none';
+  prevSig=null;pending=true;lastChange=performance.now()-S.settle;
+  fitStage();drawRegion();
+  toast('تم ضبط المصدر '+srcSize().join('×'));
+}
+function stopSource(){
+  if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
+  try{vid.pause();}catch(e){}
+  vid.srcObject=null;vid.removeAttribute('src');vid.load();
+  img.removeAttribute('src');
+  mode=null;vid.style.display='none';img.style.display='none';
+  $('#empty').style.display='flex';fitStage();drawRegion();
+}
+function setStream(st){
+  stopSource();stream=st;mode='video';vid.srcObject=st;vid.play().catch(()=>{});
+  const tr=st.getVideoTracks()[0];
+  if(tr)tr.addEventListener('ended',()=>{stopSource();toast('توقفت المشاركة');});
+}
+vid.addEventListener('loadedmetadata',()=>{if(mode==='video')afterSource();});
+vid.addEventListener('resize',()=>{if(mode==='video'){prevSig=null;fitStage();}});
+img.addEventListener('load',()=>{if(mode==='img')afterSource();});
+
+async function useScreen(){
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getDisplayMedia){toast('التقاط الشاشة غير مدعوم هنا. افتح الصفحة في Chrome/Edge على الكمبيوتر، أو استخدم الكاميرا/الصورة/الفيديو.',5000);return;}
+  try{setStream(await navigator.mediaDevices.getDisplayMedia({video:{frameRate:30,cursor:'never'},audio:false}));}
+  catch(e){toast('لم تتم المشاركة: '+(e.message||e.name));}
+}
+async function useCam(){
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){toast('الكاميرا غير مدعومة هنا');return;}
+  try{setStream(await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1920}},audio:false}));}
+  catch(e){toast('تعذّر فتح الكاميرا: '+(e.message||e.name));}
+}
+function useImageFile(f){
+  if(!f)return;stopSource();mode='img';img.src=URL.createObjectURL(f);
+}
+function useVideoFile(f){
+  if(!f)return;stopSource();mode='video';vid.loop=true;vid.src=URL.createObjectURL(f);vid.play().catch(()=>{});
+}
+$('#bScreen').onclick=useScreen;$('#bCam').onclick=useCam;
+$('#bImg').onclick=()=>$('#fImg').click();$('#bVid').onclick=()=>$('#fVid').click();
+$('#bStop').onclick=()=>{stopSource();setRunning(false);};
+$('#fImg').onchange=e=>{useImageFile(e.target.files[0]);e.target.value='';};
+$('#fVid').onchange=e=>{useVideoFile(e.target.files[0]);e.target.value='';};
+document.addEventListener('paste',e=>{const items=(e.clipboardData&&e.clipboardData.files)||[];for(const f of items){if(f.type.startsWith('image/')){useImageFile(f);return;}}});
+['dragover','drop'].forEach(ev=>stage.addEventListener(ev,e=>{e.preventDefault();if(ev==='drop'){const f=e.dataTransfer.files[0];if(!f)return;if(f.type.startsWith('image/'))useImageFile(f);else if(f.type.startsWith('video/'))useVideoFile(f);}}));
+if(!(navigator.mediaDevices&&navigator.mediaDevices.getDisplayMedia)){
+  $('#envNote').textContent='⚠️ التقاط الشاشة غير متاح في هذا المتصفح/التطبيق. استخدم كاميرا أو صورة أو فيديو.';
+  $('#bScreen').disabled=true;
+}
+window.addEventListener('resize',fitStage);
+
+/* ================= المنطقة ================= */
+const regionBox=$('#regionBox'),selLayer=$('#selLayer'),selHint=$('#selHint');
+function drawRegion(){
+  const r=S.region;
+  if(!r||!hasSource()){regionBox.style.display='none';return;}
+  regionBox.style.display='block';
+  regionBox.style.left=r.x*100+'%';regionBox.style.top=r.y*100+'%';regionBox.style.width=r.w*100+'%';regionBox.style.height=r.h*100+'%';
+}
+function startSelect(){
+  if(!hasSource()){toast('اختر مصدراً أولاً');return;}
+  selLayer.classList.add('on');selHint.style.display='block';
+}
+let sel=null;
+selLayer.addEventListener('pointerdown',e=>{
+  const b=stage.getBoundingClientRect();sel={x:clamp((e.clientX-b.left)/b.width,0,1),y:clamp((e.clientY-b.top)/b.height,0,1)};
+  selLayer.setPointerCapture(e.pointerId);S.region={x:sel.x,y:sel.y,w:0,h:0};drawRegion();
+});
+selLayer.addEventListener('pointermove',e=>{
+  if(!sel)return;const b=stage.getBoundingClientRect();
+  const x=clamp((e.clientX-b.left)/b.width,0,1),y=clamp((e.clientY-b.top)/b.height,0,1);
+  S.region={x:Math.min(sel.x,x),y:Math.min(sel.y,y),w:Math.abs(x-sel.x),h:Math.abs(y-sel.y)};drawRegion();
+});
+selLayer.addEventListener('pointerup',()=>{
+  if(!sel)return;sel=null;selLayer.classList.remove('on');selHint.style.display='none';
+  if(S.region.w<0.02||S.region.h<0.02)S.region=null;
+  save();drawRegion();prevSig=null;pending=true;lastChange=performance.now();
+  toast(S.region?'تم تحديد المنطقة':'المنطقة صغيرة جداً، أُلغيت');
+});
+$('#bRegion').onclick=startSelect;
+$('#bRegionX').onclick=()=>{S.region=null;save();drawRegion();prevSig=null;pending=true;toast('القراءة من كل الشاشة');};
+
+/* ================= التقاط وإعداد الصورة ================= */
+const oc=document.createElement('canvas');
+function preprocess(x,w,h){
+  if(!(S.gray||S.invert||S.thresh>0))return;
+  const id=x.getImageData(0,0,w,h),d=id.data,c=S.contrast,th=S.thresh,inv=S.invert;
+  for(let i=0;i<d.length;i+=4){
+    let g=0.299*d[i]+0.587*d[i+1]+0.114*d[i+2];
+    if(c!==1)g=(g-128)*c+128;
+    if(inv)g=255-g;
+    if(th>0)g=g>=th?255:0;
+    g=g<0?0:g>255?255:g;
+    d[i]=d[i+1]=d[i+2]=g;
+  }
+  x.putImageData(id,0,0);
+}
+function grab(full,scale,pre){
+  const [w,h]=srcSize();const el=srcEl();
+  const r=(!full&&S.region)?S.region:{x:0,y:0,w:1,h:1};
+  const sx=Math.round(r.x*w),sy=Math.round(r.y*h),sw=Math.max(4,Math.round(r.w*w)),sh=Math.max(4,Math.round(r.h*h));
+  let k=scale;if(sw*k>3200)k=3200/sw;
+  const cw=Math.max(4,Math.round(sw*k)),ch=Math.max(4,Math.round(sh*k));
+  oc.width=cw;oc.height=ch;
+  const x=oc.getContext('2d',{willReadFrequently:true});
+  x.imageSmoothingQuality='high';x.drawImage(el,sx,sy,sw,sh,0,0,cw,ch);
+  if(pre)preprocess(x,cw,ch);
+  return {cv:oc,k,sx,sy,sw,sh,w,h};
+}
+const sc=document.createElement('canvas');sc.width=96;
+function frameDiff(){
+  const [w,h]=srcSize();const r=S.region||{x:0,y:0,w:1,h:1};
+  const sw=Math.max(4,r.w*w),sh=Math.max(4,r.h*h);
+  const H=Math.max(8,Math.round(96*sh/sw));sc.height=H;
+  const x=sc.getContext('2d',{willReadFrequently:true});
+  try{x.drawImage(srcEl(),r.x*w,r.y*h,sw,sh,0,0,96,H);}catch(e){return null;}
+  const d=x.getImageData(0,0,96,H).data,n=96*H,cur=new Uint8Array(n);
+  for(let i=0,j=0;j<n;i+=4,j++)cur[j]=(d[i]*77+d[i+1]*150+d[i+2]*29)>>8;
+  let res=null;
+  if(prevSig&&prevSig.length===n){let c=0;for(let j=0;j<n;j++)if(Math.abs(cur[j]-prevSig[j])>24)c++;res=c/n*100;}
+  prevSig=cur;return res;
+}
+
+/* ================= OCR ================= */
+function loadTess(){
+  if(window.Tesseract)return Promise.resolve();
+  return tessP||(tessP=new Promise((res,rej)=>{
+    const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+    s.onload=res;s.onerror=()=>{tessP=null;rej(new Error('تعذّر تحميل مكتبة OCR (تحقق من الإنترنت)'));};
+    document.head.append(s);
+  }));
+}
+async function ensureWorker(){
+  const langs=(S.ocrLangs.length?S.ocrLangs:['eng']).join('+');
+  if(worker&&workerLangs===langs)return worker;
+  if(workerP)return workerP;
+  workerP=(async()=>{
+    await loadTess();
+    if(worker){try{await worker.terminate();}catch(e){}worker=null;}
+    setChip('stOcr','⏳ تحميل OCR '+langs,'warn');
+    const w=await Tesseract.createWorker(langs,1,{logger:m=>{if(m&&m.status&&typeof m.progress==='number'&&/load|init/.test(m.status))setChip('stOcr','⏳ '+Math.round(m.progress*100)+'%','warn');}});
+    await w.setParameters({tessedit_pageseg_mode:String(S.psm),preserve_interword_spaces:'1'});
+    worker=w;workerLangs=langs;return w;
+  })();
+  try{return await workerP;}finally{workerP=null;}
+}
+function linesOf(data){
+  let L=data.lines;
+  if((!L||!L.length)&&data.blocks){L=[];data.blocks.forEach(b=>(b.paragraphs||[]).forEach(p=>(p.lines||[]).forEach(l=>L.push(l))));}
+  return (L||[]).map(l=>({text:(l.text||'').replace(/\s+/g,' ').trim(),conf:l.confidence,box:l.bbox}));
+}
+const CJK=/[　-鿿가-힯＀-￯]/;
+function cleanText(t){
+  return t.replace(/([　-鿿가-힯])\s+(?=[　-鿿가-힯])/g,'$1').replace(/[ \t]+/g,' ').trim();
+}
+function ignoreList(){return S.ignore.split('\n').map(s=>s.trim().toLowerCase()).filter(Boolean);}
+function goodLine(t){
+  if(t.replace(/\s/g,'').length<S.minChars)return false;
+  if(!/[\p{L}\p{N}]/u.test(t))return false;
+  const low=t.toLowerCase();
+  return !ignoreList().some(w=>low.includes(w));
+}
+function joinLines(arr){return cleanText(arr.filter(goodLine).join(S.keepBreaks?'\n':' '));}
+async function geminiOcr(){
+  if(!S.keys.geminiKey)throw new Error('أدخل مفتاح Gemini في قسم خدمات الترجمة');
+  const g=grab(false,1,false);
+  const data=g.cv.toDataURL('image/jpeg',0.85).split(',')[1];
+  const r=await fetchT('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(S.keys.geminiModel)+':generateContent?key='+encodeURIComponent(S.keys.geminiKey),{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({contents:[{parts:[{text:'Extract all visible text from this image exactly as written, keeping line breaks. Output only the text. If there is no readable text, output exactly: [NO_TEXT]'},{inline_data:{mime_type:'image/jpeg',data}}]}]})
+  },20000);
+  const j=await r.json();
+  const t=(j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts||[]).map(p=>p.text||'').join('');
+  if(/\[NO_TEXT\]/.test(t))return [];
+  return t.split('\n');
+}
+async function ocrOnce(){
+  if(busy||!hasSource())return;
+  busy=true;const t0=performance.now();let raw='',confTxt='';
+  try{
+    let lines;
+    if(S.ocrEngine==='gemini'){
+      lines=await geminiOcr();raw=lines.join('\n');confTxt='gemini';
+    }else{
+      const w=await ensureWorker();
+      const g=grab(false,S.scale,true);
+      const {data}=await w.recognize(g.cv,{},{text:true,blocks:true});
+      const ls=linesOf(data);
+      raw=ls.map(l=>Math.round(l.conf)+'% '+l.text).join('\n')||data.text||'';
+      confTxt=Math.round(data.confidence)+'%';
+      lines=ls.filter(l=>l.conf>=S.minConf).map(l=>l.text);
+      if(!ls.length&&data.text&&data.confidence>=S.minConf)lines=data.text.split('\n');
+    }
+    const text=joinLines(lines);
+    const ms=Math.round(performance.now()-t0);
+    setChip('stOcr','OCR '+ms+'ms'+(confTxt?' • '+confTxt:''),'ok');
+    $('#dbg').textContent=(raw||'(لا نص)')+'\n— '+ms+'ms';
+    handleText(text);
+  }catch(e){
+    setChip('stOcr','خطأ OCR','bad');$('#dbg').textContent='خطأ: '+e.message;
+  }finally{busy=false;lastOcrEnd=performance.now();}
+}
+
+/* ================= تشابه ================= */
+function norm(s){return s.toLowerCase().replace(/[\s\p{P}\p{S}]+/gu,'');}
+function sim(a,b){
+  a=norm(a);b=norm(b);if(a===b)return 1;if(a.length<2||b.length<2)return 0;
+  const m=new Map();for(let i=0;i<a.length-1;i++){const g=a.substr(i,2);m.set(g,(m.get(g)||0)+1);}
+  let hit=0;for(let i=0;i<b.length-1;i++){const g=b.substr(i,2),c=m.get(g)||0;if(c>0){m.set(g,c-1);hit++;}}
+  return 2*hit/(a.length+b.length-2);
+}
+
+/* ================= معالجة النص الجديد ================= */
+function handleText(text){
+  const now=performance.now();
+  if(!text){ if(!emptySince)emptySince=now; return; }
+  emptySince=0;lastText=text;
+  if(frozen)return;
+  if(shownTr&&sim(text,shownTr)>=0.6)return;                 // يقرأ ترجمته هو (نافذة عائمة داخل الالتقاط)
+  if(curSrc&&sim(text,curSrc)>=S.sim)return;                 // نفس النص تقريباً: الترجمة تبقى ثابتة
+  curSrc=text;cycle=0;retry=0;
+  runTranslate(text,{});
+}
+
+/* ================= الترجمة ================= */
+async function fetchT(url,opts,ms){
+  const c=new AbortController();const t=setTimeout(()=>c.abort(),ms||9000);
+  try{const r=await fetch(url,Object.assign({},opts,{signal:c.signal}));if(!r.ok)throw new Error('HTTP '+r.status);return r;}
+  finally{clearTimeout(t);}
+}
+function cc(svc,c){
+  if(c==='auto')return 'auto';
+  if(['lingva','libre','chrome'].includes(svc)&&c.startsWith('zh'))return 'zh';
+  return c;
+}
+function firstOcrCode(){const l=LANGS.find(x=>x.t===(S.ocrLangs[0]||'eng'));return l?l.g:'en';}
+function chunks(t,n){const o=[];while(t.length>n){let i=t.lastIndexOf(' ',n);if(i<n/2)i=n;o.push(t.slice(0,i));t=t.slice(i).trim();}if(t)o.push(t);return o;}
+const chromeTr={};
+const LLM_PROMPT=(t,tg)=>'Translate the following text to '+langName(tg)+' ('+tg+'). It comes from a video game or screen via OCR, so fix obvious OCR typos silently. Output ONLY the translation, nothing else.\n\n'+t;
+const TR={
+ async google(t,s,g){
+  const r=await fetchT('https://translate.googleapis.com/translate_a/single?client=gtx&sl='+cc('google',s)+'&tl='+g+'&dt=t&dj=1',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'q='+encodeURIComponent(t)});
+  const j=await r.json();
+  if(!j.sentences)throw new Error('رد غير متوقع');
+  return j.sentences.filter(x=>x.trans).map(x=>x.trans).join('');
+ },
+ async mymemory(t,s,g){
+  const out=[];
+  for(const part of chunks(t,450)){
+    let u='https://api.mymemory.translated.net/get?q='+encodeURIComponent(part)+'&langpair='+encodeURIComponent((s==='auto'?'Autodetect':s)+'|'+g);
+    if(S.keys.mmEmail)u+='&de='+encodeURIComponent(S.keys.mmEmail);
+    const j=await (await fetchT(u)).json();
+    const tt=j.responseData&&j.responseData.translatedText;
+    if(!tt||/MYMEMORY WARNING|INVALID/i.test(tt)||(j.responseStatus&&+j.responseStatus!==200))throw new Error((tt||'فشل').slice(0,60));
+    out.push(tt);
+  }
+  return out.join(' ');
+ },
+ async lingva(t,s,g){
+  const base=(S.keys.lingvaUrl||'').replace(/\/+$/,'');
+  const j=await (await fetchT(base+'/api/v1/'+cc('lingva',s)+'/'+cc('lingva',g)+'/'+encodeURIComponent(t))).json();
+  if(!j.translation)throw new Error('رد غير متوقع');return j.translation;
+ },
+ async chrome(t,s,g){
+  if(!('Translator' in self))throw new Error('مترجم Chrome المدمج غير مدعوم');
+  let src=s;
+  if(src==='auto'){
+    if('LanguageDetector' in self){const d=await self.LanguageDetector.create();const r=await d.detect(t);src=r[0].detectedLanguage;}
+    else src=firstOcrCode();
+  }
+  src=cc('chrome',src);const tg=cc('chrome',g);
+  if(src===tg)return t;
+  const k=src+'>'+tg;
+  if(!chromeTr[k])chromeTr[k]=await self.Translator.create({sourceLanguage:src,targetLanguage:tg});
+  return await chromeTr[k].translate(t);
+ },
+ async libre(t,s,g){
+  const base=(S.keys.libreUrl||'').replace(/\/+$/,'');
+  const body={q:t,source:cc('libre',s),target:cc('libre',g),format:'text'};
+  if(S.keys.libreKey)body.api_key=S.keys.libreKey;
+  const j=await (await fetchT(base+'/translate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})).json();
+  if(!j.translatedText)throw new Error(j.error||'رد غير متوقع');return j.translatedText;
+ },
+ async gemini(t,s,g){
+  if(!S.keys.geminiKey)throw new Error('لا مفتاح Gemini');
+  const j=await (await fetchT('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(S.keys.geminiModel)+':generateContent?key='+encodeURIComponent(S.keys.geminiKey),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:LLM_PROMPT(t,g)}]}]})},20000)).json();
+  const o=(j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts||[]).map(p=>p.text||'').join('').trim();
+  if(!o)throw new Error('رد فارغ');return o;
+ },
+ async openai(t,s,g){
+  if(!S.keys.openaiKey)throw new Error('لا مفتاح');
+  const base=(S.keys.openaiUrl||'').replace(/\/+$/,'');
+  const j=await (await fetchT(base+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+S.keys.openaiKey},body:JSON.stringify({model:S.keys.openaiModel,temperature:0.2,messages:[{role:'user',content:LLM_PROMPT(t,g)}]})},20000)).json();
+  const o=j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content;
+  if(!o)throw new Error('رد فارغ');return o.trim();
+ }
+};
+function enabledOrder(){
+  let ids=SERVICES.map(s=>s.id).filter(id=>S.enabled[id]);
+  if(!ids.length)ids=['google'];
+  const i=Math.max(0,ids.indexOf(S.primary));
+  return ids.slice(i).concat(ids.slice(0,i));
+}
+const ckey=(t,s,g)=>s+'>'+g+'|'+norm(t);
+async function translate(t,s,g,force,from){
+  const key=ckey(t,s,g);
+  if(!force&&cache.has(key))return cache.get(key);
+  let order=enabledOrder();
+  const n=order.length;from=((from||0)%n+n)%n;
+  order=order.slice(from).concat(order.slice(0,from));
+  if(!S.fallback)order=order.slice(0,1);
+  let lastErr=null;
+  for(const id of order){
+    try{
+      const out=(await TR[id](t,s,g)).trim();
+      if(!out)throw new Error('ترجمة فارغة');
+      const res={text:out,svc:id};
+      cache.set(key,res);if(cache.size>600)cache.delete(cache.keys().next().value);
+      return res;
+    }catch(e){lastErr=e;}
+  }
+  throw lastErr||new Error('فشلت كل الخدمات');
+}
+async function runTranslate(text,{force=false,from=0}={}){
+  const my=++seq;
+  setChip('stSvc','⏳ يترجم…','warn');
+  try{
+    const r=await translate(text,S.srcLang,S.tgtLang,force,from);
+    if(my!==seq)return;
+    present(text,r.text,r.svc);
+  }catch(e){
+    if(my!==seq)return;
+    setChip('stSvc','فشلت الترجمة: '+(e.message||'').slice(0,40),'bad');
+    if(retry<2){retry++;setTimeout(()=>{if(my===seq&&!frozen)runTranslate(text,{force:true,from:cycle+retry});},2500);}
+    else curSrc=null;
+  }
+}
+function present(src,tr,svc){
+  const now=performance.now();
+  if(S.minShow>0&&shownTr&&now-shownAt<S.minShow){
+    queued={src,tr,svc};
+    if(!queueT)queueT=setTimeout(()=>{queueT=null;if(queued){const q=queued;queued=null;applyTr(q.src,q.tr,q.svc);}},S.minShow-(now-shownAt));
+    return;
+  }
+  applyTr(src,tr,svc);
+}
+function applyTr(src,tr,svc){
+  shownSrc=src;shownTr=tr;shownSvc=svc;shownAt=performance.now();
+  setChip('stSvc',(SERVICES.find(s=>s.id===svc)||{}).n||svc,'ok');
+  renderBoxes();
+  history.push({src,tr,svc,t:new Date()});if(history.length>150)history.shift();
+  renderHistory();
+  if(S.tts&&'speechSynthesis' in window){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(tr);u.lang=S.tgtLang;speechSynthesis.speak(u);}catch(e){}}
+}
+
+/* ================= الصندوق + النافذة العائمة ================= */
+function styleBox(el,inPip){
+  const b=S.box;const rgb=hex2rgb(b.bg);
+  el.style.background='rgba('+rgb+','+(b.opacity/100)+')';
+  el.style.color=b.fg;el.style.textAlign=b.align;
+}
+function hex2rgb(h){h=h.replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');return parseInt(h.slice(0,2),16)+','+parseInt(h.slice(2,4),16)+','+parseInt(h.slice(4,6),16);}
+function fill(el){
+  el.textContent='';
+  const t=document.createElement('div');t.className='tr';t.textContent=shownTr;
+  t.dir=RTL.includes(S.tgtLang)?'rtl':'ltr';el.append(t);
+  if(S.box.showOrig&&shownSrc){const o=document.createElement('div');o.className='og';o.dir='auto';o.textContent=shownSrc;el.append(o);}
+}
+function renderBoxes(){
+  const show=boxVisible&&!!shownTr;
+  tbox.style.display=show?'block':'none';
+  if(show){
+    const W=stage.clientWidth||600;
+    tbox.style.left=S.box.x+'%';tbox.style.top=S.box.y+'%';tbox.style.width=S.box.w+'%';
+    tbox.style.fontSize=Math.max(10,S.box.font*W/900)+'px';
+    styleBox(tbox);fill(tbox);
+  }
+  if(pipBox){
+    pipBox.ownerDocument.body.style.background='rgb('+hex2rgb(S.box.bg)+')';
+    pipBox.style.color=S.box.fg;pipBox.style.fontSize=S.box.font+'px';pipBox.style.textAlign=S.box.align;
+    if(shownTr)fill(pipBox);else{pipBox.textContent='بانتظار نص…';}
+  }
+}
+let drag=null;
+tbox.addEventListener('pointerdown',e=>{drag={sx:e.clientX,sy:e.clientY,x:S.box.x,y:S.box.y};tbox.setPointerCapture(e.pointerId);});
+tbox.addEventListener('pointermove',e=>{
+  if(!drag)return;const r=stage.getBoundingClientRect();
+  S.box.x=clamp(drag.x+(e.clientX-drag.sx)/r.width*100,0,100);S.box.y=clamp(drag.y+(e.clientY-drag.sy)/r.height*100,0,100);
+  tbox.style.left=S.box.x+'%';tbox.style.top=S.box.y+'%';
+});
+tbox.addEventListener('pointerup',()=>{if(drag){drag=null;save();}});
+async function togglePip(){
+  if(pipWin){pipWin.close();return;}
+  if(!('documentPictureInPicture' in window)){toast('النافذة العائمة تحتاج Chrome/Edge 116+ على الكمبيوتر',4500);return;}
+  try{
+    pipWin=await documentPictureInPicture.requestWindow({width:560,height:170});
+    const d=pipWin.document;d.documentElement.dir='rtl';
+    const st=d.createElement('style');
+    st.textContent='html,body{margin:0;height:100%;font-family:system-ui,Tahoma,Arial,sans-serif}body{display:flex;align-items:center;justify-content:center;padding:8px;box-sizing:border-box;overflow:auto}#pb{width:100%;word-break:break-word;line-height:1.45;font-weight:600}#pb .og{opacity:.65;font-size:.65em;margin-top:.35em}';
+    d.head.append(st);
+    pipBox=d.createElement('div');pipBox.id='pb';d.body.append(pipBox);
+    d.addEventListener('keydown',onKey);
+    pipWin.addEventListener('pagehide',()=>{pipWin=null;pipBox=null;$('#bPip').classList.remove('on');});
+    $('#bPip').classList.add('on');renderBoxes();
+  }catch(e){toast('تعذّر فتح النافذة: '+(e.message||e.name));}
+}
+
+/* ================= الحلقة التلقائية ================= */
+function tick(){
+  if(!running)return;
+  timer=setTimeout(tick,Math.max(30,S.interval));
+  if(!hasSource())return;
+  const now=performance.now();
+  const d=frameDiff();
+  if(d===null||d>=S.sens){pending=true;lastChange=now;}
+  setChip('stDiff','تغيّر '+(d===null?'—':d.toFixed(1)+'%'),d!==null&&d>=S.sens?'warn':'');
+  if(S.force>0&&now-lastOcrEnd>S.force&&!pending){pending=true;lastChange=now-S.settle;}
+  if(pending&&!busy&&!frozen&&now-lastChange>=S.settle){pending=false;ocrOnce();}
+  if(emptySince&&!frozen&&shownTr&&S.hold>=0&&now-emptySince>=S.hold){clearShown();}
+}
+function clearShown(){
+  shownTr='';shownSrc='';curSrc=null;emptySince=0;queued=null;
+  renderBoxes();setChip('stSvc','خدمة —','');
+}
+function setRunning(v){
+  running=v;clearTimeout(timer);
+  const b=$('#bRun');
+  if(v){
+    if(!hasSource()){running=false;toast('اختر مصدراً أولاً (شاشة/كاميرا/صورة/فيديو)');return;}
+    pending=true;lastChange=performance.now()-S.settle;tick();
+    b.textContent='⏸ إيقاف';b.classList.remove('pri');b.classList.add('on');setChip('stRun','▶ يعمل','ok');
+  }else{
+    b.textContent='▶ تشغيل الترجمة التلقائية';b.classList.add('pri');b.classList.remove('on');setChip('stRun','⏹ متوقف','');
+  }
+}
+
+/* ================= الأزرار ================= */
+function ocrNow(){
+  if(!hasSource()){toast('اختر مصدراً أولاً');return;}
+  if(frozen)toggleFreeze();
+  prevSig=null;
+  if(busy){pending=true;lastChange=-1e9;return;}
+  const keep=curSrc;curSrc=null;ocrOnce().then(()=>{if(!curSrc)curSrc=keep;});
+}
+function altTranslate(){
+  if(curSrc||lastText){
+    const t=curSrc||lastText;curSrc=t;cycle++;retry=0;
+    const order=enabledOrder();
+    if(order.length<2)toast('فعّل خدمة ثانية من قسم الخدمات لتجربة ترجمة مختلفة');
+    runTranslate(t,{force:true,from:cycle});
+  }else ocrNow();
+}
+function toggleFreeze(){
+  frozen=!frozen;
+  const b=$('#bFreeze');b.classList.toggle('on',frozen);b.textContent=frozen?'📍 إلغاء التثبيت':'📌 تثبيت';
+  if(!frozen){pending=true;lastChange=performance.now()-S.settle;}
+  toast(frozen?'الترجمة مثبّتة ولن تتغير':'أُلغي التثبيت');
+}
+function toggleBox(){boxVisible=!boxVisible;renderBoxes();}
+function copyTr(){
+  if(!shownTr){toast('لا توجد ترجمة');return;}
+  (navigator.clipboard?navigator.clipboard.writeText(shownTr):Promise.reject()).then(()=>toast('تم النسخ'),()=>toast('تعذّر النسخ'));
+}
+$('#bRun').onclick=()=>setRunning(!running);
+$('#bNow').onclick=ocrNow;$('#bAlt').onclick=altTranslate;$('#bFreeze').onclick=toggleFreeze;
+$('#bBox').onclick=toggleBox;$('#bCopy').onclick=copyTr;$('#bPip').onclick=togglePip;
+$('#bFull').onclick=()=>fullTranslate();
+
+/* ================= ترجمة الشاشة كاملة ================= */
+let fsShowOrig=false,fsLines=[];
+async function fullTranslate(){
+  if(!hasSource()){toast('اختر مصدراً أولاً');return;}
+  if(S.ocrEngine==='gemini'){toast('ترجمة الشاشة كاملة تستخدم Tesseract (تحتاج مواقع الأسطر)');}
+  const fs=$('#fs'),stg=$('#fsStage');fs.classList.add('on');stg.textContent='';
+  $('#fsSt').textContent='⏳ يقرأ الشاشة…';fsShowOrig=false;fsLines=[];
+  try{
+    const [w,h]=srcSize();
+    const snap=document.createElement('canvas');snap.width=w;snap.height=h;snap.getContext('2d').drawImage(srcEl(),0,0,w,h);
+    const im=document.createElement('img');im.src=snap.toDataURL('image/jpeg',0.9);stg.append(im);
+    const wk=await ensureWorker();
+    const g=grab(true,S.scale,true);
+    await wk.setParameters({tessedit_pageseg_mode:'11'});
+    let data;
+    try{data=(await wk.recognize(g.cv,{},{text:true,blocks:true})).data;}
+    finally{await wk.setParameters({tessedit_pageseg_mode:String(S.psm)});}
+    const ls=linesOf(data).filter(l=>l.box&&l.conf>=S.minConf&&goodLine(l.text)).slice(0,70);
+    if(!ls.length){$('#fsSt').textContent='ما لقيت نصاً';return;}
+    $('#fsSt').textContent='⏳ يترجم '+ls.length+' سطر…';
+    let idx=0,done=0;
+    const worker4=async()=>{
+      while(idx<ls.length){
+        const l=ls[idx++];
+        try{const r=await translate(cleanText(l.text),S.srcLang,S.tgtLang,false,0);l.tr=r.text;}catch(e){l.tr=l.text;}
+        done++;$('#fsSt').textContent='⏳ '+done+'/'+ls.length;
+      }
+    };
+    await Promise.all([worker4(),worker4(),worker4(),worker4()]);
+    const rtl=RTL.includes(S.tgtLang);
+    ls.forEach(l=>{
+      const b=l.box,x0=b.x0/g.k/w,y0=b.y0/g.k/h,ww=(b.x1-b.x0)/g.k/w,hh=(b.y1-b.y0)/g.k/h;
+      const d=document.createElement('div');d.className='fl';
+      d.style.left=(x0*100)+'%';d.style.top=(y0*100)+'%';d.style.minWidth=(ww*100)+'%';d.style.height=(hh*100)+'%';
+      d.dataset.o=l.text;d.dataset.t=l.tr;d.dir=rtl?'rtl':'ltr';
+      d.style.fontSize='calc('+(hh*0.78)+' * var(--fh,300px))';
+      stg.append(d);fsLines.push(d);
+    });
+    stg.style.setProperty('--fh',(stg.clientWidth*h/w)+'px');
+    fsLines.forEach(d=>{d.textContent=d.dataset.t;d.onclick=()=>{d.textContent=d.textContent===d.dataset.t?d.dataset.o:d.dataset.t;};});
+    $('#fsSt').textContent='✔ '+ls.length+' سطر — اضغط أي سطر لرؤية الأصل';
+  }catch(e){$('#fsSt').textContent='خطأ: '+(e.message||e);}
+}
+$('#fsClose').onclick=()=>$('#fs').classList.remove('on');
+$('#fsToggle').onclick=()=>{fsShowOrig=!fsShowOrig;fsLines.forEach(d=>{d.textContent=fsShowOrig?d.dataset.o:d.dataset.t;d.classList.toggle('orig',fsShowOrig);});};
+$('#fsCopy').onclick=()=>{const t=fsLines.map(d=>d.dataset.t).join('\n');navigator.clipboard&&navigator.clipboard.writeText(t).then(()=>toast('تم النسخ'),()=>toast('تعذّر النسخ'));};
+window.addEventListener('resize',()=>{const s=$('#fsStage');if(s&&fsLines.length){const im=s.querySelector('img');if(im&&im.naturalWidth)s.style.setProperty('--fh',(s.clientWidth*im.naturalHeight/im.naturalWidth)+'px');}});
+
+/* ================= الاختصارات ================= */
+const ACTIONS=[
+ ['run','تشغيل / إيقاف التلقائي',()=>setRunning(!running)],
+ ['ocr','ترجمة الآن (إعادة قراءة)',ocrNow],
+ ['alt','ترجمة بديلة / تبديل الخدمة',altTranslate],
+ ['freeze','تثبيت / إلغاء التثبيت',toggleFreeze],
+ ['full','ترجمة الشاشة كاملة',()=>fullTranslate()],
+ ['box','إخفاء / إظهار الصندوق',toggleBox],
+ ['copy','نسخ الترجمة',copyTr],
+ ['region','تحديد منطقة القراءة',startSelect]
+];
+let capturing=null;
+function comboOf(e){const p=[];if(e.ctrlKey)p.push('Ctrl');if(e.altKey)p.push('Alt');if(e.shiftKey)p.push('Shift');p.push(e.code);return p.join('+');}
+function comboLabel(c){return c?c.replace('Key','').replace('Digit','').replace('Arrow','↔ '):'— بدون —';}
+function onKey(e){
+  if(capturing){
+    e.preventDefault();e.stopPropagation();
+    if(['ControlLeft','ControlRight','ShiftLeft','ShiftRight','AltLeft','AltRight','MetaLeft','MetaRight'].includes(e.code))return;
+    S.hotkeys[capturing.a]=e.code==='Escape'?'':comboOf(e);save();capturing=null;renderHotkeys();return;
+  }
+  const t=e.target;if(t&&(/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)||t.isContentEditable))return;
+  const c=comboOf(e);
+  for(const [a,,fn] of ACTIONS){if(S.hotkeys[a]&&S.hotkeys[a]===c){e.preventDefault();fn();return;}}
+}
+document.addEventListener('keydown',onKey);
+function renderHotkeys(){
+  const box=$('#hkList');box.textContent='';
+  ACTIONS.forEach(([a,label])=>{
+    const row=document.createElement('div');row.className='hk';
+    const s=document.createElement('span');s.textContent=label;
+    const b=document.createElement('button');b.className='btn'+(capturing&&capturing.a===a?' on':'');
+    b.textContent=capturing&&capturing.a===a?'اضغط زراً… (Esc = حذف)':comboLabel(S.hotkeys[a]);
+    b.onclick=()=>{capturing={a};renderHotkeys();};
+    row.append(s,b);box.append(row);
+  });
+}
+
+/* ================= السجل ================= */
+function renderHistory(){
+  const h=$('#hist');h.textContent='';
+  history.slice().reverse().slice(0,60).forEach(x=>{
+    const d=document.createElement('div');d.className='hi';
+    const o=document.createElement('div');o.className='o';o.textContent=x.src;
+    const t=document.createElement('div');t.className='t';t.textContent=x.tr;t.dir='auto';
+    d.append(o,t);d.onclick=()=>navigator.clipboard&&navigator.clipboard.writeText(x.tr).then(()=>toast('نُسخت الترجمة'));
+    h.append(d);
+  });
+}
+$('#hCopy').onclick=()=>navigator.clipboard&&navigator.clipboard.writeText(history.map(x=>x.src+'\n'+x.tr).join('\n\n')).then(()=>toast('تم النسخ'));
+$('#hClear').onclick=()=>{history.length=0;renderHistory();};
+$('#hSave').onclick=()=>{
+  const b=new Blob([history.map(x=>x.src+'\n=> '+x.tr).join('\n\n')],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='translations.txt';document.body.append(a);a.click();a.remove();
+};
+
+/* ================= بناء الواجهة وربط الإعدادات ================= */
+function chipLabel(v){return v<0?'∞':v===0?'0':(v/1000)+'ث';}
+function buildChips(el){
+  const k=el.dataset.k,vals=el.dataset.vals.split(',').map(Number);
+  vals.forEach(v=>{
+    const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=chipLabel(v);b.dataset.v=v;
+    b.onclick=()=>{setP(k,v);save();changed(k);refreshChips();};el.append(b);
+  });
+  const i=document.createElement('input');i.type='number';i.min='0';i.className='chipin';i.placeholder='مخصص ms';
+  i.oninput=()=>{const n=parseInt(i.value,10);if(!isNaN(n)&&n>=0){setP(k,n);save();changed(k);refreshChips();}};
+  el.append(i);
+}
+function refreshChips(){
+  $$('.chips[data-k]').forEach(el=>{
+    const cur=getP(el.dataset.k);let m=false;
+    el.querySelectorAll('.chip').forEach(b=>{const on=+b.dataset.v===cur;b.classList.toggle('on',on);m=m||on;});
+    const i=el.querySelector('input');if(document.activeElement!==i)i.value=m?'':cur;
+  });
+}
+function bindAll(root){
+  root.querySelectorAll('[data-k]:not(.chips)').forEach(el=>{
+    const k=el.dataset.k,v=getP(k);
+    if(el.type==='checkbox')el.checked=!!v;else el.value=v==null?'':v;
+    const out=el.dataset.out?$('#'+el.dataset.out):null;if(out)out.textContent=el.value;
+    const ev=(el.tagName==='SELECT'||el.type==='checkbox'||el.type==='color')?'change':'input';
+    el.addEventListener(ev,()=>{
+      let nv;
+      if(el.type==='checkbox')nv=el.checked;
+      else if(el.type==='number'||el.type==='range'){nv=parseFloat(el.value);if(isNaN(nv))return;}
+      else nv=el.value;
+      setP(k,nv);save();if(out)out.textContent=el.value;changed(k);
+    });
+  });
+}
+function changed(k){
+  if(k.startsWith('box.'))renderBoxes();
+  if(k==='psm'&&worker)worker.setParameters({tessedit_pageseg_mode:String(S.psm)}).catch(()=>{});
+  if((k==='srcLang'||k==='tgtLang')&&curSrc){retry=0;runTranslate(curSrc,{});}
+  if(['scale','contrast','invert','thresh','gray','minConf'].includes(k)){pending=true;}
+}
+function buildLangs(){
+  const box=$('#ocrLangs');
+  LANGS.forEach(l=>{
+    const lb=document.createElement('label');lb.className='chk';
+    const c=document.createElement('input');c.type='checkbox';c.checked=S.ocrLangs.includes(l.t);
+    c.onchange=()=>{
+      const set=new Set(S.ocrLangs);if(c.checked)set.add(l.t);else set.delete(l.t);
+      if(!set.size){set.add('eng');toast('لازم لغة واحدة على الأقل');}
+      S.ocrLangs=Array.from(set);save();
+      box.querySelectorAll('input').forEach((x,i)=>x.checked=S.ocrLangs.includes(LANGS[i].t));
+      pending=true;
+    };
+    lb.append(c,document.createTextNode(l.n));box.append(lb);
+  });
+  const sl=$('#srcLang'),tl=$('#tgtLang');
+  sl.append(new Option('تعرّف تلقائي','auto'));
+  const seen=new Set();
+  LANGS.forEach(l=>{if(seen.has(l.g))return;seen.add(l.g);sl.append(new Option(l.n,l.g));tl.append(new Option(l.n,l.g));});
+}
+function buildServices(){
+  const box=$('#svcs');
+  SERVICES.forEach(s=>{
+    const c=document.createElement('div');c.className='svc'+(S.primary===s.id?' prim':'');
+    const hd=document.createElement('div');hd.className='hd';
+    const l1=document.createElement('label');l1.className='chk';
+    const r=document.createElement('input');r.type='radio';r.name='prim';r.checked=S.primary===s.id;
+    r.onchange=()=>{S.primary=s.id;S.enabled[s.id]=true;save();buildServicesRefresh();};
+    const b=document.createElement('b');b.textContent=s.n;l1.append(r,b);
+    const l2=document.createElement('label');l2.className='chk';
+    const e=document.createElement('input');e.type='checkbox';e.checked=!!S.enabled[s.id];e.dataset.sid=s.id;
+    e.onchange=()=>{S.enabled[s.id]=e.checked;save();};
+    l2.append(e,document.createTextNode('مفعّلة'));hd.append(l1,l2);c.append(hd);
+    const d=document.createElement('div');d.className='d';d.textContent=s.d;c.append(d);
+    (s.f||[]).forEach(([k,ph,type])=>{
+      const i=document.createElement('input');i.type=type;i.placeholder=ph;i.title=ph;i.dataset.k=k;i.autocomplete='off';c.append(i);
+    });
+    box.append(c);
+  });
+  bindAll(box);
+}
+function buildServicesRefresh(){
+  $$('#svcs .svc').forEach((c,i)=>{c.classList.toggle('prim',SERVICES[i].id===S.primary);c.querySelector('input[type=radio]').checked=SERVICES[i].id===S.primary;c.querySelector('input[data-sid]').checked=!!S.enabled[SERVICES[i].id];});
+}
+function buildPos(){
+  const box=$('#posChips');
+  [['أعلى',50,12],['وسط',50,50],['أسفل',50,88]].forEach(([n,x,y])=>{
+    const b=document.createElement('button');b.className='chip';b.textContent=n;
+    b.onclick=()=>{S.box.x=x;S.box.y=y;save();renderBoxes();};box.append(b);
+  });
+}
+
+$$('.chips[data-k]').forEach(buildChips);
+buildLangs();buildPos();bindAll(document);buildServices();
+refreshChips();renderHotkeys();fitStage();
+window.addEventListener('beforeunload',()=>{try{if(stream)stream.getTracks().forEach(t=>t.stop());}catch(e){}});
+})();
+</script>
+</body>
+</html>
